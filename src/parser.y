@@ -13,6 +13,7 @@
     #include <string>
     #include <vector>
     #include <stdint.h>
+    #include "ast.h"
 
     using namespace std;
 
@@ -20,6 +21,10 @@
         class Scanner;
         class Driver;
     }
+    using namespace XYZ;
+
+    using ASTNodePtr = std::shared_ptr<ASTNode>;
+
 }
 
 %code top
@@ -47,25 +52,75 @@
 
 %define api.token.prefix {TOKEN_}
 
-%token END 0 "end of file"
-%token <std::string> STRING  "string";
+/* TOKENS */
+%token END_FILE 0 "end of file"
 %token <uint64_t> NUMBER "number";
+%token <std::string> STRING  "string";
 %token LEFTPAR "leftpar";
 %token RIGHTPAR "rightpar";
 %token SEMICOLON "semicolon";
 %token COMMA "comma";
+
+/* KEY WORD */
+%token PROGRAM VAR BEGIN END IF THEN ELSE
+%token WHILE DO INTEGER REAL ASSIGN
+
+/* node */
+%type <ASTNodePtr> program_struct
+%type <ASTNodePtr> program_head
+%type <ASTNodePtr> program_body
+%type <ASTNodePtr> idlist
+
+%type <ASTNodePtr> const_decls
+%type <ASTNodePtr> const_decl
+%type <ASTNodePtr> const_val
+
+%type <ASTNodePtr> var_decls
+%type <ASTNodePtr> var_decl
+
+%type <ASTNodePtr> type
+%type <ASTNodePtr> basic_type
+%type <ASTNodePtr> period
+
+%type <ASTNodePtr> subprogram_decls
+%type <ASTNodePtr> subprogram
+%type <ASTNodePtr> subprogram_head
+%type <ASTNodePtr> subprogram_body
+
+%type <ASTNodePtr> formal_parameter
+%type <ASTNodePtr> parameter_list
+%type <ASTNodePtr> parameter
+%type <ASTNodePtr> var_parameter
+%type <ASTNodePtr> value_parameter
+
+%type <ASTNodePtr> compound_statement
+%type <ASTNodePtr> statement_list
+%type <ASTNodePtr> statement
+
+%type <ASTNodePtr> variable_list
+%type <ASTNodePtr> variable
+%type <ASTNodePtr> id_varpart
+
+%type <ASTNodePtr> procedure_call
+%type <ASTNodePtr> else_part
+%type <ASTNodePtr> expression_list
+%type <ASTNodePtr> expression
+%type <ASTNodePtr> simple_expression
+
+%type <ASTNodePtr> term
+%type <ASTNodePtr> factor
+
+%start program_struct
 %%
 
-program :
+program_struct :
 {
     cout << "*** RUN ***" << endl;
     cout << endl << "prompt> ";
     driver.clear();
-} | program NUMBER {
-    cout << "Number: " << $2 << endl;
-} | {
-    cout << "Empty program" << endl;
-};
+    $$ = std::make_shared<ASTNode>();
+    /* driver.set_program($$); */
+} ;
 
 %%
 

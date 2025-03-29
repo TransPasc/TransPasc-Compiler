@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(BisonFlexExample)
 
+# 指定 c++ 17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 # 查找 Flex 和 Bison
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
@@ -20,4 +24,7 @@ add_executable(a.out
     src/driver.cpp
     ${FLEX_Scanner_OUTPUTS}
     ${BISON_Parser_OUTPUTS}
+)
+target_sources(a.out PRIVATE
+    src/ast.cpp
 )
