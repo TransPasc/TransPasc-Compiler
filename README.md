@@ -8,3 +8,15 @@
 ## How to start
 
 <!-- TODO: Complete it -->
+
+## Lexical rules
+
+词法规则定义如下:
+
+*注:pascal 不区分大小写*
+```
+```
+
+## Grammar rules
+
+<!-- TODO -->
