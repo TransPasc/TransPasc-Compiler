@@ -54,16 +54,12 @@
 
 /* TOKENS */
 %token END_FILE 0 "end of file"
-%token <uint64_t> NUMBER "number";
-%token <std::string> STRING  "string";
-%token LEFTPAR "leftpar";
-%token RIGHTPAR "rightpar";
-%token SEMICOLON "semicolon";
-%token COMMA "comma";
 
-/* KEY WORD */
-%token PROGRAM VAR BEGIN END IF THEN ELSE
-%token WHILE DO INTEGER REAL ASSIGN
+%token <ASTNodePtr> NUMBER "number";
+%token <ASTNodePtr> ID "id";
+
+%token <ASTNodePtr> PROGRAM VAR BEGIN END IF THEN ELSE
+%token <ASTNodePtr> WHILE DO INTEGER REAL ASSIGN
 
 /* node */
 %type <ASTNodePtr> program_struct
@@ -111,6 +107,8 @@
 %type <ASTNodePtr> factor
 
 %start program_struct
+
+/* 定义优先级 */
 %%
 
 program_struct :

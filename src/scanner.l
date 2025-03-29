@@ -5,12 +5,15 @@
     #include "driver.h"
     #include "parser.hpp"
     #include "location.hh"
+    #include "ast.h"
 
     using namespace std;
 
     #define yyterminate() XYZ::Parser::make_END_FILE(XYZ::location());
 
     #define YY_USER_ACTION m_driver.increaseLocation(yyleng);
+
+    using ASTNodePtr = std::shared_ptr<XYZ::ASTNode>;
 %}
 
 %option nodefault
@@ -60,8 +63,9 @@ COMMENT_END (\}|\*\))
 {WS}    { /* Ignore whitespace */ }
 {NUM}    {
     cout << "Scanner: number [" << yytext << "]" << endl;
-    uint64_t number = strtoull(yytext, 0, 10);
-    return XYZ::Parser::make_NUMBER(number, XYZ::location());
+    // uint64_t number = strtoull(yytext, 0, 10);
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_NUMBER(ptr,XYZ::location());
 }
 .   {
     cout << "词法错误[" << yytext << "]" << endl;
