@@ -1,3 +1,10 @@
 {
     "cmake.generator": "Unix Makefiles",
+    // cmake debug 参数
+    "cmake.debugConfig": {
+        "args": [
+            "test.txt",
+        ],
+        "externalConsole": true,
+    },
 }

@@ -12,6 +12,32 @@ int Driver::parse() {
   return m_parser.parse();
 }
 
+// 添加打印token流的方法
+void Driver::printTokens() {
+  while (true) {
+    auto token = m_scanner.get_next_token();
+    if (token.kind() == XYZ::Parser::symbol_kind_type::S_YYEOF) {
+      break;
+    }
+    std::cout << "Token: " << getTokenName(token.kind());
+  }
+}
+
+// 获取token名称的辅助方法
+std::string Driver::getTokenName(XYZ::Parser::symbol_kind_type kind) {
+  switch (kind) {
+    case XYZ::Parser::symbol_kind_type::S_YYEOF:
+      return "EOF";
+    case XYZ::Parser::symbol_kind_type::S_ID:
+      return "Id";
+    case XYZ::Parser::symbol_kind_type::S_NUMBER:
+      return "Number";
+    // 添加其他token类型的名称
+    default:
+      return "Unknown Token";
+  }
+}
+
 void Driver::clear() { m_location = 0; }
 
 std::string Driver::str() const {

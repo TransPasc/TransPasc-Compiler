@@ -15,8 +15,12 @@
 
     using ASTNodePtr = std::shared_ptr<XYZ::ASTNode>;
 %}
+/*
+    这里开启 nodefault 会报错:flex scanner jammed
 
-%option nodefault
+    https://www.spinics.net/lists/lm-sensors/msg17031.html
+ */
+/* %option nodefault */
 %option noyywrap
 %option c++
 %option yyclass="Scanner"
@@ -60,7 +64,14 @@ COMMENT_END (\}|\*\))
 %x COMMENT
 
 %%
-{WS}    { /* Ignore whitespace */ }
+'\n' {
+    // m_driver.increaseLine();
+    cout << "换行" << endl;
+    // TODO: 处理换行
+}
+{WS}    { /* Ignore whitespace */
+    cout << "空白符" << endl;
+}
 {NUM}    {
     cout << "Scanner: number [" << yytext << "]" << endl;
     // uint64_t number = strtoull(yytext, 0, 10);

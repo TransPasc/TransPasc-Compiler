@@ -118,7 +118,11 @@ program_struct :
     driver.clear();
     $$ = std::make_shared<ASTNode>();
     /* driver.set_program($$); */
-} ;
+} | program_struct NUMBER {
+    cout << "[Parse a Number] "<< endl;
+} | {
+    cout << "[Empty program]" << endl;
+};
 
 %%
 
