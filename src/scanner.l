@@ -21,6 +21,8 @@
 %option c++
 %option yyclass="Scanner"
 %option prefix="XYZ_"
+/* 忽略大小写 */
+%option caseless
 
 /* 词法规则定义 */
 WS [ \t\r\v\f]
