@@ -80,3 +80,6 @@ end.
 {$result-list}
 
 ```
+## Notice
+
+c 中的函数和 Pascal 中的过程/函数不同，Pascal 中的可以嵌套，可以访问上一层的变量，相当于 cpp 中的闭包，转化为 c代码时需要注意
