@@ -55,5 +55,9 @@ void Driver::increaseLocation(unsigned int loc) {
   //   cout << "increaseLocation(): " << loc << ", total = " << m_location <<
   //   endl;
 }
+void Driver::increaseLine() {
+  m_line++;
+  cout << "Line : " << m_line << endl;
+}
 
 unsigned int Driver::location() const { return m_location; }

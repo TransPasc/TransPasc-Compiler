@@ -47,6 +47,22 @@ DO "do"
 INTEGER "integer"
 REAL "real"
 ASSIGN ":="
+CONST "const"
+ARRAY "array"
+OF "of"
+PROCEDURE "procedure"
+FUNCTION "function"
+FOR "for"
+RECORD "record"
+TYPE "type"
+LABEL "label"
+CASE "case"
+GOTO "goto"
+TO "to"
+READ "read"
+WRITE "write"
+NOT "not"
+
 
 RELOP (<=|>=|<>|<|>|=)
 ADDOP (\+|\-|or)
@@ -97,8 +113,8 @@ COMMENT_END (\}|\*\))
 }
 
 \n {
-    // m_driver.increaseLine();
-    cout << "换行" << endl;
+    m_driver.increaseLine();
+    // cout << "\n" << endl;
     // TODO: 处理换行
 }
 {WS}    { /* Ignore whitespace */
@@ -170,6 +186,82 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_ASSIGN(ptr, XYZ::location());
 }
+{CONST}    {
+    cout << "Scanner: const [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_CONST(ptr, XYZ::location());
+}
+{ARRAY}    {
+    cout << "Scanner: array [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_ARRAY(ptr, XYZ::location());
+}
+{OF}    {
+    cout << "Scanner: of [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_OF(ptr, XYZ::location());
+}
+{PROCEDURE}    {
+    cout << "Scanner: procedure [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_PROCEDURE(ptr, XYZ::location());
+}
+{FUNCTION}    {
+    cout << "Scanner: function [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_FUNCTION(ptr, XYZ::location());
+}
+{FOR}    {
+    cout << "Scanner: for [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_FOR(ptr, XYZ::location());
+}
+{RECORD}    {
+    cout << "Scanner: record [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_RECORD(ptr, XYZ::location());
+}
+{TYPE}    {
+    cout << "Scanner: type [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_TYPE(ptr, XYZ::location());
+}
+{LABEL}    {
+    cout << "Scanner: label [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_LABEL(ptr, XYZ::location());
+}
+{CASE}    {
+    cout << "Scanner: case [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_CASE(ptr, XYZ::location());
+}
+{GOTO}    {
+    cout << "Scanner: goto [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_GOTO(ptr, XYZ::location());
+}
+{TO}    {
+    cout << "Scanner: to [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_TO(ptr, XYZ::location());
+}
+{READ}    {
+    cout << "Scanner: read [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_READ(ptr, XYZ::location());
+}
+{WRITE}    {
+    cout << "Scanner: write [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_WRITE(ptr, XYZ::location());
+}
+{NOT}    {
+    cout << "Scanner: not [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_NOT(ptr, XYZ::location());
+}
+
 {ID}    {
     /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
     cout << "Scanner: id [" << yytext << "]" << endl;
