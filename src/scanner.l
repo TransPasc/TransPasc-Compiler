@@ -35,7 +35,18 @@ OPTIONAL_FRACTION (\.{DIGITS})?
 NUM {DIGITS}{OPTIONAL_FRACTION}
 
 /* KEY WORD */
-/* program var procedure begin if else ... */
+PROGRAM "program"
+VAR "var"
+BEGIN "begin"
+END "end"
+IF "if"
+THEN "then"
+ELSE "else"
+WHILE "while"
+DO "do"
+INTEGER "integer"
+REAL "real"
+ASSIGN ":="
 
 RELOP (<=|>=|<>|<|>|=)
 ADDOP (\+|\-|or)
@@ -84,6 +95,7 @@ COMMENT_END (\}|\*\))
     cout << "Scanner: block comment content [" << yytext << "]" << endl;
 }
 }
+
 \n {
     // m_driver.increaseLine();
     cout << "换行" << endl;
@@ -98,7 +110,68 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_NUMBER(ptr,XYZ::location());
 }
+{PROGRAM}    {
+    cout << "Scanner: program [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_PROGRAM(ptr, XYZ::location());
+}
+{VAR}    {
+    cout << "Scanner: var [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_VAR(ptr, XYZ::location());
+}
+{BEGIN}    {
+    cout << "Scanner: begin [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_BEGIN(ptr, XYZ::location());
+}
+{END}    {
+    cout << "Scanner: end [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_END(ptr, XYZ::location());
+}
+{IF}    {
+    cout << "Scanner: if [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_IF(ptr, XYZ::location());
+}
+{THEN}    {
+    cout << "Scanner: then [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_THEN(ptr, XYZ::location());
+}
+{ELSE}    {
+    cout << "Scanner: else [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_ELSE(ptr, XYZ::location());
+}
+{WHILE}    {
+    cout << "Scanner: while [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_WHILE(ptr, XYZ::location());
+}
+{DO}    {
+    cout << "Scanner: do [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_DO(ptr, XYZ::location());
+}
+{INTEGER}    {
+    cout << "Scanner: integer [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_INTEGER(ptr, XYZ::location());
+}
+{REAL}    {
+    cout << "Scanner: real [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_REAL(ptr, XYZ::location());
+}
+{ASSIGN}    {
+    cout << "Scanner: assign [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_ASSIGN(ptr, XYZ::location());
+}
 {ID}    {
+    /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
     cout << "Scanner: id [" << yytext << "]" << endl;
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_ID(ptr, XYZ::location());

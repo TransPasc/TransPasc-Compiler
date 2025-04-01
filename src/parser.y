@@ -122,7 +122,17 @@
 
 %start program_struct
 
-/* 定义优先级 */
+/* 定义优先级，从低到高 */
+/* TODO: 调整优先级顺序 */
+%right ASSIGNOP
+%left RELOP
+%left ADDOP
+%left MULOP
+%left COMMA COLON DOT
+%left LBRACKET RBRACKET
+%left LPAREN RPAREN
+%nonassoc END IF THEN ELSE WHILE DO
+
 %%
 
 program_struct :
