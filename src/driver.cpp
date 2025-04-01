@@ -19,7 +19,7 @@ void Driver::printTokens() {
     if (token.kind() == XYZ::Parser::symbol_kind_type::S_YYEOF) {
       break;
     }
-    std::cout << "Token: " << getTokenName(token.kind());
+    std::cout << "Token: " << getTokenName(token.kind()) << endl;
   }
 }
 
@@ -52,7 +52,8 @@ void Driver::switchInputStream(std::istream *is) {
 
 void Driver::increaseLocation(unsigned int loc) {
   m_location += loc;
-  cout << "increaseLocation(): " << loc << ", total = " << m_location << endl;
+  //   cout << "increaseLocation(): " << loc << ", total = " << m_location <<
+  //   endl;
 }
 
 unsigned int Driver::location() const { return m_location; }
