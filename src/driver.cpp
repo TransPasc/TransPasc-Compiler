@@ -19,7 +19,7 @@ void Driver::printTokens() {
     if (token.kind() == XYZ::Parser::symbol_kind_type::S_YYEOF) {
       break;
     }
-    std::cout << "Token: " << getTokenName(token.kind()) << endl;
+    // std::cout << "Token: " << getTokenName(token.kind()) << endl;
   }
 }
 

@@ -57,6 +57,20 @@
 
 %token <ASTNodePtr> NUMBER "number";
 %token <ASTNodePtr> ID "id";
+%token <ASTNodePtr> RELOP "relational operator";
+%token <ASTNodePtr> ADDOP "addition operator";
+%token <ASTNodePtr> MULOP "multiplication operator";
+%token <ASTNodePtr> ASSIGNOP "assignment operator";
+
+%token <ASTNodePtr> COMMA "comma";
+%token <ASTNodePtr> SEMICOLON "semicolon";
+%token <ASTNodePtr> COLON "colon";
+%token <ASTNodePtr> DOT "dot";
+
+%token <ASTNodePtr> LPAREN "left parenthesis";
+%token <ASTNodePtr> RPAREN "right parenthesis";
+%token <ASTNodePtr> LBRACKET "left bracket";
+%token <ASTNodePtr> RBRACKET "right bracket";
 
 %token <ASTNodePtr> PROGRAM VAR BEGIN END IF THEN ELSE
 %token <ASTNodePtr> WHILE DO INTEGER REAL ASSIGN

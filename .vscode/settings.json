@@ -3,7 +3,7 @@
     // cmake debug 参数
     "cmake.debugConfig": {
         "args": [
-            "test.txt",
+            "test.pas",
         ],
         "externalConsole": true,
     },
