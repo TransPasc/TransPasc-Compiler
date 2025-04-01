@@ -142,55 +142,53 @@
 %nonassoc END IF THEN ELSE WHILE DO
 
 %%
-
 program_struct :
     program_head SEMICOLON program_body DOT {
-        cout << "program_head SEMICOLON program_body DOT" << endl;
+        cout << "program_struct -> program_head SEMICOLON program_body DOT" << endl;
     }
 ;
 program_head :
     PROGRAM ID LPAREN idlist RPAREN {
-        cout << "PROGRAM ID LPAREN idlist RPAREN" << endl;
+        cout << "program_head -> PROGRAM ID LPAREN idlist RPAREN" << endl;
     }|
     PROGRAM ID {
-        cout << "PROGRAM ID" << endl;
+        cout << "program_head -> PROGRAM ID" << endl;
     }
 ;
 program_body :
     const_decls var_decls subprogram_decls compound_statement {
-        cout << "const_decls var_decls subprogram_decls compound_statement" << endl;
+        cout << "program_body -> const_decls var_decls subprogram_decls compound_statement" << endl;
     }
 ;
 idlist:
     ID {
-        cout << "ID" << endl;
+        cout << "idlist -> ID" << endl;
     }|
     idlist COMMA ID {
-        cout << "idlist COMMA ID" << endl;
+        cout << "idlist -> idlist COMMA ID" << endl;
     }
 ;
 const_decls : {
-     /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "const_decls -> EMPTY" << endl;
     }|
-    CONST const_decl{
-        cout << "CONST const_decl" << endl;
+    CONST const_decl {
+        cout << "const_decls -> CONST const_decl" << endl;
     }
 ;
 const_decl :
     ID ASSIGN const_val {
-        cout << "ID ASSIGN const_val" << endl;
+        cout << "const_decl -> ID ASSIGN const_val" << endl;
     }|
     const_decl SEMICOLON ID ASSIGN const_val {
-        cout << "const_decl SEMICOLON ID ASSIGN const_val" << endl;
+        cout << "const_decl -> const_decl SEMICOLON ID ASSIGN const_val" << endl;
     }
 ;
 const_val :
     ADDOP NUMBER {
-        cout << "ADDOP NUMBER" << endl;
+        cout << "const_val -> ADDOP NUMBER" << endl;
     }|
     NUMBER {
-        cout << "NUMBER" << endl;
+        cout << "const_val -> NUMBER" << endl;
     }
     /* TODO: 查阅 pascal const letter 定义 */
     /* |' letter ' {
@@ -199,240 +197,234 @@ const_val :
 ;
 var_decls :
     {
-        /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "var_decls -> EMPTY" << endl;
     }|
-    VAR var_decl {
-        cout << "VAR var_decl" << endl;
+    VAR var_decl SEMICOLON{
+        cout << "var_decls -> VAR var_decl" << endl;
     }
 ;
 var_decl :
     idlist COLON type {
-        cout << "idlst COLON type" << endl;
+        cout << "var_decl -> idlist COLON type" << endl;
     }|
     var_decl SEMICOLON idlist COLON type {
-        cout << "var_decl SEMICOLON idlist COLON type" << endl;
+        cout << "var_decl -> var_decl SEMICOLON idlist COLON type" << endl;
     }
 ;
 type :
     basic_type {
-        cout << "basic_type" << endl;
+        cout << "type -> basic_type" << endl;
     }|
     ARRAY LBRACKET period RBRACKET OF basic_type {
-        cout << "ARRAY LBRACKET period RBRACKET OF basic_type" << endl;
+        cout << "type -> ARRAY LBRACKET period RBRACKET OF basic_type" << endl;
     }
 ;
 basic_type :
     INTEGER {
-        cout << "INTEGER" << endl;
+        cout << "basic_type -> INTEGER" << endl;
     }|
     REAL {
-        cout << "REAL" << endl;
+        cout << "basic_type -> REAL" << endl;
     }|
     BOOLEAN {
-        cout << "ID" << endl;
+        cout << "basic_type -> BOOLEAN" << endl;
     }|
     CHAR {
-        cout << "CHAR" << endl;
-    }|
+        cout << "basic_type -> CHAR" << endl;
+    }
 ;
 period :
     NUMBER DOT DOT NUMBER {
-        cout << "DIGITS..DIGITS" << endl;
+        cout << "period -> NUMBER DOT DOT NUMBER" << endl;
     }|
     period COMMA NUMBER DOT DOT NUMBER {
-        cout << "period COMMA DIGITS..DIGITS" << endl;
+        cout << "period -> period COMMA NUMBER DOT DOT NUMBER" << endl;
     }
 ;
 subprogram_decls :
     {
-        /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "subprogram_decls -> EMPTY" << endl;
     }|
     subprogram_decls subprogram {
-        cout << "subprogram_decls subprogram" << endl;
+        cout << "subprogram_decls -> subprogram_decls subprogram" << endl;
     }
 ;
 subprogram :
     subprogram_head SEMICOLON subprogram_body {
-        cout << "subprogram_head SEMICOLON subprogram_body" << endl;
+        cout << "subprogram -> subprogram_head SEMICOLON subprogram_body" << endl;
     }
 ;
 subprogram_head :
     PROCEDURE ID formal_parameter {
-        cout << "PROCEDURE ID formal_parameter" << endl;
+        cout << "subprogram_head -> PROCEDURE ID formal_parameter" << endl;
     }|
     FUNCTION ID formal_parameter COLON basic_type {
-        cout << "FUNCTION ID formal_parameter COLON basic_type" << endl;
+        cout << "subprogram_head -> FUNCTION ID formal_parameter COLON basic_type" << endl;
     }
 ;
 formal_parameter :{
-    /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "formal_parameter -> EMPTY" << endl;
     }|
     LPAREN parameter_list RPAREN {
-        cout << "LPAREN parameter_list RPAREN" << endl;
+        cout << "formal_parameter -> LPAREN parameter_list RPAREN" << endl;
     }
 ;
 parameter_list :
     parameter {
-        cout << "parameter" << endl;
+        cout << "parameter_list -> parameter" << endl;
     }|
     parameter_list SEMICOLON parameter {
-        cout << "parameter_list SEMICOLON parameter" << endl;
+        cout << "parameter_list -> parameter_list SEMICOLON parameter" << endl;
     }
 ;
 parameter :
     var_parameter {
-        cout << "var_parameter" << endl;
+        cout << "parameter -> var_parameter" << endl;
     }|
     value_parameter {
-        cout << "value_parameter" << endl;
+        cout << "parameter -> value_parameter" << endl;
     }
 ;
 var_parameter :
     VAR value_parameter {
-        cout << "VAR value_parameter" << endl;
+        cout << "var_parameter -> VAR value_parameter" << endl;
     }
 ;
 value_parameter :
     idlist COLON basic_type {
-        cout << "idlist COLON basic_type" << endl;
+        cout << "value_parameter -> idlist COLON basic_type" << endl;
     }
 ;
 subprogram_body :
     const_decls var_decls compound_statement {
-        cout << "const_decls var_decls compound_statement" << endl;
+        cout << "subprogram_body -> const_decls var_decls compound_statement" << endl;
     }
 ;
 compound_statement :
     BEGIN statement_list END {
-        cout << "BEGIN statement_list END" << endl;
+        cout << "compound_statement -> BEGIN statement_list END" << endl;
     }
 ;
 statement_list :
     statement {
-        cout << "statement" << endl;
+        cout << "statement_list -> statement" << endl;
     }|
     statement_list SEMICOLON statement {
-        cout << "statement_list SEMICOLON statement" << endl;
+        cout << "statement_list -> statement_list SEMICOLON statement" << endl;
     }
 ;
 statement : {
-    cout << "EMPTY" << endl;
+        cout << "statement -> EMPTY" << endl;
     }|
     variable ASSIGNOP expression {
-        cout << "variable ASSIGNOP expression" << endl;
+        cout << "statement -> variable ASSIGNOP expression" << endl;
     }|
     ID ASSIGNOP expression {
-        cout << "ID ASSIGNOP expression" << endl;
+        cout << "statement -> ID ASSIGNOP expression" << endl;
     }|
     procedure_call {
-        cout << "procedure_call" << endl;
+        cout << "statement -> procedure_call" << endl;
     }|
     IF expression THEN statement else_part {
-        cout << "IF expression THEN statement else_part" << endl;
+        cout << "statement -> IF expression THEN statement else_part" << endl;
     }|
     FOR ID ASSIGN expression TO expression DO statement {
-        cout << "FOR ID ASSIGN expression TO expression DO statement" << endl;
+        cout << "statement -> FOR ID ASSIGN expression TO expression DO statement" << endl;
     }|
     READ LPAREN variable_list RPAREN {
-        cout << "READ LPAREN variable_list RPAREN" << endl;
+        cout << "statement -> READ LPAREN variable_list RPAREN" << endl;
     }|
     WRITE LPAREN expression_list RPAREN {
-        cout << "WRITE LPAREN expression_list RPAREN" << endl;
+        cout << "statement -> WRITE LPAREN expression_list RPAREN" << endl;
     }
 ;
 variable_list :
     variable {
-        cout << "variable" << endl;
+        cout << "variable_list -> variable" << endl;
     }|
     variable_list COMMA variable {
-        cout << "variable_list COMMA variable" << endl;
+        cout << "variable_list -> variable_list COMMA variable" << endl;
     }
 ;
 variable :
     ID id_varpart {
-        cout << "ID id_varpart" << endl;
+        cout << "variable -> ID id_varpart" << endl;
     }
 ;
 id_varpart :
     {
-        /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "id_varpart -> EMPTY" << endl;
     }|
     LBRACKET expression_list RBRACKET  {
-        cout << "LBRACKET expression RBRACKET id_varpart" << endl;
+        cout << "id_varpart -> LBRACKET expression_list RBRACKET" << endl;
     }
 ;
 procedure_call :
     ID {
-        cout << "ID" << endl;
+        cout << "procedure_call -> ID" << endl;
     }|
     ID LPAREN expression_list RPAREN {
-        cout << "ID LPAREN expression_list RPAREN" << endl;
+        cout << "procedure_call -> ID LPAREN expression_list RPAREN" << endl;
     }
 ;
 else_part :
     {
-        /* EMPTY */
-        cout << "EMPTY" << endl;
+        cout << "else_part -> EMPTY" << endl;
     }|
     ELSE statement {
-        cout << "ELSE statement" << endl;
+        cout << "else_part -> ELSE statement" << endl;
     }
 ;
 expression_list :
     expression {
-        cout << "expression" << endl;
+        cout << "expression_list -> expression" << endl;
     }|
     expression_list COMMA expression {
-        cout << "expression_list COMMA expression" << endl;
+        cout << "expression_list -> expression_list COMMA expression" << endl;
     }
 ;
 expression :
     simple_expression {
-        cout << "simple_expression" << endl;
+        cout << "expression -> simple_expression" << endl;
     }|
     simple_expression RELOP simple_expression {
-        cout << "simple_expression RELOP simple_expression" << endl;
+        cout << "expression -> simple_expression RELOP simple_expression" << endl;
     }
 ;
 simple_expression :
     term {
-        cout << "term" << endl;
+        cout << "simple_expression -> term" << endl;
     }|
     simple_expression ADDOP term {
-        cout << "simple_expression ADDOP term" << endl;
+        cout << "simple_expression -> simple_expression ADDOP term" << endl;
     }
 ;
 term :
     factor {
-        cout << "factor" << endl;
+        cout << "term -> factor" << endl;
     }|
     term MULOP factor {
-        cout << "term MULOP factor" << endl;
+        cout << "term -> term MULOP factor" << endl;
     }
 ;
 factor :
     NUMBER {
-        cout << "NUMBER" << endl;
+        cout << "factor -> NUMBER" << endl;
     }|
     variable {
-        cout << "variable" << endl;
+        cout << "factor -> variable" << endl;
     }|
     LPAREN expression RPAREN {
-        cout << "LPAREN expression RPAREN" << endl;
+        cout << "factor -> LPAREN expression RPAREN" << endl;
     }|
     ID LPAREN expression_list RPAREN {
-        cout << "ID LPAREN expression_list RPAREN" << endl;
+        cout << "factor -> ID LPAREN expression_list RPAREN" << endl;
     }|
-    NOT factor{
-        cout << "NOT factor" << endl;
+    NOT factor {
+        cout << "factor -> NOT factor" << endl;
     }|
     UMINUS factor {
-        /* TODO: 负号和减号等冲突 */
-        cout << "UMINUS factor" << endl;
+        cout << "factor -> UMINUS factor" << endl;
     }
 ;
 %%

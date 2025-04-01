@@ -46,6 +46,9 @@ WHILE "while"
 DO "do"
 INTEGER "integer"
 REAL "real"
+CHAR "char"
+BOOLEAN "boolean"
+STRING "string"
 ASSIGN ":="
 CONST "const"
 ARRAY "array"
@@ -260,6 +263,21 @@ COMMENT_END (\}|\*\))
     cout << "Scanner: not [" << yytext << "]" << endl;
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_NOT(ptr, XYZ::location());
+}
+{CHAR}    {
+    cout << "Scanner: char [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_CHAR(ptr, XYZ::location());
+}
+{BOOLEAN}    {
+    cout << "Scanner: boolean [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_BOOLEAN(ptr, XYZ::location());
+}
+{STRING}    {
+    cout << "Scanner: string [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_STRING(ptr, XYZ::location());
 }
 
 {ID}    {
