@@ -4,3 +4,8 @@ tmp
 temp
 
 .DS_Store
+.cursor
+
+GPATH
+GTAGS
+GRTAGS

@@ -57,9 +57,12 @@
 
 
 %token <ASTNodePtr> NUMBER "number";
+%token <ASTNodePtr> CHAR_LITERAL "char_literal";
 %token <ASTNodePtr> ID "id";
 %token <ASTNodePtr> RELOP "relational operator";
-%token <ASTNodePtr> ADDOP "addition operator";
+%token <ASTNodePtr> PLUS "plus";
+%token <ASTNodePtr> MINUS "minus";
+%token <ASTNodePtr> OR "or";
 %token <ASTNodePtr> MULOP "multiplication operator";
 %token <ASTNodePtr> ASSIGNOP "assignment operator";
 
@@ -67,11 +70,11 @@
 %token <ASTNodePtr> SEMICOLON "semicolon";
 %token <ASTNodePtr> COLON "colon";
 %token <ASTNodePtr> DOT "dot";
+%token <ASTNodePtr> QUOTE "quote";
 %token <ASTNodePtr> TO "to";
 %token <ASTNodePtr> READ "read";
 %token <ASTNodePtr> WRITE "write";
 %token <ASTNodePtr> NOT "not";
-%token <ASTNodePtr> UMINUS "unary minus";
 
 %token <ASTNodePtr> LPAREN "left parenthesis";
 %token <ASTNodePtr> RPAREN "right parenthesis";
@@ -79,10 +82,11 @@
 %token <ASTNodePtr> RBRACKET "right bracket";
 
 %token <ASTNodePtr> PROGRAM VAR BEGIN END IF THEN ELSE
-%token <ASTNodePtr> WHILE DO ASSIGN CONST
+%token <ASTNodePtr> WHILE DO CONST
 %token <ASTNodePtr> ARRAY OF PROCEDURE FUNCTION
 %token <ASTNodePtr> FOR RECORD TYPE LABEL CASE GOTO
 %token <ASTNodePtr> CHAR BOOLEAN STRING INTEGER REAL
+
 /* node */
 %type <ASTNodePtr> program_struct
 %type <ASTNodePtr> program_head
@@ -134,12 +138,13 @@
 /* TODO: 调整优先级顺序 */
 %right ASSIGNOP
 %left RELOP
-%left ADDOP
+%left PLUS MINUS OR
 %left MULOP
 %left COMMA COLON DOT
 %left LBRACKET RBRACKET
 %left LPAREN RPAREN
 %nonassoc END IF THEN ELSE WHILE DO
+%right UMINUS
 
 %%
 program_struct :
@@ -176,24 +181,26 @@ const_decls : {
     }
 ;
 const_decl :
-    ID ASSIGN const_val {
-        cout << "const_decl -> ID ASSIGN const_val" << endl;
+    ID ASSIGNOP const_val {
+        cout << "const_decl -> ID ASSIGNOP const_val" << endl;
     }|
-    const_decl SEMICOLON ID ASSIGN const_val {
-        cout << "const_decl -> const_decl SEMICOLON ID ASSIGN const_val" << endl;
+    const_decl SEMICOLON ID ASSIGNOP const_val {
+        cout << "const_decl -> const_decl SEMICOLON ID ASSIGNOP const_val" << endl;
     }
 ;
 const_val :
-    ADDOP NUMBER {
-        cout << "const_val -> ADDOP NUMBER" << endl;
+    PLUS NUMBER {
+        cout << "const_val -> PLUS NUMBER" << endl;
+    }|
+    MINUS NUMBER {
+        cout << "const_val -> MINUS NUMBER" << endl;
     }|
     NUMBER {
         cout << "const_val -> NUMBER" << endl;
+    }|
+    CHAR_LITERAL {
+        cout << "const_val ->  CHAR_LITERAL" << endl;
     }
-    /* TODO: 查阅 pascal const letter 定义 */
-    /* |' letter ' {
-        cout << "' letter '" << endl;
-    } */
 ;
 var_decls :
     {
@@ -328,8 +335,8 @@ statement : {
     IF expression THEN statement else_part {
         cout << "statement -> IF expression THEN statement else_part" << endl;
     }|
-    FOR ID ASSIGN expression TO expression DO statement {
-        cout << "statement -> FOR ID ASSIGN expression TO expression DO statement" << endl;
+    FOR ID ASSIGNOP expression TO expression DO statement {
+        cout << "statement -> FOR ID ASSIGNOP expression TO expression DO statement" << endl;
     }|
     READ LPAREN variable_list RPAREN {
         cout << "statement -> READ LPAREN variable_list RPAREN" << endl;
@@ -395,8 +402,14 @@ simple_expression :
     term {
         cout << "simple_expression -> term" << endl;
     }|
-    simple_expression ADDOP term {
-        cout << "simple_expression -> simple_expression ADDOP term" << endl;
+    simple_expression PLUS term {
+        cout << "simple_expression -> simple_expression PLUS term" << endl;
+    }|
+    simple_expression MINUS term {
+        cout << "simple_expression -> simple_expression MINUS term" << endl;
+    }|
+    simple_expression OR term {
+        cout << "simple_expression -> simple_expression OR term" << endl;
     }
 ;
 term :
@@ -411,6 +424,9 @@ factor :
     NUMBER {
         cout << "factor -> NUMBER" << endl;
     }|
+    CHAR_LITERAL {
+        cout << "factor -> CHAR_LITERAL" << endl;
+    }|
     variable {
         cout << "factor -> variable" << endl;
     }|
@@ -423,8 +439,8 @@ factor :
     NOT factor {
         cout << "factor -> NOT factor" << endl;
     }|
-    UMINUS factor {
-        cout << "factor -> UMINUS factor" << endl;
+    MINUS factor %prec UMINUS {
+        cout << "factor -> MINUS factor (unary)" << endl;
     }
 ;
 %%

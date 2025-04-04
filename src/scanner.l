@@ -16,7 +16,7 @@
     using ASTNodePtr = std::shared_ptr<XYZ::ASTNode>;
 %}
 
-%option nodefault
+/* %option nodefault */
 %option noyywrap
 %option c++
 %option yyclass="Scanner"
@@ -35,6 +35,7 @@ DIGITS {DIGIT}+
 
 OPTIONAL_FRACTION (\.{DIGITS})?
 NUM {DIGITS}{OPTIONAL_FRACTION}
+CHAR_LITERAL ('{LETTER}')
 
 /* KEY WORD */
 PROGRAM "program"
@@ -51,7 +52,6 @@ REAL "real"
 CHAR "char"
 BOOLEAN "boolean"
 STRING "string"
-ASSIGN ":="
 CONST "const"
 ARRAY "array"
 OF "of"
@@ -70,7 +70,10 @@ NOT "not"
 
 
 RELOP (<=|>=|<>|<|>|=)
-ADDOP (\+|\-|or)
+PLUS \+
+MINUS \-
+OR or
+ADDOP ({PLUS}|{MINUS}|{OR})
 MULOP (div|mod|and|\*|\/)
 ASSIGNOP :=
 
@@ -78,6 +81,7 @@ COMMA ,
 SEMICOLON ;
 COLON :
 DOT \.
+QUOTE '
 LPAREN \(
 RPAREN \)
 LBRACKET \[
@@ -86,35 +90,37 @@ RBRACKET \]
 /* 注释 */
 
 LINE_COMMENT \/\/[^\n]*
-COMMENT_START (\{|\(\*)
-COMMENT_END (\}|\*\))
 
-%x COMMENT
+%x BRACE_COMMENT STAR_COMMENT
 
 %%
 {LINE_COMMENT}    { /* 忽略行注释 */
-    cout << "Scanner: line comment [" << yytext << "]" << endl;
+    // cout << "Scanner: line comment [" << yytext << "]" << endl;
     // m_driver.increaseLine();
 }
-{COMMENT_START}    { /* Ignore block comments */
-    BEGIN(COMMENT);
-    cout << "Scanner: block comment start [" << yytext << "]" << endl;
+"{"                { /* Start brace comment */
+    BEGIN(BRACE_COMMENT);
+    // cout << "Scanner: brace comment start {" << endl;
 }
-<COMMENT>{
-{COMMENT_END}    { /* Ignore block comments */
-    BEGIN(INITIAL);
-    cout << "Scanner: block comment end [" << yytext << "]" << endl;
+"(*"               { /* Start star comment */
+    BEGIN(STAR_COMMENT);
+    // cout << "Scanner: star comment start (*" << endl;
 }
-\n            { /* Ignore block comments */
-    cout << "Scanner: block comment new line [" << yytext << "]" << endl;
-    // m_driver.increaseLine();
+
+<BRACE_COMMENT>{
+"}"             { BEGIN(INITIAL); /* cout << "Scanner: brace comment end }" << endl; */ }
+[^{}\n]+        { /* Ignore content within brace comment */ /* cout << "Scanner: brace comment content [" << yytext << "]" << endl; */ }
+\n              { m_driver.increaseLine(); /* cout << "Scanner: brace comment newline" << endl; */ }
+<<EOF>>         {  BEGIN(INITIAL); }
 }
-{WS}            { /* Ignore whitespace */
-    cout << "Scanner: block comment whitespace [" << yytext << "]" << endl;
-}
-[^}]*            { /* Ignore block comments */
-    cout << "Scanner: block comment content [" << yytext << "]" << endl;
-}
+
+<STAR_COMMENT>{
+"*)"            { BEGIN(INITIAL); /* cout << "Scanner: star comment end *)" << endl; */ }
+[^*\n]+         { /* Ignore non-* content within star comment */ /* cout << "Scanner: star comment content [" << yytext << "]" << endl; */ }
+\n              { m_driver.increaseLine(); /* cout << "Scanner: star comment newline" << endl; */ }
+"*"+[^)*\n]     { /* Consume '*' followed by non-) non-* non-newline */ /* cout << "Scanner: star comment '*' sequence [" << yytext << "]" << endl; */}
+"*"             { /* Consume single '*' not followed by ')' */ /* cout << "Scanner: star comment single '*'" << endl; */ }
+<<EOF>>         {  BEGIN(INITIAL); }
 }
 
 \n {
@@ -130,6 +136,11 @@ COMMENT_END (\}|\*\))
     // uint64_t number = strtoull(yytext, 0, 10);
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_NUMBER(ptr,XYZ::location());
+}
+{CHAR_LITERAL} {
+    cout << "Scanner: char_literal [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_CHAR_LITERAL(ptr,XYZ::location());
 }
 {PROGRAM}    {
     cout << "Scanner: program [" << yytext << "]" << endl;
@@ -185,11 +196,6 @@ COMMENT_END (\}|\*\))
     cout << "Scanner: real [" << yytext << "]" << endl;
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_REAL(ptr, XYZ::location());
-}
-{ASSIGN}    {
-    cout << "Scanner: assign [" << yytext << "]" << endl;
-    auto ptr = make_shared<XYZ::ASTNode>();
-    return XYZ::Parser::make_ASSIGN(ptr, XYZ::location());
 }
 {CONST}    {
     cout << "Scanner: const [" << yytext << "]" << endl;
@@ -281,6 +287,11 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_STRING(ptr, XYZ::location());
 }
+{OR}    {
+    cout << "Scanner: or [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_OR(ptr, XYZ::location());
+}
 
 {ID}    {
     /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
@@ -293,10 +304,15 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_RELOP(ptr, XYZ::location());
 }
-{ADDOP}    {
-    cout << "Scanner: addop [" << yytext << "]" << endl;
+{PLUS}    {
+    cout << "Scanner: plus [" << yytext << "]" << endl;
     auto ptr = make_shared<XYZ::ASTNode>();
-    return XYZ::Parser::make_ADDOP(ptr, XYZ::location());
+    return XYZ::Parser::make_PLUS(ptr, XYZ::location());
+}
+{MINUS}    {
+    cout << "Scanner: minus [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_MINUS(ptr, XYZ::location());
 }
 {MULOP}    {
     cout << "Scanner: mulop [" << yytext << "]" << endl;
@@ -328,6 +344,11 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_DOT(ptr, XYZ::location());
 }
+{QUOTE}    {
+    cout << "Scanner: quote [" << yytext << "]" << endl;
+    auto ptr = make_shared<XYZ::ASTNode>();
+    return XYZ::Parser::make_QUOTE(ptr, XYZ::location());
+}
 {LPAREN}    {
     cout << "Scanner: lparen [" << yytext << "]" << endl;
     auto ptr = make_shared<XYZ::ASTNode>();
@@ -348,11 +369,12 @@ COMMENT_END (\}|\*\))
     auto ptr = make_shared<XYZ::ASTNode>();
     return XYZ::Parser::make_RBRACKET(ptr, XYZ::location());
 }
-.   {
-    cout << "词法错误[" << yytext << "]" << endl;
-}
+
 
 <<EOF>>     { return yyterminate(); }
 
+.           {
+    cout << "Scanner: unrecognized character [" << yytext << "]" << endl;
+}
 
 %%
