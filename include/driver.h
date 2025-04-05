@@ -31,6 +31,7 @@ class Driver {
 
  private:
   void increaseLocation(unsigned int loc);
+  void increaseLine();
 
   unsigned int location() const;
 
@@ -38,6 +39,7 @@ class Driver {
   Scanner m_scanner;
   Parser m_parser;
   unsigned int m_location;  // Used by scanner
+  unsigned int m_line;      // Used by parser
 };
 
 }  // namespace XYZ
