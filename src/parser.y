@@ -13,7 +13,7 @@
     #include <string>
     #include <vector>
     #include <stdint.h>
-    #include "ast.h"
+    #include "ast/ast.h"
 
     using namespace std;
 

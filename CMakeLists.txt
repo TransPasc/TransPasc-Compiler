@@ -26,5 +26,5 @@ add_executable(a.out
     ${BISON_Parser_OUTPUTS}
 )
 target_sources(a.out PRIVATE
-    src/ast.cpp
+    src/ast/ast.cpp
 )

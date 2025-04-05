@@ -5,7 +5,7 @@
     #include "driver.h"
     #include "parser.hpp"
     #include "location.hh"
-    #include "ast.h"
+    #include "ast/ast.h"
 
     using namespace std;
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#include "ast.h"
+#include "ast/ast.h"
 namespace XYZ {
 class ASTNode;
 class ASTVisitor {
