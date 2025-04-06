@@ -102,5 +102,24 @@ class FactorNode_Minus_Factor : public FactorNode {
   ASTNodePtr getMinus() const { return m_children[0]; }
   ASTNodePtr getFactor() const { return m_children[1]; }
 };
+// factor := ID LPAREN expression_list RPAREN
+class FactorNode_ID_Lparen_ExpressionList_Rparen : public FactorNode {
+ public:
+  FactorNode_ID_Lparen_ExpressionList_Rparen(ASTNodePtr id, ASTNodePtr lparen,
+                                             ASTNodePtr expressionList,
+                                             ASTNodePtr rparen, size_t line)
 
+      : FactorNode(line) {
+    addChild(id);
+    addChild(lparen);
+    addChild(expressionList);
+    addChild(rparen);
+  }
+  ~FactorNode_ID_Lparen_ExpressionList_Rparen() override = default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  ASTNodePtr getID() const { return m_children[0]; }
+  ASTNodePtr getExpressionList() const { return m_children[1]; }
+};
 }  // namespace XYZ

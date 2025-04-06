@@ -61,3 +61,10 @@ void Driver::increaseLine() {
 }
 
 unsigned int Driver::location() const { return m_location; }
+
+namespace XYZ {
+
+// 定义 static root
+std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
+
+}  // namespace XYZ

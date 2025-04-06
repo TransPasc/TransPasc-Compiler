@@ -1,10 +1,12 @@
 #pragma once
-
+#include "ast/ast.hpp"
 namespace XYZ {
 
 class ASTVisitor {
  public:
   virtual ~ASTVisitor() = default;
+
+  virtual void visit(class TerminalNode &node) = 0;
 
   virtual void visit(class ProgramStructNode &node) = 0;
   virtual void visit(

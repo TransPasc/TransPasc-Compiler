@@ -10,18 +10,19 @@ class IdVarPartNode : public ASTNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 };
-// id_varpart := LBRACKET expression RBRACKET
-class IdVarPartNode_Lbracket_Expression_Rbracket : public IdVarPartNode {
+// id_varpart := LBRACKET expression_list RBRACKET
+class IdVarPartNode_Lbracket_ExpressionList_Rbracket : public IdVarPartNode {
  public:
-  IdVarPartNode_Lbracket_Expression_Rbracket(ASTNodePtr lbracket,
-                                             ASTNodePtr expression,
-                                             ASTNodePtr rbracket, size_t line)
+  IdVarPartNode_Lbracket_ExpressionList_Rbracket(ASTNodePtr lbracket,
+                                                 ASTNodePtr expression_list,
+                                                 ASTNodePtr rbracket,
+                                                 size_t line)
       : IdVarPartNode(line) {
     addChild(lbracket);
-    addChild(expression);
+    addChild(expression_list);
     addChild(rbracket);
   }
-  ~IdVarPartNode_Lbracket_Expression_Rbracket() override = default;
+  ~IdVarPartNode_Lbracket_ExpressionList_Rbracket() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 

@@ -24,7 +24,9 @@ class TerminalNode : public ASTNode {
     MULOP,
     SEMICOLON,
     COLON,
-    PERIOD
+    PERIOD,
+    KEYWORD,      // 新增关键字类型
+    CHAR_LITERAL  // 新增字符字面量类型
   };
   TerminalNode(Type type, std::string val, size_t line)
       : ASTNode("Terminal", line), value() {
@@ -56,6 +58,12 @@ class TerminalNode : public ASTNode {
       case Type::ADDOP:
         value = val;
         break;
+      case Type::RPAREN:
+        value = val;
+        break;
+      case Type::ASSIGNOP:
+        value = val;
+        break;
       case Type::MULOP:
         value = val;
         break;
@@ -66,6 +74,12 @@ class TerminalNode : public ASTNode {
         value = val;
         break;
       case Type::PERIOD:
+        value = val;
+        break;
+      case Type::KEYWORD:
+        value = val;
+        break;
+      case Type::CHAR_LITERAL:
         value = val;
         break;
     };

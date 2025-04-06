@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "ast/ast.hpp"
 #include "parser.hpp"
 #include "scanner.h"
 
@@ -25,6 +26,8 @@ class Driver {
   std::string str() const;
 
   void switchInputStream(std::istream *is);
+
+  static std::shared_ptr<ProgramStructNode> root;  // 修改为 static
 
   friend class Parser;
   friend class Scanner;
