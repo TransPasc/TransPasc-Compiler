@@ -16,3 +16,4 @@
 - fix: 输出的ast 的 location 信息错误
 - fix: 部分语法未能正确识别
 - 优化 AST 的输出
+- 完善 ast:exception类

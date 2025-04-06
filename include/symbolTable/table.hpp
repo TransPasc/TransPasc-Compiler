@@ -3,59 +3,50 @@
 #include <string>
 #include <vector>
 
+#include "symbolTable/exception.hpp"
+
 namespace XYZ {
 class SymbolRecord;  // 前向声明 符号记录类，存储例如： lineno, type, value,
                      // etc.
-// SymbolTable 基类
+/**
+ * @class SymbolTable
+ * @brief 符号表抽象接口，可支持多级作用域管理（默认不支持）
+ */
 class SymbolTable {
  public:
-  using SymbolType = std::string;
+  using SymbolName = std::string;
 
  public:
   SymbolTable() = default;
   virtual ~SymbolTable() = default;
-  // 插入符号
-  virtual bool insert(const SymbolType &name, SymbolRecord *record) = 0;
+  /**
+   * @brief 在当前作用域插入符号
+   * @param symbol_name 符号名称
+   * @param new_record 符号记录对象（移交所有权）
+   */
+  virtual bool insert(const SymbolName &symbol_name,
+                      std::unique_ptr<SymbolRecord> new_record) = 0;
   // 删除符号
-  virtual bool remove(const SymbolType &name) = 0;
+  virtual bool remove(const SymbolName &name) = 0;
   //   update符号
-  virtual bool update(const SymbolType &name, SymbolRecord *record) = 0;
+  virtual bool update(const SymbolName &name, SymbolRecord *record) = 0;
   // 查找符号
-  virtual SymbolRecord *lookup(const SymbolType &name) = 0;
+  virtual SymbolRecord *lookup(const SymbolName &name) = 0;
 
   virtual size_t size() const = 0;
   // 清空符号表
   virtual void clear() = 0;
-};
-// 栈 链 式符号表
-class StackLinkedSymbolTable : public SymbolTable {
- public:
-  StackLinkedSymbolTable() : SymbolTable() {};
-  ~StackLinkedSymbolTable() override = default;
-
-  bool insert(const SymbolType &name, SymbolRecord *record) override;
-  bool remove(const SymbolType &name) override;
-  bool update(const SymbolType &name, SymbolRecord *record) override;
-  SymbolRecord *lookup(const SymbolType &name) override;
-
-  size_t size() const override;
-  void clear() override;
-
-  //   进入新块
-  void enterBlock();
-  //   退出当前块
-  void exitBlock();
-
- private:
-  //   块索引表
-  std::vector<int32_t> blockIndex;
-  //   栈式符号表
-  std::vector<std::shared_ptr<SymbolRecord>> symbolTable;
-  //   栈顶指针
-  int32_t top = -1;
-  //   当前块索引
-  int32_t currentBlockIndex = -1;
-  //   当前块级别
-  int32_t currentBlockLevel = -1;
+  //   进入新块, 默认不实现
+  virtual void enterBlock() {
+    throw SymbolTableException(
+        SymbolTableException::ErrorType::UnsupportedOperation,
+        "enterBlock() not implemented");
+  }
+  //   退出当前块, 默认不实现
+  virtual void exitBlock() {
+    throw SymbolTableException(
+        SymbolTableException::ErrorType::UnsupportedOperation,
+        "exitBlock() not implemented");
+  }
 };
 }  // namespace XYZ
