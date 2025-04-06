@@ -13,3 +13,5 @@
 - 增加 arg parse, 来控制编译器的行为(如 -h --version -o)
 - 对 TOKEN 流、AST、语义信息、符号表 等支持黑盒测试
 - 引入日志库
+- fix: 输出的ast 的 location 信息错误
+- fix: 部分语法未能正确识别

@@ -38,7 +38,6 @@ class ASTNode {
   //  只对子类开放 修改 child 节点
   void addChild(ASTNodePtr child) { m_children.push_back(child); }
 
- private:
   void printIndent(size_t indent) const {
     for (size_t i = 0; i < indent; ++i) {
       std::cout << " ";

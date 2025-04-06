@@ -18,6 +18,8 @@ class Driver {
   // 添加打印token流的方法
   void printTokens();
 
+  void printAST();
+
   // 获取token名称的辅助方法
   std::string getTokenName(XYZ::Parser::symbol_kind_type kind);
 
