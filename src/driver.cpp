@@ -3,6 +3,12 @@
 #include <sstream>
 
 using namespace XYZ;
+namespace XYZ {
+
+// 定义 static root
+std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
+
+}  // namespace XYZ
 
 Driver::Driver()
     : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {}
@@ -57,7 +63,17 @@ void Driver::increaseLocation(unsigned int loc) {
 }
 void Driver::increaseLine() {
   m_line++;
-  cout << "Line : " << m_line << endl;
+  //   cout << "Line : " << m_line << endl;
 }
 
 unsigned int Driver::location() const { return m_location; }
+
+void Driver::printAST() {
+  if (root) {
+    root->print(0);
+  } else {
+    std::cout << "AST is empty." << std::endl;
+  }
+
+  std::cout << "End of AST." << std::endl;
+}

@@ -22,7 +22,11 @@ void readFromFile(Driver& driver, string path) {
 void printTokens(Driver& driver) { driver.printTokens(); }
 void parse(Driver& driver) {
   int res = driver.parse();
-  cout << "Parse complete. Result = " << res << endl;
+  if (res != 0) {
+    cout << "Parse failed. Error code: " << res << endl;
+    return;
+  }
+  driver.printAST();
 }
 }  // namespace MENU
 int main(int argc, char** argv) {

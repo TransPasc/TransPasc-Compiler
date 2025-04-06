@@ -25,6 +25,5 @@ add_executable(a.out
     ${FLEX_Scanner_OUTPUTS}
     ${BISON_Parser_OUTPUTS}
 )
-target_sources(a.out PRIVATE
-    src/ast/ast.cpp
-)
+
+include(cmake/main.cmake)

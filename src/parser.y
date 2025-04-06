@@ -13,7 +13,7 @@
     #include <string>
     #include <vector>
     #include <stdint.h>
-    #include "ast/ast.h"
+    #include "ast/ast.hpp"
 
     using namespace std;
 
@@ -34,12 +34,14 @@
     #include "parser.hpp"
     #include "driver.h"
     #include "location.hh"
+    #include "ast/ast.hpp"
 
     static XYZ::Parser::symbol_type yylex(XYZ::Scanner &scanner, XYZ::Driver &driver) {
         return scanner.get_next_token();
     }
 
     using namespace XYZ;
+    using ASTNodePtr = std::shared_ptr<ASTNode>;
 }
 
 %lex-param { XYZ::Scanner &scanner }
@@ -149,298 +151,343 @@
 %%
 program_struct :
     program_head SEMICOLON program_body DOT {
-        cout << "program_struct -> program_head SEMICOLON program_body DOT" << endl;
+        Driver::root = std::make_shared<ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot>(
+            $1, $2, $3, $4, @1.begin.line);
+        $$ = Driver::root;
     }
 ;
 program_head :
     PROGRAM ID LPAREN idlist RPAREN {
-        cout << "program_head -> PROGRAM ID LPAREN idlist RPAREN" << endl;
-    }|
+        $$ = std::make_shared<ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen>(
+            $1, $2, $3, $4, $5, @1.begin.line);
+    } |
     PROGRAM ID {
-        cout << "program_head -> PROGRAM ID" << endl;
+        $$ = std::make_shared<ProgramHeadNode_Program_Id>(
+            $1, $2, @1.begin.line);
     }
 ;
 program_body :
     const_decls var_decls subprogram_decls compound_statement {
-        cout << "program_body -> const_decls var_decls subprogram_decls compound_statement" << endl;
+        $$ = std::make_shared<ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement>(
+            $1, $2, $3, $4, @1.begin.line);
     }
 ;
 idlist:
     ID {
-        cout << "idlist -> ID" << endl;
-    }|
+        $$ = std::make_shared<IdListNode_Id>($1, @1.begin.line);
+    } |
     idlist COMMA ID {
-        cout << "idlist -> idlist COMMA ID" << endl;
+        $$ = std::make_shared<IdListNode_IdList_Comma_Id>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 const_decls : {
-        cout << "const_decls -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<ConstDeclsNode>(@$.begin.line);
+    } |
     CONST const_decl {
-        cout << "const_decls -> CONST const_decl" << endl;
+        $$ = std::make_shared<ConstDeclsNode_Const_ConstDecl>(
+            $1, $2, @1.begin.line);
     }
 ;
 const_decl :
     ID ASSIGNOP const_val {
-        cout << "const_decl -> ID ASSIGNOP const_val" << endl;
-    }|
+        $$ = std::make_shared<ConstDeclNode_Id_Assignop_ConstVal>(
+            $1, $2, $3, @1.begin.line);
+    } |
     const_decl SEMICOLON ID ASSIGNOP const_val {
-        cout << "const_decl -> const_decl SEMICOLON ID ASSIGNOP const_val" << endl;
+        $$ = std::make_shared<ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal>(
+            $1, $2, $3, $4, $5, @1.begin.line);
     }
 ;
 const_val :
     PLUS NUMBER {
-        cout << "const_val -> PLUS NUMBER" << endl;
-    }|
+        $$ = std::make_shared<ConstValNode_Plus_Number>($1, $2, @1.begin.line);
+    } |
     MINUS NUMBER {
-        cout << "const_val -> MINUS NUMBER" << endl;
-    }|
+        $$ = std::make_shared<ConstValNode_Minus_Number>($1, $2, @1.begin.line);
+    } |
     NUMBER {
-        cout << "const_val -> NUMBER" << endl;
-    }|
+        $$ = std::make_shared<ConstValNode_Number>($1, @1.begin.line);
+    } |
     CHAR_LITERAL {
-        cout << "const_val ->  CHAR_LITERAL" << endl;
+        $$ = std::make_shared<ConstValNode_CharLiteral>($1, @1.begin.line);
     }
 ;
 var_decls :
     {
-        cout << "var_decls -> EMPTY" << endl;
-    }|
-    VAR var_decl SEMICOLON{
-        cout << "var_decls -> VAR var_decl" << endl;
+        $$ = std::make_shared<VarDeclsNode>(@$.begin.line);
+    } |
+    VAR var_decl SEMICOLON {
+        $$ = std::make_shared<VarDeclsNode_Var_VarDecl_Semicolon>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 var_decl :
     idlist COLON type {
-        cout << "var_decl -> idlist COLON type" << endl;
-    }|
+        $$ = std::make_shared<VarDeclNode_IdList_Colon_Type>(
+            $1, $2, $3, @1.begin.line);
+    } |
     var_decl SEMICOLON idlist COLON type {
-        cout << "var_decl -> var_decl SEMICOLON idlist COLON type" << endl;
+        $$ = std::make_shared<VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type>(
+            $1, $2, $3, $4, $5, @1.begin.line);
     }
 ;
 type :
     basic_type {
-        cout << "type -> basic_type" << endl;
-    }|
+        $$ = std::make_shared<TypeNode_BasicType>($1, @1.begin.line);
+    } |
     ARRAY LBRACKET period RBRACKET OF basic_type {
-        cout << "type -> ARRAY LBRACKET period RBRACKET OF basic_type" << endl;
+        $$ = std::make_shared<TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType>(
+            $1, $2, $3, $4, $5, $6, @1.begin.line);
     }
 ;
 basic_type :
     INTEGER {
-        cout << "basic_type -> INTEGER" << endl;
-    }|
+        $$ = std::make_shared<BasicTypeNode_Integer>($1, @1.begin.line);
+    } |
     REAL {
-        cout << "basic_type -> REAL" << endl;
-    }|
+        $$ = std::make_shared<BasicTypeNode_Real>($1, @1.begin.line);
+    } |
     BOOLEAN {
-        cout << "basic_type -> BOOLEAN" << endl;
-    }|
+        $$ = std::make_shared<BasicTypeNode_Boolean>($1, @1.begin.line);
+    } |
     CHAR {
-        cout << "basic_type -> CHAR" << endl;
+        $$ = std::make_shared<BasicTypeNode_Char>($1, @1.begin.line);
     }
 ;
 period :
     NUMBER DOT DOT NUMBER {
-        cout << "period -> NUMBER DOT DOT NUMBER" << endl;
-    }|
+        $$ = std::make_shared<PeriodNode_Number_Dot_Dot_Number>(
+            $1, $2, $3, $4, @1.begin.line);
+    } |
     period COMMA NUMBER DOT DOT NUMBER {
-        cout << "period -> period COMMA NUMBER DOT DOT NUMBER" << endl;
+        $$ = std::make_shared<PeriodNode_Period_Comma_Number_Dot_Dot_Number>(
+            $1, $2, $3, $4, $5, $6, @1.begin.line);
     }
 ;
 subprogram_decls :
     {
-        cout << "subprogram_decls -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<SubprogramDeclsNode>(@$.begin.line);
+    } |
     subprogram_decls subprogram {
-        cout << "subprogram_decls -> subprogram_decls subprogram" << endl;
+        $$ = std::make_shared<SubprogramDeclsNode_SubprogramDecls_Subprogram>(
+            $1, $2, @1.begin.line);
     }
 ;
 subprogram :
     subprogram_head SEMICOLON subprogram_body {
-        cout << "subprogram -> subprogram_head SEMICOLON subprogram_body" << endl;
+        $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 subprogram_head :
     PROCEDURE ID formal_parameter {
-        cout << "subprogram_head -> PROCEDURE ID formal_parameter" << endl;
-    }|
+        $$ = std::make_shared<SubprogramHeadNode_Procedure_Id_FormalParameter>(
+            $1, $2, $3, @1.begin.line);
+    } |
     FUNCTION ID formal_parameter COLON basic_type {
-        cout << "subprogram_head -> FUNCTION ID formal_parameter COLON basic_type" << endl;
+        $$ = std::make_shared<SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType>(
+            $1, $2, $3, $4, $5, @1.begin.line);
     }
 ;
 formal_parameter :{
-        cout << "formal_parameter -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<FormalParameterNode>(@$.begin.line);
+    } |
     LPAREN parameter_list RPAREN {
-        cout << "formal_parameter -> LPAREN parameter_list RPAREN" << endl;
+        $$ = std::make_shared<FormalParameterNode_Lparen_ParameterList_Rparen>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 parameter_list :
     parameter {
-        cout << "parameter_list -> parameter" << endl;
-    }|
+        $$ = std::make_shared<ParameterListNode_Parameter>($1, @1.begin.line);
+    } |
     parameter_list SEMICOLON parameter {
-        cout << "parameter_list -> parameter_list SEMICOLON parameter" << endl;
+        $$ = std::make_shared<ParameterListNode_ParameterList_Semicolon_Parameter>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 parameter :
     var_parameter {
-        cout << "parameter -> var_parameter" << endl;
-    }|
+        $$ = std::make_shared<ParameterNode_VarParameter>($1, @1.begin.line);
+    } |
     value_parameter {
-        cout << "parameter -> value_parameter" << endl;
+        $$ = std::make_shared<ParameterNode_ValueParameter>($1, @1.begin.line);
     }
 ;
 var_parameter :
     VAR value_parameter {
-        cout << "var_parameter -> VAR value_parameter" << endl;
+        $$ = std::make_shared<VarParameterNode_Var_ValueParameter>(
+            $1, $2, @1.begin.line);
     }
 ;
 value_parameter :
     idlist COLON basic_type {
-        cout << "value_parameter -> idlist COLON basic_type" << endl;
+        $$ = std::make_shared<ValueParameterNode_IdList_Colon_BasicType>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 subprogram_body :
     const_decls var_decls compound_statement {
-        cout << "subprogram_body -> const_decls var_decls compound_statement" << endl;
+        $$ = std::make_shared<SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 compound_statement :
     BEGIN statement_list END {
-        cout << "compound_statement -> BEGIN statement_list END" << endl;
+        $$ = std::make_shared<CompoundStatementNode_Begin_StatementList_End>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 statement_list :
     statement {
-        cout << "statement_list -> statement" << endl;
-    }|
+        $$ = std::make_shared<StatementListNode_Statement>($1, @1.begin.line);
+    } |
     statement_list SEMICOLON statement {
-        cout << "statement_list -> statement_list SEMICOLON statement" << endl;
+        $$ = std::make_shared<StatementListNode_StatementList_Semicolon_Statement>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 statement : {
-        cout << "statement -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<StatementNode>(@$.begin.line);
+    } |
     variable ASSIGNOP expression {
-        cout << "statement -> variable ASSIGNOP expression" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_Variable_Assignop_Expression>(
+            $1, $2, $3, @1.begin.line);
+    } |
     ID ASSIGNOP expression {
-        cout << "statement -> ID ASSIGNOP expression" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_Id_Assignop_Expression>(
+            $1, $2, $3, @1.begin.line);
+    } |
     procedure_call {
-        cout << "statement -> procedure_call" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_ProcedureCall>($1, @1.begin.line);
+    } |
     IF expression THEN statement else_part {
-        cout << "statement -> IF expression THEN statement else_part" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_If_Expression_Then_Statement_ElsePart>(
+            $1, $2, $3, $4, $5, @1.begin.line);
+    } |
     FOR ID ASSIGNOP expression TO expression DO statement {
-        cout << "statement -> FOR ID ASSIGNOP expression TO expression DO statement" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement>(
+            $1, $2, $3, $4, $5, $6, $7, $8, @1.begin.line);
+    } |
     READ LPAREN variable_list RPAREN {
-        cout << "statement -> READ LPAREN variable_list RPAREN" << endl;
-    }|
+        $$ = std::make_shared<StatementNode_Read_Lparen_VariableList_Rparen>(
+            $1, $2, $3, $4, @1.begin.line);
+    } |
     WRITE LPAREN expression_list RPAREN {
-        cout << "statement -> WRITE LPAREN expression_list RPAREN" << endl;
+        $$ = std::make_shared<StatementNode_Write_Lparen_ExpressionList_Rparen>(
+            $1, $2, $3, $4, @1.begin.line);
     }
 ;
 variable_list :
     variable {
-        cout << "variable_list -> variable" << endl;
-    }|
+        $$ = std::make_shared<VariableListNode_Variable>($1, @1.begin.line);
+    } |
     variable_list COMMA variable {
-        cout << "variable_list -> variable_list COMMA variable" << endl;
+        $$ = std::make_shared<VariableListNode_VariableList_Comma_Variable>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 variable :
     ID id_varpart {
-        cout << "variable -> ID id_varpart" << endl;
+        $$ = std::make_shared<VariableNode_Id_IdVarpart>($1, $2, @1.begin.line);
     }
 ;
 id_varpart :
     {
-        cout << "id_varpart -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<IdVarPartNode>(@$.begin.line);
+    } |
     LBRACKET expression_list RBRACKET  {
-        cout << "id_varpart -> LBRACKET expression_list RBRACKET" << endl;
+        $$ = std::make_shared<IdVarPartNode_Lbracket_ExpressionList_Rbracket>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 procedure_call :
     ID {
-        cout << "procedure_call -> ID" << endl;
-    }|
+        $$ = std::make_shared<ProcedureCallNode_Id>($1, @1.begin.line);
+    } |
     ID LPAREN expression_list RPAREN {
-        cout << "procedure_call -> ID LPAREN expression_list RPAREN" << endl;
+        $$ = std::make_shared<ProcedureCallNode_Id_Lparen_ExpressionList_Rparen>(
+            $1, $2, $3, $4, @1.begin.line);
     }
 ;
 else_part :
     {
-        cout << "else_part -> EMPTY" << endl;
-    }|
+        $$ = std::make_shared<ElsePartNode>(@$.begin.line);
+    } |
     ELSE statement {
-        cout << "else_part -> ELSE statement" << endl;
+        $$ = std::make_shared<ElsePartNode_Else_Statement>(
+            $1, $2, @1.begin.line);
     }
 ;
 expression_list :
     expression {
-        cout << "expression_list -> expression" << endl;
-    }|
+        $$ = std::make_shared<ExpressionListNode_Expression>($1, @1.begin.line);
+    } |
     expression_list COMMA expression {
-        cout << "expression_list -> expression_list COMMA expression" << endl;
+        $$ = std::make_shared<ExpressionListNode_ExpressionList_Comma_Expression>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 expression :
     simple_expression {
-        cout << "expression -> simple_expression" << endl;
-    }|
+        $$ = std::make_shared<ExpressionNode_SimpleExpression>($1, @1.begin.line);
+    } |
     simple_expression RELOP simple_expression {
-        cout << "expression -> simple_expression RELOP simple_expression" << endl;
+        $$ = std::make_shared<ExpressionNode_SimpleExpression_Relop_SimpleExpression>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 simple_expression :
     term {
-        cout << "simple_expression -> term" << endl;
-    }|
+        $$ = std::make_shared<SimpleExpressionNode_Term>($1, @1.begin.line);
+    } |
     simple_expression PLUS term {
-        cout << "simple_expression -> simple_expression PLUS term" << endl;
-    }|
+        $$ = std::make_shared<SimpleExpressionNode_SimpleExpression_Plus_Term>(
+            $1, $2, $3, @1.begin.line);
+    } |
     simple_expression MINUS term {
-        cout << "simple_expression -> simple_expression MINUS term" << endl;
-    }|
+        $$ = std::make_shared<SimpleExpressionNode_SimpleExpression_Minus_Term>(
+            $1, $2, $3, @1.begin.line);
+    } |
     simple_expression OR term {
-        cout << "simple_expression -> simple_expression OR term" << endl;
+        $$ = std::make_shared<SimpleExpressionNode_SimpleExpression_Or_Term>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 term :
     factor {
-        cout << "term -> factor" << endl;
-    }|
+        $$ = std::make_shared<TermNode_Factor>($1, @1.begin.line);
+    } |
     term MULOP factor {
-        cout << "term -> term MULOP factor" << endl;
+        $$ = std::make_shared<TermNode_Term_Mulop_Factor>(
+            $1, $2, $3, @1.begin.line);
     }
 ;
 factor :
     NUMBER {
-        cout << "factor -> NUMBER" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_Number>($1, @1.begin.line);
+    } |
     CHAR_LITERAL {
-        cout << "factor -> CHAR_LITERAL" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_CharLiteral>($1, @1.begin.line);
+    } |
     variable {
-        cout << "factor -> variable" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_Variable>($1, @1.begin.line);
+    } |
     LPAREN expression RPAREN {
-        cout << "factor -> LPAREN expression RPAREN" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_Lparen_Expression_Rparen>(
+            $1, $2, $3, @1.begin.line);
+    } |
     ID LPAREN expression_list RPAREN {
-        cout << "factor -> ID LPAREN expression_list RPAREN" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_ID_Lparen_ExpressionList_Rparen>(
+            $1, $2, $3, $4, @1.begin.line);
+    } |
     NOT factor {
-        cout << "factor -> NOT factor" << endl;
-    }|
+        $$ = std::make_shared<FactorNode_Not_Factor>($1, $2, @1.begin.line);
+    } |
     MINUS factor %prec UMINUS {
-        cout << "factor -> MINUS factor (unary)" << endl;
+        $$ = std::make_shared<FactorNode_Minus_Factor>(
+            $1, $2, @1.begin.line);
     }
 ;
 %%

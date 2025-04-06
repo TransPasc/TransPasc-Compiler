@@ -1,0 +1,63 @@
+#pragma once
+#include "ast/ast.h"
+
+namespace XYZ {
+
+// subprogram_head 的基类
+class SubprogramHeadNode : public ASTNode {
+ public:
+  SubprogramHeadNode(size_t line) : ASTNode("SubprogramHead", line) {}
+  ~SubprogramHeadNode() override = default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+};
+
+// subprogram_head := PROCEDURE ID formal_parameter
+class SubprogramHeadNode_Procedure_Id_FormalParameter
+    : public SubprogramHeadNode {
+ public:
+  SubprogramHeadNode_Procedure_Id_FormalParameter(ASTNodePtr procedureToken,
+                                                  ASTNodePtr id,
+                                                  ASTNodePtr formalParameter,
+                                                  size_t line)
+      : SubprogramHeadNode(line) {
+    addChild(procedureToken);
+    addChild(id);
+    addChild(formalParameter);
+  }
+  ~SubprogramHeadNode_Procedure_Id_FormalParameter() override = default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  ASTNodePtr getProcedureToken() const { return m_children[0]; }
+  ASTNodePtr getId() const { return m_children[1]; }
+  ASTNodePtr getFormalParameter() const { return m_children[2]; }
+};
+
+// subprogram_head := FUNCTION ID formal_parameter COLON basic_type
+class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
+    : public SubprogramHeadNode {
+ public:
+  SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType(
+      ASTNodePtr functionToken, ASTNodePtr id, ASTNodePtr formalParameter,
+      ASTNodePtr colon, ASTNodePtr basicType, size_t line)
+      : SubprogramHeadNode(line) {
+    addChild(functionToken);
+    addChild(id);
+    addChild(formalParameter);
+    addChild(colon);
+    addChild(basicType);
+  }
+  ~SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType() override =
+      default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  ASTNodePtr getFunctionToken() const { return m_children[0]; }
+  ASTNodePtr getId() const { return m_children[1]; }
+  ASTNodePtr getFormalParameter() const { return m_children[2]; }
+  ASTNodePtr getColon() const { return m_children[3]; }
+  ASTNodePtr getBasicType() const { return m_children[4]; }
+};
+
+}  // namespace XYZ
