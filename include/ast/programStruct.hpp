@@ -7,7 +7,7 @@ namespace XYZ {
 // 也是program_struct := $NULL 的默认实现
 class ProgramStructNode : public ASTNode {
  public:
-  ProgramStructNode(size_t line) : ASTNode("ProgramStructNode", line) {};
+  ProgramStructNode(size_t line) : ASTNode("ProgramStruct", line) {};
   ~ProgramStructNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }

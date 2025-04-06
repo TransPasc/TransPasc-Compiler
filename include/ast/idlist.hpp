@@ -6,7 +6,7 @@ namespace XYZ {
 // idlist 的基类
 class IdListNode : public ASTNode {
  public:
-  IdListNode(size_t line) : ASTNode("IdListNode", line) {}
+  IdListNode(size_t line) : ASTNode("IdList", line) {}
   ~IdListNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }

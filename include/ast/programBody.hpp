@@ -6,7 +6,7 @@ namespace XYZ {
 // program_body 的基类
 class ProgramBodyNode : public ASTNode {
  public:
-  ProgramBodyNode(size_t line) : ASTNode("ProgramBodyNode", line) {}
+  ProgramBodyNode(size_t line) : ASTNode("ProgramBody", line) {}
   ~ProgramBodyNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }

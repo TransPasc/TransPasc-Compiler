@@ -7,7 +7,7 @@ namespace XYZ {
 // const_decls := EMPTY
 class ConstDeclsNode : public ASTNode {
  public:
-  ConstDeclsNode(size_t line) : ASTNode("ConstDeclsNode", line) {}
+  ConstDeclsNode(size_t line) : ASTNode("ConstDecls", line) {}
   ~ConstDeclsNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }

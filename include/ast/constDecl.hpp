@@ -6,7 +6,7 @@ namespace XYZ {
 // const_decl 的基类
 class ConstDeclNode : public ASTNode {
  public:
-  ConstDeclNode(size_t line) : ASTNode("ConstDeclNode", line) {}
+  ConstDeclNode(size_t line) : ASTNode("ConstDecl", line) {}
   ~ConstDeclNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }

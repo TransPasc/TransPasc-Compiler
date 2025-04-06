@@ -27,7 +27,7 @@ class TerminalNode : public ASTNode {
     PERIOD
   };
   TerminalNode(Type type, std::string val, size_t line)
-      : ASTNode("TerminalNode", line), value() {
+      : ASTNode("Terminal", line), value() {
     switch (type) {
       case Type::ID:
         value = val;
