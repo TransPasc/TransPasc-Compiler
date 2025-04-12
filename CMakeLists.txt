@@ -17,6 +17,7 @@ endif()
 # 查找 Flex 和 Bison
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+# include_directories(${FLEX_INCLUDE_DIRS})
 
 # 定义 Flex 和 Bison 的输出
 FLEX_TARGET(Scanner src/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
