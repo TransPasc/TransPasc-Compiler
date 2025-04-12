@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 project(BisonFlexExample)
-
+option(DEBUG "Enable debug mode" ON)
 # 指定 c++ 17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+if(DEBUG)
+    message(STATUS "Debug mode is enabled")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    set(CMAKE_BUILD_TYPE Debug)
+else()
+    message(STATUS "Release mode is enabled")
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
 # 查找 Flex 和 Bison
 find_package(BISON REQUIRED)

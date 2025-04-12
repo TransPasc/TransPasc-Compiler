@@ -12,6 +12,6 @@ jobs:
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --config Debug --target all
       - name: Run Tests
         run: cd build && ctest --output-on-failure

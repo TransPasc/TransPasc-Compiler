@@ -8,15 +8,12 @@ namespace XYZ {
 // 定义 static root
 std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
 
-}  // namespace XYZ
+} // namespace XYZ
 
 Driver::Driver()
-    : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {}
+    : m_scanner(*this), m_parser(m_scanner, *this), m_location(0), m_line(0) {}
 
-int Driver::parse() {
-  m_location = 0;
-  return m_parser.parse();
-}
+int Driver::parse() { return m_parser.parse(); }
 
 // 添加打印token流的方法
 void Driver::printTokens() {
@@ -32,15 +29,15 @@ void Driver::printTokens() {
 // 获取token名称的辅助方法
 std::string Driver::getTokenName(XYZ::Parser::symbol_kind_type kind) {
   switch (kind) {
-    case XYZ::Parser::symbol_kind_type::S_YYEOF:
-      return "EOF";
-    case XYZ::Parser::symbol_kind_type::S_ID:
-      return "Id";
-    case XYZ::Parser::symbol_kind_type::S_NUMBER:
-      return "Number";
-    // 添加其他token类型的名称
-    default:
-      return "Unknown Token";
+  case XYZ::Parser::symbol_kind_type::S_YYEOF:
+    return "EOF";
+  case XYZ::Parser::symbol_kind_type::S_ID:
+    return "Id";
+  case XYZ::Parser::symbol_kind_type::S_NUMBER:
+    return "Number";
+  // 添加其他token类型的名称
+  default:
+    return "Unknown Token";
   }
 }
 

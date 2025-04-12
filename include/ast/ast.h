@@ -8,7 +8,7 @@
 
 namespace XYZ {
 class ASTNode {
- public:
+public:
   using ASTNodePtr = std::shared_ptr<ASTNode>;
   ASTNode(const std::string &name, size_t line) : m_name(name), m_line(line) {};
   virtual ~ASTNode() = default;
@@ -34,7 +34,7 @@ class ASTNode {
   auto begin() const { return m_children.begin(); }
   auto end() const { return m_children.end(); }
 
- protected:
+protected:
   //  只对子类开放 修改 child 节点
   void addChild(ASTNodePtr child) { m_children.push_back(child); }
 
@@ -44,10 +44,10 @@ class ASTNode {
     }
   }
 
- protected:
+protected:
   std::string m_name;
   size_t m_line = 0;
   //   size_t m_column = 0; // 暂不使用
   std::vector<ASTNodePtr> m_children;
 };
-}  // namespace XYZ
+} // namespace XYZ

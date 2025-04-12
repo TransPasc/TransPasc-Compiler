@@ -6,17 +6,17 @@
 #include "symbolTable/exception.hpp"
 
 namespace XYZ {
-class SymbolRecord;  // 前向声明 符号记录类，存储例如： lineno, type, value,
-                     // etc.
+class SymbolRecord; // 前向声明 符号记录类，存储例如： lineno, type, value,
+                    // etc.
 /**
  * @class SymbolTable
  * @brief 符号表抽象接口，可支持多级作用域管理（默认不支持）
  */
 class SymbolTable {
- public:
+public:
   using SymbolName = std::string;
 
- public:
+public:
   SymbolTable() = default;
   virtual ~SymbolTable() = default;
   /**
@@ -24,16 +24,15 @@ class SymbolTable {
    * @param symbol_name 符号名称
    * @param new_record 符号记录对象（移交所有权）
    */
-  virtual bool insert(const SymbolName &symbol_name,
-                      std::unique_ptr<SymbolRecord> new_record) = 0;
+  virtual bool insert(std::unique_ptr<SymbolRecord> new_record) = 0;
   // 删除符号
   virtual bool remove(const SymbolName &name) = 0;
   //   update符号
-  virtual bool update(const SymbolName &name, SymbolRecord *record) = 0;
+  virtual bool update(std::shared_ptr<SymbolRecord> record) = 0;
   // 查找符号
-  virtual SymbolRecord *lookup(const SymbolName &name) = 0;
+  virtual std::shared_ptr<SymbolRecord> lookup(const SymbolName &name) = 0;
 
-  virtual size_t size() const = 0;
+  virtual auto size() const -> size_t = 0;
   // 清空符号表
   virtual void clear() = 0;
   //   进入新块, 默认不实现
@@ -49,4 +48,4 @@ class SymbolTable {
         "exitBlock() not implemented");
   }
 };
-}  // namespace XYZ
+} // namespace XYZ

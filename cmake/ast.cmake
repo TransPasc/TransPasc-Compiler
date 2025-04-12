@@ -6,7 +6,7 @@ set(AGGREGATED_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/ast/ast.hpp")
 
 # 检查是否找到头文件
 if(AST_HEADERS)
-    message(STATUS "Found AST headers: ${AST_HEADERS}")
+    # message(STATUS "Found AST headers: ${AST_HEADERS}")
 
     # 清空或创建 ast.hpp 文件
     file(WRITE "${AGGREGATED_HEADER}" "// Auto-generated header file aggregating all AST headers\n\n")

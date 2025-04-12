@@ -1,5 +1,7 @@
 # Pascal-S compiler
 
+- [开发文档](./docs/dev.md)
+
 ## Env
 - macOS 15.3.2
 - flex 2.6.4 Apple(flex-35)
