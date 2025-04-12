@@ -1,5 +1,4 @@
-#ifndef SCANNER_H
-#define SCANNER_H
+#pragma once
 
 #if !defined(yyFlexLexerOnce)
 #undef yyFlexLexer
@@ -27,5 +26,3 @@ private:
 };
 
 } // namespace XYZ
-
-#endif
