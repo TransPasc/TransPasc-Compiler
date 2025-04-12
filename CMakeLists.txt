@@ -27,3 +27,10 @@ add_executable(a.out
 )
 
 include(cmake/main.cmake)
+
+# 是否开启测试（默认开启）
+option(ENABLE_TESTS "Enable tests" ON)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
