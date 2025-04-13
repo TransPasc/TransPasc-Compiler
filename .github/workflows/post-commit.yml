@@ -17,7 +17,10 @@ jobs:
                 sudo apt-get install clang-format clang-tidy cppcheck
                 sudo pip install pre-commit
                 pre-commit install
-
+            - name: generate compile_commands.json
+              run: |
+                mkdir -p build
+                cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build .
             - name: Run pre-commit hooks in post-commit
               run: |
                 pre-commit run --all-files
