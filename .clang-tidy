@@ -1,0 +1,2 @@
+CheckOptions:
+  llvmlibc-restrict-system-libc-headers: false

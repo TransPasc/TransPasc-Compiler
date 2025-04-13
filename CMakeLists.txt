@@ -1,13 +1,23 @@
 cmake_minimum_required(VERSION 3.10)
 project(BisonFlexExample)
-
+option(DEBUG "Enable debug mode" ON)
 # 指定 c++ 17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(DEBUG)
+    message(STATUS "Debug mode is enabled")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    set(CMAKE_BUILD_TYPE Debug)
+else()
+    message(STATUS "Release mode is enabled")
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # 查找 Flex 和 Bison
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
+# include_directories(${FLEX_INCLUDE_DIRS})
 
 # 定义 Flex 和 Bison 的输出
 FLEX_TARGET(Scanner src/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
@@ -27,3 +37,10 @@ add_executable(a.out
 )
 
 include(cmake/main.cmake)
+
+# 是否开启测试（默认开启）
+option(ENABLE_TESTS "Enable tests" ON)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

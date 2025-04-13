@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace # 去除行尾空格
+      - id: end-of-file-fixer # 确保文件以换行符结尾
+      - id: check-yaml # 检查 YAML 文件
+      - id: check-added-large-files # 检查大文件
+      - id: check-merge-conflict # 检查合并冲突
+      - id: check-toml # 检查 TOML 文件
+      - id: check-json # 检查 JSON 文件
+
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        entry: clang-format
+        args: ["--style=file:.clang-format", "-i", "--Werror"]
+        language: system
+        types: [c++, c]
+
+      # TODO: 太严格了，以后有时间再改
+      # - id: clang-tidy
+      #   name: clang-tidy
+      #   entry: ./.github/hooks/clang-tidy-check.sh
+      #   language: script
+      #   pass_filenames: false
+
+      - id: cppcheck
+        name: cppcheck
+        entry: cppcheck
+        args:
+          [
+            "--enable=warning,performance,portability",
+            "--error-exitcode=1",
+            "--inline-suppr",
+            "--project=build/compile_commands.json",
+            "--suppress=*:*build/parser.hpp",
+            "-i",
+            "build",
+          ]
+        language: system
+        pass_filenames: false
+        require_serial: true
+        manual: true

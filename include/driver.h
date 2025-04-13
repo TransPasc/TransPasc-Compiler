@@ -10,7 +10,7 @@
 namespace XYZ {
 
 class Driver {
- public:
+public:
   Driver();
 
   int parse();
@@ -29,24 +29,24 @@ class Driver {
 
   void switchInputStream(std::istream *is);
 
-  static std::shared_ptr<ProgramStructNode> root;  // 修改为 static
+  static std::shared_ptr<ProgramStructNode> root; // 修改为 static
 
   friend class Parser;
   friend class Scanner;
 
- private:
+private:
   void increaseLocation(unsigned int loc);
   void increaseLine();
 
   unsigned int location() const;
 
- private:
+private:
   Scanner m_scanner;
   Parser m_parser;
-  unsigned int m_location;  // Used by scanner
-  unsigned int m_line;      // Used by parser
+  unsigned int m_location; // Used by scanner
+  unsigned int m_line;     // Used by parser
 };
 
-}  // namespace XYZ
+} // namespace XYZ
 
-#endif  // INTERPRETER_H
+#endif // INTERPRETER_H

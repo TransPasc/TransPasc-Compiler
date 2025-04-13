@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include "ast/ast.hpp"
 #include "ast/basicType.hpp"
 #include "ast/compoundStatement.hpp"
 #include "ast/constDecl.hpp"
 #include "ast/constDecls.hpp"
 #include "ast/constVal.hpp"
 #include "ast/elsePart.hpp"
+#include "ast/exception.hpp"
 #include "ast/expression.hpp"
 #include "ast/expressionList.hpp"
 #include "ast/factor.hpp"
