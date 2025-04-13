@@ -1,9 +1,6 @@
 on:
-    push:
-    pull_request:
-      branches:
-        - main
-
+    workflow_dispatch:
+# TODO: 在 github 上没能正确运行， 配置有问题
 jobs:
     post-commit:
         runs-on: ubuntu-latest
