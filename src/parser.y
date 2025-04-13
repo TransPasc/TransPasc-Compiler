@@ -496,4 +496,5 @@ factor :
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
     cout << "Error: " << message << endl << "Error location: " << driver.location() << endl;
+    driver.handleError(message);
 }

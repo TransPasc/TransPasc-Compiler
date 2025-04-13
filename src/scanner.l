@@ -327,7 +327,7 @@ LINE_COMMENT \/\/[^\n]*
 <<EOF>>     { return yyterminate(); }
 
 .           {
-    cout << "Scanner: unrecognized character [" << yytext << "]" << endl;
+    m_driver.handleError("unrecognized character");
 }
 
 %%

@@ -13,7 +13,10 @@ std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
 Driver::Driver()
     : m_scanner(*this), m_parser(m_scanner, *this), m_location(0), m_line(0) {}
 
-int Driver::parse() { return m_parser.parse(); }
+int Driver::parse() {
+  cout << "Parsing..." << endl;
+  return m_parser.parse();
+}
 
 // 添加打印token流的方法
 void Driver::printTokens() {
@@ -73,4 +76,18 @@ void Driver::printAST() {
   }
 
   std::cout << "End of AST." << std::endl;
+}
+
+void Driver::handleError(const std::string &msg) {
+  // TODO: 改用日志库
+  std::cerr << "Error: " << msg << std::endl;
+}
+void Driver::analyze() {
+  if (!root)
+    parse();
+  if (root) {
+    m_analyzer.analyze(root);
+  } else {
+    std::cerr << "AST is empty, cannot analyze." << std::endl;
+  }
 }

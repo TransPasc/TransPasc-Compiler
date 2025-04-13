@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "ast/ast.hpp"
+#include "err.h"
 #include "parser.hpp"
 #include "scanner.h"
+#include "semanticAnalysis/analyzer.hpp"
 
 namespace XYZ {
 
@@ -14,6 +16,7 @@ public:
   Driver();
 
   int parse();
+  void analyze();
 
   // 添加打印token流的方法
   void printTokens();
@@ -29,7 +32,9 @@ public:
 
   void switchInputStream(std::istream *is);
 
-  static std::shared_ptr<ProgramStructNode> root; // 修改为 static
+  void handleError(const std::string &msg);
+
+  static std::shared_ptr<ProgramStructNode> root;
 
   friend class Parser;
   friend class Scanner;
@@ -43,6 +48,7 @@ private:
 private:
   Scanner m_scanner;
   Parser m_parser;
+  Analyzer m_analyzer;
   unsigned int m_location; // Used by scanner
   unsigned int m_line;     // Used by parser
 };
