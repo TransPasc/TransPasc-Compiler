@@ -48,12 +48,9 @@ public:
   //   指针版 get
   template <typename T> T *getPtr() { return std::get_if<T>(&value); }
 
-  virtual void print(size_t indent) const override {
-    printIndent(indent);
+  virtual void print(std::string prefix) const override {
+    std::cout << prefix;
     std::cout << type2string() << " : " << val2string() << std::endl;
-    for (const auto &child : m_children) {
-      child->print(indent + 2);
-    }
   }
 
   //   断言是不是某个字符串

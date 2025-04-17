@@ -158,7 +158,7 @@ const location &Driver::getLocation() const { return m_location; }
 int Driver::getLine() const { return m_location.begin.line; }
 void Driver::printAST() {
   if (root) {
-    root->print(0);
+    root->print("");
   } else {
     std::cout << "AST is empty." << std::endl;
   }

@@ -137,7 +137,7 @@ private:
         val = (val ^= (i >> 12)) & HASH_TABLE_SIZE;
       }
     }
-    return val & HASH_TABLE_SIZE;
+    return val % HASH_TABLE_SIZE;
   }
 
 private:

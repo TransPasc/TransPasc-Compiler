@@ -189,13 +189,12 @@ TEST(SymbolTable, CrossScopeShadowing) {
 
   // 子作用域遮蔽
   table->enterBlock();
-  EXPECT_THROW(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2)),
-               XYZ::SymbolTableException); // 应该抛出异常
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2));
 
   // 验证查找结果
   auto res = table->lookup("a");
   ASSERT_NE(res, nullptr);
-  EXPECT_EQ(res->getLineno(), 1); // 应找到父作用域的a
+  EXPECT_EQ(res->getLineno(), 2); // 应找到子作用域的a
 
   // 尝试在子作用域重复插入
   EXPECT_THROW(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 3)),

@@ -64,7 +64,7 @@ public:
     // 插入程序名到符号表
     // type 为 UNDEFINED
     unique_ptr<SymbolRecord> record =
-        make_unique<SymbolRecord>(id->getName(), id->getLine());
+        make_unique<SymbolRecord>(id->get<string>(), id->getLine());
     record->setType(make_shared<SymbolType>());
     symbolTable->insert(std::move(record));
   };
