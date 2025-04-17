@@ -116,14 +116,23 @@ public:
     node.getId()->accept(*this);
     node.getConstVal()->accept(*this);
     unique_ptr<SymbolRecord> record = make_unique<SymbolRecord>(
-        node.getId()->getName(), node.getId()->getLine());
+        node.getId()->get<string>(), node.getId()->getLine());
     auto type = node.getConstVal()->getType();
     record->setType(type);
     symbolTable->insert(std::move(record));
   };
 
   virtual void
-  visit(class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) {};
+  visit(class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) {
+    node.getConstDecl()->accept(*this);
+    node.getId()->accept(*this);
+    node.getConstVal()->accept(*this);
+    unique_ptr<SymbolRecord> record = make_unique<SymbolRecord>(
+        node.getId()->get<string>(), node.getId()->getLine());
+    auto type = node.getConstVal()->getType();
+    record->setType(type);
+    symbolTable->insert(std::move(record));
+  };
 
   virtual void visit(class ConstValNode &node) {};
   virtual void visit(class ConstValNode_Plus_Number &node) {};
