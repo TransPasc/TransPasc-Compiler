@@ -5,7 +5,7 @@ namespace XYZ {
 
 // program_head 的基类
 class ProgramHeadNode : public ASTNode {
- public:
+public:
   ProgramHeadNode(size_t line) : ASTNode("ProgramHead", line) {}
   ~ProgramHeadNode() override = default;
 
@@ -14,7 +14,7 @@ class ProgramHeadNode : public ASTNode {
 
 // program_head := PROGRAM ID LPAREN idlist RPAREN
 class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen : public ProgramHeadNode {
- public:
+public:
   ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen(
       ASTNodePtr program, ASTNodePtr id, ASTNodePtr lparen, ASTNodePtr idlist,
       ASTNodePtr rparen, size_t line)
@@ -38,7 +38,7 @@ class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen : public ProgramHeadNode {
 
 // program_head := PROGRAM ID
 class ProgramHeadNode_Program_Id : public ProgramHeadNode {
- public:
+public:
   ProgramHeadNode_Program_Id(ASTNodePtr program, ASTNodePtr id, size_t line)
       : ProgramHeadNode(line) {
     addChild(program);
@@ -48,8 +48,12 @@ class ProgramHeadNode_Program_Id : public ProgramHeadNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getProgram() const { return m_children[0]; }
-  ASTNodePtr getId() const { return m_children[1]; }
+  shared_ptr<TerminalNode> getProgram() const {
+    return static_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  shared_ptr<TerminalNode> getId() const {
+    return static_pointer_cast<TerminalNode>(m_children[1]);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

@@ -22,7 +22,8 @@ public:
     SymbolNotFound,
     SymbolAlreadyExists,
     NoDefaultBlock,
-    NotInCurrentBlock
+    NotInCurrentBlock,
+    NullPointer
   };
 
   // 构造函数，支持错误类型和自定义消息
@@ -58,6 +59,8 @@ private:
       return "No default block: ";
     case ErrorType::NotInCurrentBlock:
       return "Not in current block: ";
+    case ErrorType::NullPointer:
+      return "Null pointer: ";
     default:
       return "Unknown error: ";
     }

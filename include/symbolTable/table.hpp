@@ -23,8 +23,9 @@ public:
    * @brief 在当前作用域插入符号
    * @param symbol_name 符号名称
    * @param new_record 符号记录对象（移交所有权）
+   * @exception SymbolTableException
    */
-  virtual bool insert(std::unique_ptr<SymbolRecord> new_record) = 0;
+  virtual void insert(std::unique_ptr<SymbolRecord> new_record) = 0;
   // 删除符号
   virtual bool remove(const SymbolName &name) = 0;
   //   update符号

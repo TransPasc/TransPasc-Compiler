@@ -1,45 +1,105 @@
 #pragma once
 #include "ast/ast.hpp"
+#include "exception.hpp"
+#include "symbolTable/stackLinkedSymbolTable.hpp"
+#include <iostream>
+#include <memory>
+#include <stack>
+#include <string>
 // TODO: 补充各个节点的visit函数
 namespace XYZ {
 using namespace std;
 class Analyzer : public ASTVisitor {
+  using ErrType = SemanticException::ErrorType;
   shared_ptr<ProgramStructNode> root = nullptr;
+  shared_ptr<SymbolTable> symbolTable = nullptr;
 
 public:
   Analyzer() {}
 
   void analyze(shared_ptr<ProgramStructNode> root) {
     this->root = root;
+    // 语义分析起点
+    // 初始化符号表
+    symbolTable = make_shared<StackLinkedSymbolTable>();
+    symbolTable->enterBlock();
     root->accept(*this);
+    // 语义分析结束
+    symbolTable->exitBlock();
   }
 
-  virtual void visit(class TerminalNode &node) {};
+  virtual void visit(class TerminalNode &node) {
+    // nothing to do
+    // 信息已经在词法分析阶段处理过了
+  };
 
   virtual void visit(class ProgramStructNode &node) {
-    cout << "ProgramStructNode" << endl;
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ProgramStructNode should not be Null");
   };
+
   virtual void
   visit(class ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot &node) {
-    cout << "ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot" << endl;
+    node.getProgramHead()->accept(*this);
+    node.getProgramBody()->accept(*this);
   };
 
-  virtual void visit(class ProgramHeadNode &node) {};
-  virtual void
-  visit(class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen &node) {};
-  virtual void visit(class ProgramHeadNode_Program_Id &node) {};
+  virtual void visit(class ProgramHeadNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ProgramHeadNode should not be Null");
+  };
 
-  virtual void visit(class ProgramBodyNode &node) {};
+  virtual void
+  visit(class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen &node) {
+    throw SemanticException(
+        ErrType::UNSUPPORTED,
+        "Unexpected ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen");
+    // node.getId()->accept(*this);
+    // node.getIdList()->accept(*this);
+  };
+
+  virtual void visit(class ProgramHeadNode_Program_Id &node) {
+    node.getId()->accept(*this);
+    shared_ptr<TerminalNode> id = node.getId();
+    // 插入程序名到符号表
+    // type 为 UNDEFINED
+    unique_ptr<SymbolRecord> record =
+        make_unique<SymbolRecord>(id->getName(), id->getLine());
+    record->setType(make_shared<SymbolType>());
+    symbolTable->insert(std::move(record));
+  };
+
+  virtual void visit(class ProgramBodyNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ProgramBodyNode should not be Null");
+  };
+
   virtual void
   visit(class
         ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement
-            &node) {};
+            &node) {
+    node.getConstDecls()->accept(*this);
+    node.getVarDecls()->accept(*this);
+    node.getSubprogramDecls()->accept(*this);
+    node.getCompoundStatement()->accept(*this);
+  };
 
-  virtual void visit(class IdListNode &node) {};
-  virtual void visit(class IdListNode_Id &node) {};
-  virtual void visit(class IdListNode_IdList_Comma_Id &node) {};
+  virtual void visit(class IdListNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "IdListNode should not be Null");
+  };
+
+  virtual void visit(class IdListNode_Id &node) {
+    // nothing need to do
+  };
+
+  virtual void visit(class IdListNode_IdList_Comma_Id &node) {
+    node.getIdList()->accept(*this);
+    node.getId()->accept(*this);
+  };
 
   virtual void visit(class ConstDeclsNode &node) {};
+
   virtual void visit(class ConstDeclsNode_Const_ConstDecl &node) {};
 
   virtual void visit(class ConstDeclNode &node) {};

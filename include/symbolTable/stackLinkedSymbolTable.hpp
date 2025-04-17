@@ -27,17 +27,16 @@ public:
    * @attention 你需要确保在插入之前，有 block。 若没有，请先调用 enterBlock
    * @param symbol_name
    * @param new_record
-   * @return true
-   * @return false
    */
-  bool insert(std::unique_ptr<SymbolRecord> new_record) override {
-    // 若是 nullptr，直接返回
+  void insert(std::unique_ptr<SymbolRecord> new_record) override {
     if (new_record == nullptr) {
-      return false;
+      throw XYZ::SymbolTableException(ErrType::NullPointer);
     }
+
     if (blockIndex.empty()) {
       throw XYZ::SymbolTableException(ErrType::NoDefaultBlock);
     }
+
     auto symbol_name = new_record->getName();
     auto hash_val = hash(symbol_name);
     //   如果hash表中已经存在
@@ -45,7 +44,8 @@ public:
     if (record != nullptr) {
       //   如果在当前块中已经存在
       if (idx >= blockIndex.top()) {
-        return false;
+        throw XYZ::SymbolTableException(ErrType::SymbolAlreadyExists,
+                                        symbol_name);
       }
     }
 
@@ -53,7 +53,6 @@ public:
     symbolTable.push_back(std::move(new_record));
 
     hashTable[hash_val] = static_cast<int32_t>(symbolTable.size() - 1);
-    return true;
   }
   // 暂不支持手动删除
   bool remove(const SymbolName &name) override {
@@ -113,6 +112,9 @@ private:
     auto index = hashTable[hash(name)];
     //   如果hash表中没有找到
     if (index == -1) {
+      return {nullptr, -1};
+    }
+    if (index < 0 || index >= symbolTable.size()) {
       return {nullptr, -1};
     }
     //   如果hash表中有值，遍历链表

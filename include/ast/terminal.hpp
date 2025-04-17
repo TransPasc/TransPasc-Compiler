@@ -11,7 +11,7 @@ class TerminalNode : public ASTNode {
   using ValT = std::variant<std::string, int, float>;
   ValT value;
 
- public:
+public:
   enum class Type {
     ID,
     NUMBER,
@@ -28,13 +28,18 @@ class TerminalNode : public ASTNode {
     SEMICOLON,
     COLON,
     PERIOD,
-    KEYWORD,  // 新增关键字类型
+    KEYWORD, // 新增关键字类型
     CHAR_LITERAL,
-    QUOTE,          // 新增字符串类型
-    STRING_LITERAL  // 新增字符串类型
+    QUOTE,         // 新增字符串类型
+    STRING_LITERAL // 新增字符串类型
   };
   TerminalNode(Type type, std::string val, size_t line)
       : ASTNode("Terminal", line), value(val), type(type) {}
+  // 拷贝构造函数
+  TerminalNode(const TerminalNode &other)
+      : ASTNode(other), value(other.value), type(other.type) {}
+  TerminalNode &operator=(const TerminalNode &) = default;
+
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
   ValT getValue() const { return value; }
@@ -47,7 +52,7 @@ class TerminalNode : public ASTNode {
     }
   }
 
- protected:
+protected:
   std::string val2string() const {
     if (std::holds_alternative<std::string>(value)) {
       return std::get<std::string>(value);
@@ -60,44 +65,44 @@ class TerminalNode : public ASTNode {
   }
   std::string type2string() const {
     switch (type) {
-      case Type::ID:
-        return "ID";
-      case Type::NUMBER:
-        return "NUMBER";
-      case Type::COMMA:
-        return "COMMA";
-      case Type::DOT:
-        return "DOT";
-      case Type::LBRACKET:
-        return "LBRACKET";
-      case Type::RBRACKET:
-        return "RBRACKET";
-      case Type::LPAREN:
-        return "LPAREN";
-      case Type::RELOP:
-        return "RELOP";
-      case Type::ADDOP:
-        return "ADDOP";
-      case Type::RPAREN:
-        return "RPAREN";
-      case Type::ASSIGNOP:
-        return "ASSIGNOP";
-      case Type::MULOP:
-        return "MULOP";
-      case Type::SEMICOLON:
-        return "SEMICOLON";
-      case Type::COLON:
-        return "COLON";
-      case Type::PERIOD:
-        return "PERIOD";
-      case Type::KEYWORD:
-        return "KEYWORD";
-      default:
-        return "";
+    case Type::ID:
+      return "ID";
+    case Type::NUMBER:
+      return "NUMBER";
+    case Type::COMMA:
+      return "COMMA";
+    case Type::DOT:
+      return "DOT";
+    case Type::LBRACKET:
+      return "LBRACKET";
+    case Type::RBRACKET:
+      return "RBRACKET";
+    case Type::LPAREN:
+      return "LPAREN";
+    case Type::RELOP:
+      return "RELOP";
+    case Type::ADDOP:
+      return "ADDOP";
+    case Type::RPAREN:
+      return "RPAREN";
+    case Type::ASSIGNOP:
+      return "ASSIGNOP";
+    case Type::MULOP:
+      return "MULOP";
+    case Type::SEMICOLON:
+      return "SEMICOLON";
+    case Type::COLON:
+      return "COLON";
+    case Type::PERIOD:
+      return "PERIOD";
+    case Type::KEYWORD:
+      return "KEYWORD";
+    default:
+      return "";
     }
   }
 
- private:
+private:
   Type type;
 };
-}  // namespace XYZ
+} // namespace XYZ

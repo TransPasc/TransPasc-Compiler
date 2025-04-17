@@ -11,6 +11,11 @@ class ASTNode {
 public:
   using ASTNodePtr = std::shared_ptr<ASTNode>;
   ASTNode(const std::string &name, size_t line) : m_name(name), m_line(line) {};
+  // 拷贝构造函数
+  ASTNode(const ASTNode &other)
+      : m_name(other.m_name), m_line(other.m_line),
+        m_children(other.m_children) {}
+  ASTNode &operator=(const ASTNode &) = default;
   virtual ~ASTNode() = default;
   virtual void accept(ASTVisitor &visitor) = 0;
 
