@@ -5,16 +5,21 @@ namespace XYZ {
 
 // period 的基类
 class PeriodNode : public ASTNode {
- public:
+public:
+  using PeriodsType = std::vector<std::shared_ptr<std::pair<int32_t, int32_t>>>;
+  using PeriodsTypePtr = std::shared_ptr<PeriodsType>;
+
+public:
   PeriodNode(size_t line) : ASTNode("Period", line) {}
   ~PeriodNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  virtual PeriodsTypePtr getPeriods() const = 0;
 };
 
 // period := NUMBER DOT DOT NUMBER
 class PeriodNode_Number_Dot_Dot_Number : public PeriodNode {
- public:
+public:
   PeriodNode_Number_Dot_Dot_Number(ASTNodePtr number1, ASTNodePtr dot1,
                                    ASTNodePtr dot2, ASTNodePtr number2,
                                    size_t line)
@@ -26,15 +31,29 @@ class PeriodNode_Number_Dot_Dot_Number : public PeriodNode {
   }
   ~PeriodNode_Number_Dot_Dot_Number() override = default;
 
-  ASTNodePtr getNumber1() const { return m_children[0]; }
-  ASTNodePtr getDot1() const { return m_children[1]; }
-  ASTNodePtr getDot2() const { return m_children[2]; }
-  ASTNodePtr getNumber2() const { return m_children[3]; }
+  shared_ptr<TerminalNode> getNumber1() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  shared_ptr<TerminalNode> getDot1() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  shared_ptr<TerminalNode> getDot2() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[2]);
+  }
+  shared_ptr<TerminalNode> getNumber2() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[3]);
+  }
+  PeriodsTypePtr getPeriods() const override {
+    PeriodsTypePtr periods = make_shared<PeriodsType>();
+    periods->push_back(make_shared<pair<int, int>>(getNumber1()->get<int>(),
+                                                   getNumber2()->get<int>()));
+    return periods;
+  }
 };
 
 // period := period COMMA NUMBER DOT DOT NUMBER
 class PeriodNode_Period_Comma_Number_Dot_Dot_Number : public PeriodNode {
- public:
+public:
   PeriodNode_Period_Comma_Number_Dot_Dot_Number(
       ASTNodePtr period, ASTNodePtr comma, ASTNodePtr number1, ASTNodePtr dot1,
       ASTNodePtr dot2, ASTNodePtr number2, size_t line)
@@ -48,12 +67,31 @@ class PeriodNode_Period_Comma_Number_Dot_Dot_Number : public PeriodNode {
   }
   ~PeriodNode_Period_Comma_Number_Dot_Dot_Number() override = default;
 
-  ASTNodePtr getPeriod() const { return m_children[0]; }
-  ASTNodePtr getComma() const { return m_children[1]; }
-  ASTNodePtr getNumber1() const { return m_children[2]; }
-  ASTNodePtr getDot1() const { return m_children[3]; }
-  ASTNodePtr getDot2() const { return m_children[4]; }
-  ASTNodePtr getNumber2() const { return m_children[5]; }
+  shared_ptr<PeriodNode> getPeriod() const {
+    return dynamic_pointer_cast<PeriodNode>(m_children[0]);
+  }
+  shared_ptr<TerminalNode> getComma() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  shared_ptr<TerminalNode> getNumber1() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[2]);
+  }
+  shared_ptr<TerminalNode> getDot1() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[3]);
+  }
+  shared_ptr<TerminalNode> getDot2() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[4]);
+  }
+  shared_ptr<TerminalNode> getNumber2() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[5]);
+  }
+  PeriodsTypePtr getPeriods() const override {
+
+    auto periods = getPeriod()->getPeriods();
+    periods->push_back(make_shared<pair<int32_t, int32_t>>(
+        getNumber1()->get<int>(), getNumber2()->get<int>()));
+    return periods;
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

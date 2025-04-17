@@ -134,35 +134,110 @@ public:
     symbolTable->insert(std::move(record));
   };
 
-  virtual void visit(class ConstValNode &node) {};
-  virtual void visit(class ConstValNode_Plus_Number &node) {};
-  virtual void visit(class ConstValNode_Minus_Number &node) {};
-  virtual void visit(class ConstValNode_Number &node) {};
-  virtual void visit(class ConstValNode_CharLiteral &node) {};
+  virtual void visit(class ConstValNode &node) {
+    // nothing to do
+  };
+  virtual void visit(class ConstValNode_Plus_Number &node) {
+    // nothing to do
+  };
+  virtual void visit(class ConstValNode_Minus_Number &node) {
+    // nothing to do
+  };
+  virtual void visit(class ConstValNode_Number &node) {
+    // nothing to do
+  };
+  virtual void visit(class ConstValNode_CharLiteral &node) {
+    // nothing to do
+  };
 
-  virtual void visit(class TypeNode &node) {};
-  virtual void visit(class TypeNode_BasicType &node) {};
+  virtual void visit(class TypeNode &node) {
+    throw SemanticException(ErrType::UNDEFINED, "TypeNode should not be Null");
+  };
+
+  virtual void visit(class TypeNode_BasicType &node) {
+    node.getBasicType()->accept(*this);
+    node.setType(node.getBasicType()->getType());
+  };
+
   virtual void
-  visit(class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType &node) {};
+  visit(class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType &node) {
+    node.getPeriod()->accept(*this);
+    node.getBasicType()->accept(*this);
+    auto curType = node.getBasicType()->getType();
+    auto periods = node.getPeriod()->getPeriods();
+    for (auto it = periods->rbegin(); it != periods->rend(); ++it) {
+      const auto &[l, h] = **it;
+      auto type = SymbolType::MakeArray(curType, l, h);
+      curType = make_shared<SymbolType>(type);
+    }
+    node.setType(curType);
+  };
 
-  virtual void visit(class BasicTypeNode &node) {};
-  virtual void visit(class BasicTypeNode_Integer &node) {};
-  virtual void visit(class BasicTypeNode_Real &node) {};
-  virtual void visit(class BasicTypeNode_Boolean &node) {};
-  virtual void visit(class BasicTypeNode_Char &node) {};
+  virtual void visit(class BasicTypeNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "BasicTypeNode should not be Null");
+  };
+  virtual void visit(class BasicTypeNode_Integer &node) {
+    auto type = SymbolType::MakeBasic(SymbolType::BasicType::INTEGER);
+    node.setType(std::make_shared<SymbolType>(type));
+  };
+  virtual void visit(class BasicTypeNode_Real &node) {
+    auto type = SymbolType::MakeBasic(SymbolType::BasicType::REAL);
+    node.setType(std::make_shared<SymbolType>(type));
+  };
+  virtual void visit(class BasicTypeNode_Boolean &node) {
+    auto type = SymbolType::MakeBasic(SymbolType::BasicType::BOOLEAN);
+    node.setType(std::make_shared<SymbolType>(type));
+  };
+  virtual void visit(class BasicTypeNode_Char &node) {
+    auto type = SymbolType::MakeBasic(SymbolType::BasicType::CHAR);
+    node.setType(std::make_shared<SymbolType>(type));
+  };
 
   virtual void visit(class PeriodNode &node) {};
   virtual void visit(class PeriodNode_Number_Dot_Dot_Number &node) {};
   virtual void
   visit(class PeriodNode_Period_Comma_Number_Dot_Dot_Number &node) {};
 
-  virtual void visit(class VarDeclsNode &node) {};
-  virtual void visit(class VarDeclsNode_Var_VarDecl_Semicolon &node) {};
+  virtual void visit(class VarDeclsNode &node) {
+    cout << "no var decls" << endl;
+  };
+  virtual void visit(class VarDeclsNode_Var_VarDecl_Semicolon &node) {
+    node.getVarDecl()->accept(*this);
+  };
 
-  virtual void visit(class VarDeclNode &node) {};
-  virtual void visit(class VarDeclNode_IdList_Colon_Type &node) {};
+  virtual void visit(class VarDeclNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "VarDeclNode should not be Null");
+  };
+
+  virtual void visit(class VarDeclNode_IdList_Colon_Type &node) {
+    node.getIdList()->accept(*this);
+    node.getType()->accept(*this);
+    auto ids = node.getIdList()->getAllIds();
+    auto type = node.getType()->getType();
+    for (const auto &id : ids) {
+      auto record =
+          std::make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+      record->setType(type);
+      symbolTable->insert(std::move(record));
+    }
+  };
+
   virtual void
-  visit(class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type &node) {};
+  visit(class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type &node) {
+    node.getVarDecl()->accept(*this);
+    node.getIdList()->accept(*this);
+    node.getType()->accept(*this);
+    auto ids = node.getIdList()->getAllIds();
+    auto type = node.getType()->getType();
+    for (const auto &id : ids) {
+      auto record =
+          std::make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+      record->setType(type);
+      symbolTable->insert(std::move(record));
+    }
+  };
 
   virtual void visit(class SubprogramDeclsNode &node) {};
   virtual void

@@ -8,10 +8,9 @@
 namespace XYZ {
 // 终结符节点
 class TerminalNode : public ASTNode {
-  using ValT = std::variant<std::string, int, float>;
-  ValT value;
 
 public:
+  using ValT = std::variant<std::string, int, float>;
   enum class Type {
     ID,
     NUMBER,
@@ -33,7 +32,24 @@ public:
     QUOTE,         // 新增字符串类型
     STRING_LITERAL // 新增字符串类型
   };
-  TerminalNode(Type type, std::string val, size_t line)
+  /**
+   * @brief 将字符串转换为数字
+   * 可能是 int 或 float
+   * @param val
+   * @return Valt
+   */
+  static ValT makeNum(const std::string &val) {
+    // TODO: 未来可能会有更复杂的数字类型
+    auto is_float = [](const std::string &str) {
+      return str.find('.') != std::string::npos;
+    };
+    if (is_float(val)) {
+      return std::stof(val);
+    } else {
+      return std::stoi(val);
+    }
+  }
+  TerminalNode(Type type, ValT val, size_t line)
       : ASTNode("Terminal", line), value(val), type(type) {}
   // 拷贝构造函数
   TerminalNode(const TerminalNode &other)
@@ -116,5 +132,6 @@ protected:
 
 private:
   Type type;
+  ValT value;
 };
 } // namespace XYZ
