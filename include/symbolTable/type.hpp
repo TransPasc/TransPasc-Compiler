@@ -129,6 +129,10 @@ public:
   template <typename Visitor> decltype(auto) visit(Visitor &&vis) const {
     return std::visit(std::forward<Visitor>(vis), m_var);
   }
+  // 设置常量标志
+  void set_const() { is_const = true; }
+  // 获取常量标志
+  bool is_const_type() const { return is_const; }
 
   // 辅助函数：类型比较
   friend bool operator==(const SymbolType &lhs, const SymbolType &rhs) {
@@ -226,6 +230,7 @@ public:
 
 private:
   Type m_var = std::monostate{}; // 使用 std::monostate 作为默认值
+  bool is_const = false;         // 是否为常量
 };
 
 } // namespace XYZ

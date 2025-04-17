@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(BisonFlexExample)
 option(DEBUG "Enable debug mode" ON)
-# 指定 c++ 17
-set(CMAKE_CXX_STANDARD 17)
+# 指定 c++ 20 标准
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(DEBUG)

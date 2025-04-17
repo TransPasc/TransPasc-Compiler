@@ -5,6 +5,7 @@
 
 #include "ast/ast.hpp"
 #include "err.h"
+#include "location.hh"
 #include "parser.hpp"
 #include "scanner.h"
 #include "semanticAnalysis/analyzer.hpp"
@@ -40,17 +41,19 @@ public:
   friend class Scanner;
 
 private:
-  void increaseLocation(unsigned int loc);
+  void increaseLocation(unsigned int leng);
   void increaseLine();
+  void step();
 
-  unsigned int location() const;
+  const location &getLocation() const;
+  int getLine() const;
 
 private:
   Scanner m_scanner;
   Parser m_parser;
   Analyzer m_analyzer;
-  unsigned int m_location; // Used by scanner
-  unsigned int m_line;     // Used by parser
+  // 声明位置实例
+  location m_location;
 };
 
 } // namespace XYZ

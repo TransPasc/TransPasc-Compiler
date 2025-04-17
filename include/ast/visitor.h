@@ -31,9 +31,9 @@ public:
   virtual void visit(class ConstDeclsNode_Const_ConstDecl &node) = 0;
 
   virtual void visit(class ConstDeclNode &node) = 0;
-  virtual void visit(class ConstDeclNode_Id_Assignop_ConstVal &node) = 0;
+  virtual void visit(class ConstDeclNode_Id_Relop_ConstVal &node) = 0;
   virtual void
-  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal &node) = 0;
+  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal &node) = 0;
 
   virtual void visit(class ConstValNode &node) = 0;
   virtual void visit(class ConstValNode_Plus_Number &node) = 0;

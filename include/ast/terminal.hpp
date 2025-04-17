@@ -43,12 +43,27 @@ public:
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
   ValT getValue() const { return value; }
+  //   泛型 get
+  template <typename T> T get() const { return std::get<T>(value); }
+  //   指针版 get
+  template <typename T> T *getPtr() { return std::get_if<T>(&value); }
 
   virtual void print(size_t indent) const override {
     printIndent(indent);
     std::cout << type2string() << " : " << val2string() << std::endl;
     for (const auto &child : m_children) {
       child->print(indent + 2);
+    }
+  }
+
+  //   断言是不是某个字符串
+  void expect_str(const std::string &str) const {
+    if (!std::holds_alternative<std::string>(value)) {
+      throw std::runtime_error("expect " + str + ", but got " + type2string());
+    }
+    auto res = std::get<std::string>(value);
+    if (res != str) {
+      throw std::runtime_error("expect " + str + ", but got " + res);
     }
   }
 

@@ -190,12 +190,16 @@ const_decls : {
     }
 ;
 const_decl :
-    ID ASSIGNOP const_val {
-        $$ = std::make_shared<ConstDeclNode_Id_Assignop_ConstVal>(
+    /*
+        Pascal也太愚蠢了吧，初始化和 eq 混用 '=' 号
+        综合考虑下，就先用 RELOP 吧
+    */
+    ID RELOP const_val {
+        $$ = std::make_shared<ConstDeclNode_Id_Relop_ConstVal>(
             $1, $2, $3, @1.begin.line);
     } |
-    const_decl SEMICOLON ID ASSIGNOP const_val {
-        $$ = std::make_shared<ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal>(
+    const_decl SEMICOLON ID RELOP const_val {
+        $$ = std::make_shared<ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal>(
             $1, $2, $3, $4, $5, @1.begin.line);
     }
 ;
@@ -495,6 +499,6 @@ factor :
 
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
-    cout << "Error: " << message << endl << "Error location: " << driver.location() << endl;
+    cout << "Error: " << message << endl << "Error location: " << loc.begin.line << endl;
     driver.handleError(message);
 }

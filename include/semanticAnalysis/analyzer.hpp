@@ -98,14 +98,32 @@ public:
     node.getId()->accept(*this);
   };
 
-  virtual void visit(class ConstDeclsNode &node) {};
+  virtual void visit(class ConstDeclsNode &node) {
+    // TODO:使用日志
+    cout << "no const decls" << endl;
+  };
 
-  virtual void visit(class ConstDeclsNode_Const_ConstDecl &node) {};
+  virtual void visit(class ConstDeclsNode_Const_ConstDecl &node) {
+    node.getConstDecl()->accept(*this);
+  };
 
-  virtual void visit(class ConstDeclNode &node) {};
-  virtual void visit(class ConstDeclNode_Id_Assignop_ConstVal &node) {};
+  virtual void visit(class ConstDeclNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ConstDeclNode should not be Null");
+  };
+
+  virtual void visit(class ConstDeclNode_Id_Relop_ConstVal &node) {
+    node.getId()->accept(*this);
+    node.getConstVal()->accept(*this);
+    unique_ptr<SymbolRecord> record = make_unique<SymbolRecord>(
+        node.getId()->getName(), node.getId()->getLine());
+    auto type = node.getConstVal()->getType();
+    record->setType(type);
+    symbolTable->insert(std::move(record));
+  };
+
   virtual void
-  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal &node) {};
+  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal &node) {};
 
   virtual void visit(class ConstValNode &node) {};
   virtual void visit(class ConstValNode_Plus_Number &node) {};
