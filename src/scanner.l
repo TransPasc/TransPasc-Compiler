@@ -17,6 +17,8 @@
     using TerminalNode = XYZ::TerminalNode;
 %}
 
+%option debug
+
 /* %option nodefault */
 %option noyywrap
 %option c++

@@ -20,8 +20,14 @@ find_package(FLEX REQUIRED)
 # include_directories(${FLEX_INCLUDE_DIRS})
 
 # 定义 Flex 和 Bison 的输出
-FLEX_TARGET(Scanner src/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
-BISON_TARGET(Parser src/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+FLEX_TARGET(Scanner
+    src/scanner.l
+    ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+BISON_TARGET(Parser
+    src/parser.y
+    ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp
+    COMPILE_FLAGS "-t -v --debug"
+    )
 ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 
 # 包含构建目录（放置生成的文件）

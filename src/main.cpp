@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     driver.switchInputStream(&cin);
   }
 
-  MENU::printTokens(driver);
+  //   MENU::printTokens(driver);
   MENU::parse(driver);
   //   MENU::semanticAnalysis(driver);
 

@@ -112,7 +112,7 @@ public:
                             "ConstDeclNode should not be Null");
   };
 
-  virtual void visit(class ConstDeclNode_Id_Relop_ConstVal &node) {
+  virtual void visit(class ConstDeclNode_Id_Relop_ConstVal_Semicolon &node) {
     node.getId()->accept(*this);
     node.getConstVal()->accept(*this);
     unique_ptr<SymbolRecord> record = make_unique<SymbolRecord>(
@@ -123,7 +123,7 @@ public:
   };
 
   virtual void
-  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal &node) {};
+  visit(class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) {};
 
   virtual void visit(class ConstValNode &node) {};
   virtual void visit(class ConstValNode_Plus_Number &node) {};

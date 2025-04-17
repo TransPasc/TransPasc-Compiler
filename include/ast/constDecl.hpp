@@ -12,19 +12,21 @@ public:
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 };
 
-// const_decl := ID Relop const_val
-class ConstDeclNode_Id_Relop_ConstVal : public ConstDeclNode {
+// const_decl := ID Relop const_val SEMICOLON
+class ConstDeclNode_Id_Relop_ConstVal_Semicolon : public ConstDeclNode {
 public:
-  ConstDeclNode_Id_Relop_ConstVal(ASTNodePtr id, ASTNodePtr relop,
-                                  ASTNodePtr constVal, size_t line)
+  ConstDeclNode_Id_Relop_ConstVal_Semicolon(ASTNodePtr id, ASTNodePtr relop,
+                                            ASTNodePtr constVal,
+                                            ASTNodePtr semicolon, size_t line)
       : ConstDeclNode(line) {
     dynamic_pointer_cast<TerminalNode>(relop)->expect_str("=");
 
     addChild(id);
     addChild(relop);
     addChild(constVal);
+    addChild(semicolon);
   }
-  ~ConstDeclNode_Id_Relop_ConstVal() override = default;
+  ~ConstDeclNode_Id_Relop_ConstVal_Semicolon() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
@@ -39,24 +41,24 @@ public:
   }
 };
 
-// const_decl := const_decl SEMICOLON ID Relop const_val
-class ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal
+// const_decl := const_decl ID Relop const_val SEMICOLON
+class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon
     : public ConstDeclNode {
 public:
-  ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal(
-      ASTNodePtr constDecl, ASTNodePtr semicolon, ASTNodePtr id,
-      ASTNodePtr relop, ASTNodePtr constVal, size_t line)
+  ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon(
+      ASTNodePtr constDecl, ASTNodePtr id, ASTNodePtr relop,
+      ASTNodePtr constVal, ASTNodePtr semicolon, size_t line)
       : ConstDeclNode(line) {
 
     dynamic_pointer_cast<TerminalNode>(relop)->expect_str("=");
 
     addChild(constDecl);
-    addChild(semicolon);
     addChild(id);
     addChild(relop);
     addChild(constVal);
+    addChild(semicolon);
   }
-  ~ConstDeclNode_ConstDecl_Semicolon_Id_Relop_ConstVal() override = default;
+  ~ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
