@@ -29,13 +29,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getProcedureToken() const {
+  std::shared_ptr<TerminalNode> getProcedureToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<FormalParameterNode> getFormalParameter() const {
+  std::shared_ptr<FormalParameterNode> getFormalParameter() const {
     return dynamic_pointer_cast<FormalParameterNode>(m_children[2]);
   }
 };
@@ -59,19 +59,19 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getFunctionToken() const {
+  std::shared_ptr<TerminalNode> getFunctionToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<FormalParameterNode> getFormalParameter() const {
+  std::shared_ptr<FormalParameterNode> getFormalParameter() const {
     return dynamic_pointer_cast<FormalParameterNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getColon() const {
+  std::shared_ptr<TerminalNode> getColon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
-  shared_ptr<BasicTypeNode> getBasicType() const {
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
     return dynamic_pointer_cast<BasicTypeNode>(m_children[4]);
   }
 };

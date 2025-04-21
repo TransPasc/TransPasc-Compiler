@@ -253,6 +253,19 @@ public:
         });
   }
 
+  bool strictEq(const SymbolType &other) const {
+    if (m_var.index() != other.m_var.index())
+      return false;
+    // TODO: 实现其他类型的比较(array, record, function, procedure)
+    return true;
+  }
+  bool strictEq(const BasicType &other) const {
+    if (!is_basic())
+      return false;
+    // TODO: 实现其他类型的比较(array, record, function, procedure)
+    return true;
+  }
+
 private:
   Type m_var = std::monostate{}; // 使用 std::monostate 作为默认值
   bool is_const = false;         // 是否可变

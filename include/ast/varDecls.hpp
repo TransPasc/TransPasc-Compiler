@@ -27,13 +27,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getVarToken() const {
+  std::shared_ptr<TerminalNode> getVarToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<VarDeclNode> getVarDecl() const {
+  std::shared_ptr<VarDeclNode> getVarDecl() const {
     return dynamic_pointer_cast<VarDeclNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getSemicolon() const {
+  std::shared_ptr<TerminalNode> getSemicolon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
 };

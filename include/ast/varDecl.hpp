@@ -24,13 +24,13 @@ public:
   }
   ~VarDeclNode_IdList_Colon_Type() override = default;
   virtual void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  shared_ptr<IdListNode> getIdList() const {
+  std::shared_ptr<IdListNode> getIdList() const {
     return dynamic_pointer_cast<IdListNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getColon() const {
+  std::shared_ptr<TerminalNode> getColon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<TypeNode> getType() const {
+  std::shared_ptr<TypeNode> getType() const {
     return dynamic_pointer_cast<TypeNode>(m_children[2]);
   }
 };
@@ -52,19 +52,19 @@ public:
   }
   ~VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type() override = default;
   virtual void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  shared_ptr<VarDeclNode> getVarDecl() const {
+  std::shared_ptr<VarDeclNode> getVarDecl() const {
     return dynamic_pointer_cast<VarDeclNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getSemicolon() const {
+  std::shared_ptr<TerminalNode> getSemicolon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<IdListNode> getIdList() const {
+  std::shared_ptr<IdListNode> getIdList() const {
     return dynamic_pointer_cast<IdListNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getColon() const {
+  std::shared_ptr<TerminalNode> getColon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
-  shared_ptr<TypeNode> getType() const {
+  std::shared_ptr<TypeNode> getType() const {
     return dynamic_pointer_cast<TypeNode>(m_children[4]);
   }
 };

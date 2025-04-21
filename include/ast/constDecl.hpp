@@ -30,13 +30,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getAssignop() const {
+  std::shared_ptr<TerminalNode> getAssignop() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<ConstValNode> getConstVal() const {
+  std::shared_ptr<ConstValNode> getConstVal() const {
     return dynamic_pointer_cast<ConstValNode>(m_children[2]);
   }
 };
@@ -62,20 +62,20 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<ConstDeclNode> getConstDecl() const {
+  std::shared_ptr<ConstDeclNode> getConstDecl() const {
     return dynamic_pointer_cast<ConstDeclNode>(m_children[0]);
   }
 
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getAssignop() const {
+  std::shared_ptr<TerminalNode> getAssignop() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
-  shared_ptr<ConstValNode> getConstVal() const {
+  std::shared_ptr<ConstValNode> getConstVal() const {
     return dynamic_pointer_cast<ConstValNode>(m_children[3]);
   }
-  shared_ptr<TerminalNode> getSemicolon() const {
+  std::shared_ptr<TerminalNode> getSemicolon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[4]);
   }
 };

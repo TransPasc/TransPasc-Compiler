@@ -36,13 +36,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getLparen() const {
+  std::shared_ptr<TerminalNode> getLparen() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<ParameterListNode> getParameterList() const {
+  std::shared_ptr<ParameterListNode> getParameterList() const {
     return dynamic_pointer_cast<ParameterListNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getRparen() const {
+  std::shared_ptr<TerminalNode> getRparen() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
 

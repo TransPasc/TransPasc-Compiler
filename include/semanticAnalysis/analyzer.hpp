@@ -11,17 +11,17 @@ namespace XYZ {
 using namespace std;
 class Analyzer : public ASTVisitor {
   using ErrType = SemanticException::ErrorType;
-  shared_ptr<ProgramStructNode> root = nullptr;
-  shared_ptr<SymbolTable> symbolTable = nullptr;
+  std::shared_ptr<ProgramStructNode> root = nullptr;
+  std::shared_ptr<SymbolTable> symbolTable = nullptr;
 
 public:
   Analyzer() {}
 
-  void analyze(shared_ptr<ProgramStructNode> root) {
+  void analyze(std::shared_ptr<ProgramStructNode> root) {
     this->root = root;
     // 语义分析起点
     // 初始化符号表
-    symbolTable = make_shared<StackLinkedSymbolTable>();
+    symbolTable = std::make_shared<StackLinkedSymbolTable>();
     symbolTable->enterBlock();
     root->accept(*this);
     // 语义分析结束
@@ -60,12 +60,12 @@ public:
 
   virtual void visit(class ProgramHeadNode_Program_Id &node) {
     node.getId()->accept(*this);
-    shared_ptr<TerminalNode> id = node.getId();
+    std::shared_ptr<TerminalNode> id = node.getId();
     // 插入程序名到符号表
     // type 为 UNDEFINED
     unique_ptr<SymbolRecord> record =
         make_unique<SymbolRecord>(id->get<string>(), id->getLine());
-    record->setType(make_shared<SymbolType>());
+    record->setType(std::make_shared<SymbolType>());
     symbolTable->insert(std::move(record));
   };
 
@@ -168,7 +168,7 @@ public:
     for (auto it = periods->rbegin(); it != periods->rend(); ++it) {
       const auto &[l, h] = **it;
       auto type = SymbolType::MakeArray(curType, l, h);
-      curType = make_shared<SymbolType>(type);
+      curType = std::make_shared<SymbolType>(type);
     }
     node.setType(curType);
   };
@@ -287,7 +287,7 @@ public:
     unique_ptr<SymbolRecord> record =
         make_unique<SymbolRecord>(id->get<string>(), id->getLine());
     auto type = SymbolType::MakeProcedure(params);
-    record->setType(make_shared<SymbolType>(type));
+    record->setType(std::make_shared<SymbolType>(type));
     symbolTable->insert(std::move(record));
     // 进入新的块 (要在把函数名插入符号表之后,否则 function名会被删除)
     symbolTable->enterBlock();
@@ -312,7 +312,7 @@ public:
         make_unique<SymbolRecord>(id->get<string>(), id->getLine());
     auto type =
         SymbolType::MakeFunction(node.getBasicType()->getType(), params);
-    record->setType(make_shared<SymbolType>(type));
+    record->setType(std::make_shared<SymbolType>(type));
     symbolTable->insert(std::move(record));
     // 进入新的块 (要在把函数名插入符号表之后,否则 function名会被删除)
     symbolTable->enterBlock();

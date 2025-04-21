@@ -14,8 +14,8 @@ public:
   ~IdListNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  virtual shared_ptr<IdListNode> getIdList() const { return nullptr; }
-  virtual shared_ptr<TerminalNode> getId() const { return nullptr; }
+  virtual std::shared_ptr<IdListNode> getIdList() const { return nullptr; }
+  virtual std::shared_ptr<TerminalNode> getId() const { return nullptr; }
   IDListType getAllIds() const {
     IDListType ids;
     auto id = getId();
@@ -38,7 +38,7 @@ public:
   ~IdListNode_Id() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  shared_ptr<TerminalNode> getId() const override {
+  std::shared_ptr<TerminalNode> getId() const override {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
 };
@@ -57,13 +57,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<IdListNode> getIdList() const override {
+  std::shared_ptr<IdListNode> getIdList() const override {
     return dynamic_pointer_cast<IdListNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getComma() const {
+  std::shared_ptr<TerminalNode> getComma() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getId() const override {
+  std::shared_ptr<TerminalNode> getId() const override {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
 };

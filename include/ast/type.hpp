@@ -5,15 +5,15 @@ namespace XYZ {
 
 // type 的基类
 class TypeNode : public ASTNode {
-  shared_ptr<SymbolType> m_type = make_shared<SymbolType>();
+  std::shared_ptr<SymbolType> m_type = std::make_shared<SymbolType>();
 
 public:
   TypeNode(size_t line) : ASTNode("Type", line) {}
   ~TypeNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  void setType(shared_ptr<SymbolType> type) { m_type = type; }
-  const shared_ptr<SymbolType> &getType() const { return m_type; }
+  void setType(std::shared_ptr<SymbolType> type) { m_type = type; }
+  const std::shared_ptr<SymbolType> &getType() const { return m_type; }
 };
 
 // type := basic_type
@@ -25,7 +25,7 @@ public:
   ~TypeNode_BasicType() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<BasicTypeNode> getBasicType() const {
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
     return dynamic_pointer_cast<BasicTypeNode>(m_children[0]);
   }
 };
@@ -48,22 +48,22 @@ public:
   ~TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getArrayToken() const {
+  std::shared_ptr<TerminalNode> getArrayToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getLbracket() const {
+  std::shared_ptr<TerminalNode> getLbracket() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<PeriodNode> getPeriod() const {
+  std::shared_ptr<PeriodNode> getPeriod() const {
     return dynamic_pointer_cast<PeriodNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getRbracket() const {
+  std::shared_ptr<TerminalNode> getRbracket() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
-  shared_ptr<TerminalNode> getOfToken() const {
+  std::shared_ptr<TerminalNode> getOfToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[4]);
   }
-  shared_ptr<BasicTypeNode> getBasicType() const {
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
     return dynamic_pointer_cast<BasicTypeNode>(m_children[5]);
   }
 };

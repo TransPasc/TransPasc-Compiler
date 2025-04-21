@@ -32,22 +32,22 @@ public:
   ~PeriodNode_Number_Dot_Dot_Number() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getNumber1() const {
+  std::shared_ptr<TerminalNode> getNumber1() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getDot1() const {
+  std::shared_ptr<TerminalNode> getDot1() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getDot2() const {
+  std::shared_ptr<TerminalNode> getDot2() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getNumber2() const {
+  std::shared_ptr<TerminalNode> getNumber2() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
   PeriodsTypePtr getPeriods() const override {
-    PeriodsTypePtr periods = make_shared<PeriodsType>();
-    periods->push_back(make_shared<pair<int, int>>(getNumber1()->get<int>(),
-                                                   getNumber2()->get<int>()));
+    PeriodsTypePtr periods = std::make_shared<PeriodsType>();
+    periods->push_back(std::make_shared<pair<int, int>>(
+        getNumber1()->get<int>(), getNumber2()->get<int>()));
     return periods;
   }
 };
@@ -69,28 +69,28 @@ public:
   ~PeriodNode_Period_Comma_Number_Dot_Dot_Number() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<PeriodNode> getPeriod() const {
+  std::shared_ptr<PeriodNode> getPeriod() const {
     return dynamic_pointer_cast<PeriodNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getComma() const {
+  std::shared_ptr<TerminalNode> getComma() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<TerminalNode> getNumber1() const {
+  std::shared_ptr<TerminalNode> getNumber1() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getDot1() const {
+  std::shared_ptr<TerminalNode> getDot1() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
-  shared_ptr<TerminalNode> getDot2() const {
+  std::shared_ptr<TerminalNode> getDot2() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[4]);
   }
-  shared_ptr<TerminalNode> getNumber2() const {
+  std::shared_ptr<TerminalNode> getNumber2() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[5]);
   }
   PeriodsTypePtr getPeriods() const override {
 
     auto periods = getPeriod()->getPeriods();
-    periods->push_back(make_shared<pair<int32_t, int32_t>>(
+    periods->push_back(std::make_shared<pair<int32_t, int32_t>>(
         getNumber1()->get<int>(), getNumber2()->get<int>()));
     return periods;
   }

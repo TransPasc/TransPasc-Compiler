@@ -1,92 +1,80 @@
 #pragma once
 #include "ast/ast.h"
+#include "ast/term.hpp"
+#include "ast/terminal.hpp"
+#include "symbolTable/type.hpp"
 
 namespace XYZ {
+class TermNode;
 
 // simple_expression 的基类
 class SimpleExpressionNode : public ASTNode {
- public:
-  SimpleExpressionNode(size_t line) : ASTNode("SimpleExpression", line) {}
-  ~SimpleExpressionNode() override = default;
+public:
+  SimpleExpressionNode(size_t line);
+  ~SimpleExpressionNode() override;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  void accept(ASTVisitor &visitor) override;
+  virtual std::shared_ptr<SymbolType> getType() const = 0;
 };
 
 // simple_expression := term
 class SimpleExpressionNode_Term : public SimpleExpressionNode {
- public:
-  SimpleExpressionNode_Term(ASTNodePtr term, size_t line)
-      : SimpleExpressionNode(line) {
-    addChild(term);
-  }
-  ~SimpleExpressionNode_Term() override = default;
+public:
+  SimpleExpressionNode_Term(ASTNodePtr term, size_t line);
+  ~SimpleExpressionNode_Term() override;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-
-  ASTNodePtr getTerm() const { return m_children[0]; }
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<TermNode> getTerm() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
 // simple_expression := simple_expression PLUS term
 class SimpleExpressionNode_SimpleExpression_Plus_Term
     : public SimpleExpressionNode {
- public:
+public:
   SimpleExpressionNode_SimpleExpression_Plus_Term(ASTNodePtr simpleExpression,
                                                   ASTNodePtr plus,
-                                                  ASTNodePtr term, size_t line)
-      : SimpleExpressionNode(line) {
-    addChild(simpleExpression);
-    addChild(plus);
-    addChild(term);
-  }
-  ~SimpleExpressionNode_SimpleExpression_Plus_Term() override = default;
+                                                  ASTNodePtr term, size_t line);
+  ~SimpleExpressionNode_SimpleExpression_Plus_Term() override;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-
-  ASTNodePtr getSimpleExpression() const { return m_children[0]; }
-  ASTNodePtr getPlus() const { return m_children[1]; }
-  ASTNodePtr getTerm() const { return m_children[2]; }
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<SimpleExpressionNode> getSimpleExpression() const;
+  std::shared_ptr<TerminalNode> getPlus() const;
+  std::shared_ptr<TermNode> getTerm() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
 // simple_expression := simple_expression MINUS term
 class SimpleExpressionNode_SimpleExpression_Minus_Term
     : public SimpleExpressionNode {
- public:
+public:
   SimpleExpressionNode_SimpleExpression_Minus_Term(ASTNodePtr simpleExpression,
                                                    ASTNodePtr minus,
-                                                   ASTNodePtr term, size_t line)
-      : SimpleExpressionNode(line) {
-    addChild(simpleExpression);
-    addChild(minus);
-    addChild(term);
-  }
-  ~SimpleExpressionNode_SimpleExpression_Minus_Term() override = default;
+                                                   ASTNodePtr term,
+                                                   size_t line);
+  ~SimpleExpressionNode_SimpleExpression_Minus_Term() override;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-
-  ASTNodePtr getSimpleExpression() const { return m_children[0]; }
-  ASTNodePtr getMinus() const { return m_children[1]; }
-  ASTNodePtr getTerm() const { return m_children[2]; }
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<SimpleExpressionNode> getSimpleExpression() const;
+  std::shared_ptr<TerminalNode> getMinus() const;
+  std::shared_ptr<TermNode> getTerm() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
 // simple_expression := simple_expression OR term
 class SimpleExpressionNode_SimpleExpression_Or_Term
     : public SimpleExpressionNode {
- public:
+public:
   SimpleExpressionNode_SimpleExpression_Or_Term(ASTNodePtr simpleExpression,
                                                 ASTNodePtr orToken,
-                                                ASTNodePtr term, size_t line)
-      : SimpleExpressionNode(line) {
-    addChild(simpleExpression);
-    addChild(orToken);
-    addChild(term);
-  }
-  ~SimpleExpressionNode_SimpleExpression_Or_Term() override = default;
+                                                ASTNodePtr term, size_t line);
+  ~SimpleExpressionNode_SimpleExpression_Or_Term() override;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-
-  ASTNodePtr getSimpleExpression() const { return m_children[0]; }
-  ASTNodePtr getOrToken() const { return m_children[1]; }
-  ASTNodePtr getTerm() const { return m_children[2]; }
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<SimpleExpressionNode> getSimpleExpression() const;
+  std::shared_ptr<TerminalNode> getOrToken() const;
+  std::shared_ptr<TermNode> getTerm() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
-}  // namespace XYZ
+} // namespace XYZ

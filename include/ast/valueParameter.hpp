@@ -29,13 +29,13 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<IdListNode> getIdList() const {
+  std::shared_ptr<IdListNode> getIdList() const {
     return dynamic_pointer_cast<IdListNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getColon() const {
+  std::shared_ptr<TerminalNode> getColon() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<BasicTypeNode> getBasicType() const {
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
     return dynamic_pointer_cast<BasicTypeNode>(m_children[2]);
   }
   SymbolType::ParamsType getParams() const override {

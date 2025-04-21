@@ -48,10 +48,10 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getProgram() const {
+  std::shared_ptr<TerminalNode> getProgram() const {
     return static_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
 };

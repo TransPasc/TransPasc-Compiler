@@ -28,10 +28,10 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getVarToken() const {
+  std::shared_ptr<TerminalNode> getVarToken() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<ValueParameterNode> getValueParameter() const {
+  std::shared_ptr<ValueParameterNode> getValueParameter() const {
     return dynamic_pointer_cast<ValueParameterNode>(m_children[1]);
   }
   SymbolType::ParamsType getParams() const override {

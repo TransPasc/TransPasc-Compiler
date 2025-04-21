@@ -22,7 +22,7 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
 };
@@ -46,16 +46,16 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getId() const {
+  std::shared_ptr<TerminalNode> getId() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getLparen() const {
+  std::shared_ptr<TerminalNode> getLparen() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[1]);
   }
-  shared_ptr<ExpressionListNode> getExpressionList() const {
+  std::shared_ptr<ExpressionListNode> getExpressionList() const {
     return dynamic_pointer_cast<ExpressionListNode>(m_children[2]);
   }
-  shared_ptr<TerminalNode> getRparen() const {
+  std::shared_ptr<TerminalNode> getRparen() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
 };

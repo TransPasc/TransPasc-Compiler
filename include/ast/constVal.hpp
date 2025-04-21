@@ -26,10 +26,10 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getPlus() const {
+  std::shared_ptr<TerminalNode> getPlus() const {
     return static_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getNumber() const {
+  std::shared_ptr<TerminalNode> getNumber() const {
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
@@ -50,10 +50,10 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getMinus() const {
+  std::shared_ptr<TerminalNode> getMinus() const {
     return static_pointer_cast<TerminalNode>(m_children[0]);
   }
-  shared_ptr<TerminalNode> getNumber() const {
+  std::shared_ptr<TerminalNode> getNumber() const {
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
@@ -72,7 +72,7 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getNumber() const {
+  std::shared_ptr<TerminalNode> getNumber() const {
     return static_pointer_cast<TerminalNode>(m_children[0]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
@@ -92,7 +92,7 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<TerminalNode> getCharLiteral() const {
+  std::shared_ptr<TerminalNode> getCharLiteral() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {

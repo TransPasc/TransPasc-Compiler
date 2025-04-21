@@ -26,7 +26,7 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<VarParameterNode> getVarParameter() const {
+  std::shared_ptr<VarParameterNode> getVarParameter() const {
     return dynamic_pointer_cast<VarParameterNode>(m_children[0]);
   }
   SymbolType::ParamsType getParams() const override {
@@ -45,7 +45,7 @@ public:
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  shared_ptr<ValueParameterNode> getValueParameter() const {
+  std::shared_ptr<ValueParameterNode> getValueParameter() const {
     return dynamic_pointer_cast<ValueParameterNode>(m_children[0]);
   }
 

@@ -34,12 +34,18 @@ ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# get all *.cpp files in src/ast
+file(GLOB_RECURSE AST_SOURCES
+    src/ast/*.cpp
+)
+
 # 添加可执行文件
 add_executable(a.out
     src/main.cpp
     src/driver.cpp
     ${FLEX_Scanner_OUTPUTS}
     ${BISON_Parser_OUTPUTS}
+    ${AST_SOURCES}  # Include the AST sources
 )
 
 include(cmake/main.cmake)

@@ -9,15 +9,15 @@ using namespace std;
 class SymbolType;
 
 class BasicTypeNode : public ASTNode {
-  shared_ptr<SymbolType> m_type = make_shared<SymbolType>();
+  std::shared_ptr<SymbolType> m_type = std::make_shared<SymbolType>();
 
 public:
   BasicTypeNode(size_t line) : ASTNode("BasicType", line) {}
   ~BasicTypeNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  void setType(shared_ptr<SymbolType> type) { m_type = type; }
-  const shared_ptr<SymbolType> &getType() const { return m_type; }
+  void setType(std::shared_ptr<SymbolType> type) { m_type = type; }
+  const std::shared_ptr<SymbolType> &getType() const { return m_type; }
 };
 
 // basic_type := INTEGER
