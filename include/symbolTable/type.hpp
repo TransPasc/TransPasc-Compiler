@@ -1,4 +1,6 @@
 #pragma once
+
+#include "symbolTable/exception.hpp"
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -6,8 +8,15 @@
 #include <variant>
 #include <vector>
 
-#include "symbolTable/exception.hpp"
-
+#include "ast/terminal.hpp"
+enum class BasicType {
+  INTEGER,
+  REAL,
+  BOOLEAN,
+  CHAR,
+  STRING,
+  FLOAT,
+};
 namespace XYZ {
 /**
  * @class SymbolType
@@ -15,14 +24,9 @@ namespace XYZ {
  */
 class SymbolType {
 public:
-  enum class BasicType {
-    INTEGER,
-    REAL,
-    BOOLEAN,
-    CHAR,
-    STRING,
-    FLOAT,
-  };
+  using ParamsType =
+      std::vector<std::shared_ptr<std::pair<SymbolType, std::string>>>;
+
   struct Array {
     std::shared_ptr<SymbolType> element_type;
     std::pair<int32_t, int32_t> range;
@@ -45,11 +49,11 @@ public:
 
   struct Function {
     std::shared_ptr<SymbolType> return_type;
-    std::vector<std::shared_ptr<SymbolType>> param_types;
+    ParamsType param_types;
   };
 
   struct Procedure {
-    std::vector<std::shared_ptr<SymbolType>> param_types;
+    ParamsType param_types;
   };
   using Type = std::variant<std::monostate, // UNDEFINED
                             BasicType,      // BASIC
@@ -82,17 +86,30 @@ public:
     st.m_var = Record{std::move(fields)};
     return st;
   }
+  /**
+   * @brief 生成函数参数列表
+   * @param idList
+   * @param type
+   * @return * ParamsTypes
+   */
+  static ParamsType
+  MakeParams(const std::vector<std::shared_ptr<TerminalNode>> &idList,
+             SymbolType type) {
+    ParamsType params;
+    for (const auto &id : idList) {
+      params.push_back(std::make_shared<std::pair<SymbolType, std::string>>(
+          type, id->get<std::string>()));
+    }
+    return params;
+  }
 
-  static SymbolType
-  MakeFunction(std::shared_ptr<SymbolType> ret,
-               std::vector<std::shared_ptr<SymbolType>> params) {
+  static SymbolType MakeFunction(std::shared_ptr<SymbolType> ret,
+                                 ParamsType params) {
     SymbolType st;
     st.m_var = Function{std::move(ret), std::move(params)};
     return st;
   }
-
-  static SymbolType
-  MakeProcedure(std::vector<std::shared_ptr<SymbolType>> params) {
+  static SymbolType MakeProcedure(ParamsType params) {
     SymbolType st;
     st.m_var = Procedure{std::move(params)};
     return st;
@@ -129,10 +146,18 @@ public:
   template <typename Visitor> decltype(auto) visit(Visitor &&vis) const {
     return std::visit(std::forward<Visitor>(vis), m_var);
   }
-  // 设置常量标志
-  void set_const() { is_const = true; }
+  /**
+   * @brief 设置为是否可变
+   * @param flag true 可变，false 不可变
+   */
+  void set_const(bool flag = true) { is_const = flag; }
   // 获取常量标志
   bool is_const_type() const { return is_const; }
+
+  // 设置为是否引用其他变量
+  void set_ref(bool flag = true) { is_ref = flag; }
+  // 获取引用标志
+  bool is_ref_type() const { return is_ref; }
 
   // 辅助函数：类型比较
   friend bool operator==(const SymbolType &lhs, const SymbolType &rhs) {
@@ -143,7 +168,7 @@ public:
       using T = std::decay_t<decltype(l_val)>;
       if constexpr (std::is_same_v<T, std::monostate>) {
         return true; // 两个未定义类型相等
-      } else if constexpr (std::is_same_v<T, SymbolType::BasicType>) {
+      } else if constexpr (std::is_same_v<T, BasicType>) {
         return l_val == rhs.get<T>();
       } else {
         const auto *r_val = rhs.get_if<T>();
@@ -171,25 +196,25 @@ public:
   void print_symbol(const SymbolType &sym) {
     sym.visit(
         overloaded{[](std::monostate) { std::cout << "Undefined type\n"; },
-                   [](SymbolType::BasicType basic) {
+                   [](BasicType basic) {
                      std::cout << "Basic type: ";
                      switch (basic) {
-                     case SymbolType::BasicType::INTEGER:
+                     case BasicType::INTEGER:
                        std::cout << "INTEGER";
                        break;
-                     case SymbolType::BasicType::REAL:
+                     case BasicType::REAL:
                        std::cout << "REAL";
                        break;
-                     case SymbolType::BasicType::BOOLEAN:
+                     case BasicType::BOOLEAN:
                        std::cout << "BOOLEAN";
                        break;
-                     case SymbolType::BasicType::CHAR:
+                     case BasicType::CHAR:
                        std::cout << "CHAR";
                        break;
-                     case SymbolType::BasicType::STRING:
+                     case BasicType::STRING:
                        std::cout << "STRING";
                        break;
-                     case SymbolType::BasicType::FLOAT:
+                     case BasicType::FLOAT:
                        std::cout << "FLOAT";
                        break;
                      default:
@@ -215,13 +240,13 @@ public:
                      this->print_symbol(*func.return_type);
                      std::cout << " with parameters:\n";
                      for (const auto &param : func.param_types) {
-                       this->print_symbol(*param);
+                       this->print_symbol(param->first);
                      }
                    },
                    [this](const SymbolType::Procedure &proc) {
                      std::cout << "Procedure with parameters:\n";
                      for (const auto &param : proc.param_types) {
-                       this->print_symbol(*param);
+                       this->print_symbol(param->first);
                      }
                    }
 
@@ -230,7 +255,9 @@ public:
 
 private:
   Type m_var = std::monostate{}; // 使用 std::monostate 作为默认值
-  bool is_const = false;         // 是否为常量
+  bool is_const = false;         // 是否可变
+  //   是否引用的其他变量
+  bool is_ref = false; // 是否引用的其他变量
 };
 
 } // namespace XYZ

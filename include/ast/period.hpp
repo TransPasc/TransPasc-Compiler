@@ -30,6 +30,7 @@ public:
     addChild(number2);
   }
   ~PeriodNode_Number_Dot_Dot_Number() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
   shared_ptr<TerminalNode> getNumber1() const {
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
@@ -66,6 +67,7 @@ public:
     addChild(number2);
   }
   ~PeriodNode_Period_Comma_Number_Dot_Dot_Number() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
   shared_ptr<PeriodNode> getPeriod() const {
     return dynamic_pointer_cast<PeriodNode>(m_children[0]);

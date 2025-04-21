@@ -1,5 +1,7 @@
 #pragma once
 #include "ast/ast.hpp"
+#include "ast/terminal.hpp"
+#include "exception.hpp"
 #include <memory>
 
 namespace XYZ {
@@ -7,14 +9,15 @@ using namespace std;
 // idlist 的基类
 class IdListNode : public ASTNode {
 public:
+  using IDListType = std::vector<std::shared_ptr<TerminalNode>>;
   IdListNode(size_t line) : ASTNode("IdList", line) {}
   ~IdListNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
   virtual shared_ptr<IdListNode> getIdList() const { return nullptr; }
   virtual shared_ptr<TerminalNode> getId() const { return nullptr; }
-  std::vector<std::shared_ptr<TerminalNode>> getAllIds() const {
-    std::vector<std::shared_ptr<TerminalNode>> ids;
+  IDListType getAllIds() const {
+    IDListType ids;
     auto id = getId();
     if (id) {
       ids.push_back(id);

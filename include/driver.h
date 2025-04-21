@@ -33,7 +33,7 @@ public:
 
   void switchInputStream(std::istream *is);
 
-  void handleError(const std::string &msg);
+  void handleError(const std::string &msg, const location &loc);
 
   static std::shared_ptr<ProgramStructNode> root;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "ast/ast.hpp"
+
 namespace XYZ {
 
 class ASTVisitor {
@@ -71,7 +71,8 @@ public:
 
   virtual void visit(class SubprogramNode &node) = 0;
   virtual void
-  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody &node) = 0;
+  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
+            &node) = 0;
 
   virtual void visit(class SubprogramHeadNode &node) = 0;
   virtual void
@@ -81,7 +82,6 @@ public:
             &node) = 0;
 
   virtual void visit(class FormalParameterNode &node) = 0;
-  virtual void visit(class FormalParameterNode_Empty &node) = 0;
   virtual void
   visit(class FormalParameterNode_Lparen_ParameterList_Rparen &node) = 0;
 

@@ -1,10 +1,13 @@
 #pragma once
 #include "ast/ast.h"
 #include "symbolTable/type.hpp"
+#include <memory>
 
 namespace XYZ {
 using namespace std;
 // basic_type 的基类
+class SymbolType;
+
 class BasicTypeNode : public ASTNode {
   shared_ptr<SymbolType> m_type = make_shared<SymbolType>();
 

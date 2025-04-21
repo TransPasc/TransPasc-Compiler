@@ -334,7 +334,7 @@ LINE_COMMENT \/\/[^\n]*
 <<EOF>>     { return yyterminate(); }
 
 .           {
-    m_driver.handleError("unrecognized character");
+    m_driver.handleError("unrecognized character", m_driver.getLocation());
 }
 
 %%

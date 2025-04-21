@@ -282,9 +282,10 @@ subprogram_decls :
     }
 ;
 subprogram :
-    subprogram_head SEMICOLON subprogram_body {
-        $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody>(
-            $1, $2, $3, @1.begin.line);
+    /* 又给错误的文法规则 */
+    subprogram_head SEMICOLON subprogram_body SEMICOLON {
+        $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON>(
+            $1, $2, $3, $4, @1.begin.line);
     }
 ;
 subprogram_head :
@@ -341,7 +342,7 @@ subprogram_body :
     }
 ;
 compound_statement :
-    BEGIN statement_list END {
+    BEGIN statement_list END{
         $$ = std::make_shared<CompoundStatementNode_Begin_StatementList_End>(
             $1, $2, $3, @1.begin.line);
     }
@@ -502,6 +503,6 @@ factor :
 
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
-    cout << "Error: " << message << endl << "Error location: " << loc.begin.line << endl;
-    driver.handleError(message);
+
+    driver.handleError(message, loc);
 }

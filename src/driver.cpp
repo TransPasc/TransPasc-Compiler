@@ -166,9 +166,10 @@ void Driver::printAST() {
   std::cout << "End of AST." << std::endl;
 }
 
-void Driver::handleError(const std::string &msg) {
+void Driver::handleError(const std::string &msg, const location &loc) {
   // TODO: 改用日志库
-  std::cerr << "Error: " << msg << std::endl;
+  auto formatted_msg = std::format("Error[{}]: {}", loc.begin.line, msg);
+  std::cerr << formatted_msg << std::endl;
 }
 void Driver::analyze() {
   if (!root)

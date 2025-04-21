@@ -3,7 +3,6 @@
 #include "symbolTable/type.hpp"
 
 namespace XYZ {
-
 // const_val 的基类
 class ConstValNode : public ASTNode {
 public:
@@ -35,7 +34,7 @@ public:
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
     return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(SymbolType::BasicType::INTEGER));
+        SymbolType::MakeBasic(BasicType::INTEGER));
   }
 };
 
@@ -59,7 +58,7 @@ public:
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
     return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(SymbolType::BasicType::INTEGER));
+        SymbolType::MakeBasic(BasicType::INTEGER));
   }
 };
 
@@ -78,7 +77,7 @@ public:
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
     return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(SymbolType::BasicType::INTEGER));
+        SymbolType::MakeBasic(BasicType::INTEGER));
   }
 };
 
@@ -97,8 +96,7 @@ public:
     return dynamic_pointer_cast<TerminalNode>(m_children[0]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
-    return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(SymbolType::BasicType::CHAR));
+    return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::CHAR));
   }
 };
 

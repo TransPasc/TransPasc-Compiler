@@ -178,26 +178,35 @@ public:
                             "BasicTypeNode should not be Null");
   };
   virtual void visit(class BasicTypeNode_Integer &node) {
-    auto type = SymbolType::MakeBasic(SymbolType::BasicType::INTEGER);
+    auto type = SymbolType::MakeBasic(BasicType::INTEGER);
     node.setType(std::make_shared<SymbolType>(type));
   };
   virtual void visit(class BasicTypeNode_Real &node) {
-    auto type = SymbolType::MakeBasic(SymbolType::BasicType::REAL);
+    auto type = SymbolType::MakeBasic(BasicType::REAL);
     node.setType(std::make_shared<SymbolType>(type));
   };
   virtual void visit(class BasicTypeNode_Boolean &node) {
-    auto type = SymbolType::MakeBasic(SymbolType::BasicType::BOOLEAN);
+    auto type = SymbolType::MakeBasic(BasicType::BOOLEAN);
     node.setType(std::make_shared<SymbolType>(type));
   };
   virtual void visit(class BasicTypeNode_Char &node) {
-    auto type = SymbolType::MakeBasic(SymbolType::BasicType::CHAR);
+    auto type = SymbolType::MakeBasic(BasicType::CHAR);
     node.setType(std::make_shared<SymbolType>(type));
   };
 
-  virtual void visit(class PeriodNode &node) {};
-  virtual void visit(class PeriodNode_Number_Dot_Dot_Number &node) {};
+  virtual void visit(class PeriodNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "PeriodNode should not be Null");
+  };
+
+  virtual void visit(class PeriodNode_Number_Dot_Dot_Number &node) {
+    // nothing to do
+  };
+
   virtual void
-  visit(class PeriodNode_Period_Comma_Number_Dot_Dot_Number &node) {};
+  visit(class PeriodNode_Period_Comma_Number_Dot_Dot_Number &node) {
+    node.getPeriod()->accept(*this);
+  };
 
   virtual void visit(class VarDeclsNode &node) {
     cout << "no var decls" << endl;
@@ -239,40 +248,129 @@ public:
     }
   };
 
-  virtual void visit(class SubprogramDeclsNode &node) {};
-  virtual void
-  visit(class SubprogramDeclsNode_SubprogramDecls_Subprogram &node) {};
+  virtual void visit(class SubprogramDeclsNode &node) {
+    cout << "no subprogram decls" << endl;
+  };
 
-  virtual void visit(class SubprogramNode &node) {};
   virtual void
-  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody &node) {};
+  visit(class SubprogramDeclsNode_SubprogramDecls_Subprogram &node) {
+    node.getSubprogramDecls()->accept(*this);
+    node.getSubprogram()->accept(*this);
+  };
 
-  virtual void visit(class SubprogramHeadNode &node) {};
+  virtual void visit(class SubprogramNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "SubprogramNode should not be Null");
+  };
+
   virtual void
-  visit(class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {};
+  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
+            &node) {
+    // 进入新的块
+    symbolTable->enterBlock();
+    node.getSubprogramHead()->accept(*this);
+    // TODO: 获取 var_list, 并传递给 body
+    node.getSubprogramBody()->accept(*this);
+    // 退出当前块
+    symbolTable->exitBlock();
+  };
+
+  virtual void visit(class SubprogramHeadNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "SubprogramHeadNode should not be Null");
+  };
+
+  virtual void
+  visit(class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {
+    node.getId()->accept(*this);
+    node.getFormalParameter()->accept(*this);
+    auto params = node.getFormalParameter()->getParams();
+    auto id = node.getId();
+    unique_ptr<SymbolRecord> record =
+        make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+    auto type = SymbolType::MakeProcedure(params);
+    record->setType(make_shared<SymbolType>(type));
+    symbolTable->insert(std::move(record));
+  };
+
   virtual void
   visit(class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
-            &node) {};
+            &node) {
+    node.getId()->accept(*this);
+    node.getFormalParameter()->accept(*this);
+    node.getBasicType()->accept(*this);
+    // TODO: params 的顺序反了
+    auto params = node.getFormalParameter()->getParams();
+    auto id = node.getId();
+    unique_ptr<SymbolRecord> record =
+        make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+    auto type =
+        SymbolType::MakeFunction(node.getBasicType()->getType(), params);
+    record->setType(make_shared<SymbolType>(type));
+    symbolTable->insert(std::move(record));
+  };
 
-  virtual void visit(class FormalParameterNode &node) {};
-  virtual void visit(class FormalParameterNode_Empty &node) {};
+  virtual void visit(class FormalParameterNode &node) {
+    cout << "no formal parameter" << endl;
+  };
+
   virtual void
-  visit(class FormalParameterNode_Lparen_ParameterList_Rparen &node) {};
+  visit(class FormalParameterNode_Lparen_ParameterList_Rparen &node) {
+    node.getParameterList()->accept(*this);
+  };
 
-  virtual void visit(class ParameterListNode &node) {};
-  virtual void visit(class ParameterListNode_Parameter &node) {};
+  virtual void visit(class ParameterListNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ParameterListNode should not be Null");
+  };
+
+  virtual void visit(class ParameterListNode_Parameter &node) {
+    node.getParameter()->accept(*this);
+  };
+
   virtual void
-  visit(class ParameterListNode_ParameterList_Semicolon_Parameter &node) {};
+  visit(class ParameterListNode_ParameterList_Semicolon_Parameter &node) {
+    node.getParameterList()->accept(*this);
+    node.getParameter()->accept(*this);
+  };
 
-  virtual void visit(class ParameterNode &node) {};
-  virtual void visit(class ParameterNode_VarParameter &node) {};
-  virtual void visit(class ParameterNode_ValueParameter &node) {};
+  virtual void visit(class ParameterNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ParameterNode should not be Null");
+  };
 
-  virtual void visit(class VarParameterNode &node) {};
-  virtual void visit(class VarParameterNode_Var_ValueParameter &node) {};
+  virtual void visit(class ParameterNode_VarParameter &node) {
+    node.getVarParameter()->accept(*this);
+  };
 
-  virtual void visit(class ValueParameterNode &node) {};
-  virtual void visit(class ValueParameterNode_IdList_Colon_BasicType &node) {};
+  virtual void visit(class ParameterNode_ValueParameter &node) {
+    node.getValueParameter()->accept(*this);
+  };
+
+  virtual void visit(class VarParameterNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "VarParameterNode should not be Null");
+  };
+  virtual void visit(class VarParameterNode_Var_ValueParameter &node) {
+    node.getValueParameter()->accept(*this);
+  };
+
+  virtual void visit(class ValueParameterNode &node) {
+    cout << "Visiting ValueParameterNode" << endl;
+  };
+
+  virtual void visit(class ValueParameterNode_IdList_Colon_BasicType &node) {
+    node.getIdList()->accept(*this);
+    node.getBasicType()->accept(*this);
+    auto ids = node.getIdList()->getAllIds();
+    auto type = node.getBasicType()->getType();
+    for (const auto &id : ids) {
+      auto record =
+          std::make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+      record->setType(type);
+      symbolTable->insert(std::move(record));
+    }
+  };
 
   virtual void visit(class SubprogramBodyNode &node) {};
   virtual void
