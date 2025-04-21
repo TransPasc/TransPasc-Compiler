@@ -417,6 +417,12 @@ public:
   virtual void visit(class StatementNode_Variable_Assignop_Expression &node) {
     node.getVariable()->accept(*this);
     node.getExpression()->accept(*this);
+    auto leftType = node.getVariable()->getType();
+    auto rightType = node.getExpression()->getType();
+    if (!leftType->strictEq(*rightType)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in assignment");
+    }
     // TODO: 变量赋值
     // auto id = node.getVariable()->getId();
     // auto record = symbolTable->lookup(id->get<string>());

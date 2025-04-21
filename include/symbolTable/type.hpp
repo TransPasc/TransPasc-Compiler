@@ -253,6 +253,7 @@ public:
         });
   }
 
+  //   TODO: 实现 strict equal
   bool strictEq(const SymbolType &other) const {
     if (m_var.index() != other.m_var.index())
       return false;
@@ -262,7 +263,7 @@ public:
   bool strictEq(const BasicType &other) const {
     if (!is_basic())
       return false;
-    // TODO: 实现其他类型的比较(array, record, function, procedure)
+    //   TODO
     return true;
   }
 
