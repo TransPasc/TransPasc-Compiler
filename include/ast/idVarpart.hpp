@@ -4,7 +4,7 @@
 namespace XYZ {
 // id_varpart 的基类
 class IdVarPartNode : public ASTNode {
- public:
+public:
   IdVarPartNode(size_t line) : ASTNode("IdVarPart", line) {}
   ~IdVarPartNode() override = default;
 
@@ -12,7 +12,7 @@ class IdVarPartNode : public ASTNode {
 };
 // id_varpart := LBRACKET expression_list RBRACKET
 class IdVarPartNode_Lbracket_ExpressionList_Rbracket : public IdVarPartNode {
- public:
+public:
   IdVarPartNode_Lbracket_ExpressionList_Rbracket(ASTNodePtr lbracket,
                                                  ASTNodePtr expression_list,
                                                  ASTNodePtr rbracket,
@@ -27,7 +27,7 @@ class IdVarPartNode_Lbracket_ExpressionList_Rbracket : public IdVarPartNode {
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
   ASTNodePtr getLbracket() const { return m_children[0]; }
-  ASTNodePtr getExpression() const { return m_children[1]; }
+  ASTNodePtr getExpressionList() const { return m_children[1]; }
   ASTNodePtr getRbracket() const { return m_children[2]; }
 };
-}  // namespace XYZ
+} // namespace XYZ

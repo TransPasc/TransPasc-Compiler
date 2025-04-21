@@ -266,10 +266,8 @@ public:
   virtual void
   visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
             &node) {
-    // 进入新的块
-    symbolTable->enterBlock();
+    // 进入block 的逻辑在 programhead 中(function or procedure)
     node.getSubprogramHead()->accept(*this);
-    // TODO: 获取 var_list, 并传递给 body
     node.getSubprogramBody()->accept(*this);
     // 退出当前块
     symbolTable->exitBlock();
@@ -291,6 +289,14 @@ public:
     auto type = SymbolType::MakeProcedure(params);
     record->setType(make_shared<SymbolType>(type));
     symbolTable->insert(std::move(record));
+    // 进入新的块 (要在把函数名插入符号表之后,否则 function名会被删除)
+    symbolTable->enterBlock();
+    // 将 ids及其类型信息插入到符号表中
+    for (const auto &param : params) {
+      auto record = make_unique<SymbolRecord>(param->second, id->getLine());
+      record->setType(std::make_shared<SymbolType>(param->first));
+      symbolTable->insert(std::move(record));
+    }
   };
 
   virtual void
@@ -308,6 +314,14 @@ public:
         SymbolType::MakeFunction(node.getBasicType()->getType(), params);
     record->setType(make_shared<SymbolType>(type));
     symbolTable->insert(std::move(record));
+    // 进入新的块 (要在把函数名插入符号表之后,否则 function名会被删除)
+    symbolTable->enterBlock();
+    // 将 ids及其类型信息插入到符号表中
+    for (const auto &param : params) {
+      auto record = make_unique<SymbolRecord>(param->second, id->getLine());
+      record->setType(std::make_shared<SymbolType>(param->first));
+      symbolTable->insert(std::move(record));
+    }
   };
 
   virtual void visit(class FormalParameterNode &node) {
@@ -362,92 +376,262 @@ public:
   virtual void visit(class ValueParameterNode_IdList_Colon_BasicType &node) {
     node.getIdList()->accept(*this);
     node.getBasicType()->accept(*this);
-    auto ids = node.getIdList()->getAllIds();
-    auto type = node.getBasicType()->getType();
-    for (const auto &id : ids) {
-      auto record =
-          std::make_unique<SymbolRecord>(id->get<string>(), id->getLine());
-      record->setType(type);
-      symbolTable->insert(std::move(record));
-    }
   };
 
-  virtual void visit(class SubprogramBodyNode &node) {};
+  virtual void visit(class SubprogramBodyNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "SubprogramBodyNode should not be Null");
+  };
   virtual void
   visit(class SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement &node) {
+    node.getConstDecls()->accept(*this);
+    node.getVarDecls()->accept(*this);
+    node.getCompoundStatement()->accept(*this);
   };
 
-  virtual void visit(class CompoundStatementNode &node) {};
+  virtual void visit(class CompoundStatementNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "CompoundStatementNode should not be Null");
+  };
   virtual void
-  visit(class CompoundStatementNode_Begin_StatementList_End &node) {};
+  visit(class CompoundStatementNode_Begin_StatementList_End &node) {
+    node.getStatementList()->accept(*this);
+  };
 
-  virtual void visit(class StatementListNode &node) {};
-  virtual void visit(class StatementListNode_Statement &node) {};
+  virtual void visit(class StatementListNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "StatementListNode should not be Null");
+  };
+  virtual void visit(class StatementListNode_Statement &node) {
+    node.getStatement()->accept(*this);
+  };
   virtual void
-  visit(class StatementListNode_StatementList_Semicolon_Statement &node) {};
+  visit(class StatementListNode_StatementList_Semicolon_Statement &node) {
+    node.getStatementList()->accept(*this);
+    node.getStatement()->accept(*this);
+  };
 
-  virtual void visit(class StatementNode &node) {};
-  virtual void visit(class StatementNode_Variable_Assignop_Expression &node) {};
-  virtual void visit(class StatementNode_Id_Assignop_Expression &node) {};
-  virtual void visit(class StatementNode_ProcedureCall &node) {};
+  virtual void visit(class StatementNode &node) {
+    cout << "statement is null" << endl;
+  };
+  virtual void visit(class StatementNode_Variable_Assignop_Expression &node) {
+    node.getVariable()->accept(*this);
+    node.getExpression()->accept(*this);
+    // TODO: 变量赋值
+    // auto id = node.getVariable()->getId();
+    // auto record = symbolTable->lookup(id->get<string>());
+    // if (record == nullptr) {
+    //   throw SemanticException(ErrType::UNDEFINED,
+    //                           "Undefined variable: " + id->get<string>());
+    // }
+    // auto type = record->getType();
+    // node.setType(type);
+  };
+  virtual void visit(class StatementNode_Id_Assignop_Expression &node) {
+    node.getId()->accept(*this);
+    node.getExpression()->accept(*this);
+    // TODO: 变量赋值
+  };
+  virtual void visit(class StatementNode_ProcedureCall &node) {
+    node.getProcedureCall()->accept(*this);
+  };
   virtual void
-  visit(class StatementNode_If_Expression_Then_Statement_ElsePart &node) {};
+  visit(class StatementNode_If_Expression_Then_Statement_ElsePart &node) {
+    node.getExpression()->accept(*this);
+    // TODO: 类型检查 是否为布尔类型
+    node.getStatement()->accept(*this);
+    node.getElsePart()->accept(*this);
+  };
   virtual void visit(
       class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
-          &node) {};
+          &node) {
+    node.getId()->accept(*this);
+    node.getExpression1()->accept(*this);
+    node.getExpression2()->accept(*this);
+    node.getStatement()->accept(*this);
+    // TODO: 类型检查
+  };
   virtual void
-  visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) {};
+  visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) {
+    node.getVariableList()->accept(*this);
+    // TODO: 类型检查
+  };
   virtual void
-  visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {};
-
-  virtual void visit(class VariableListNode &node) {};
-  virtual void visit(class VariableListNode_Variable &node) {};
-  virtual void visit(class VariableListNode_VariableList_Comma_Variable &node) {
+  visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {
+    node.getExpressionList()->accept(*this);
+    // TODO: 类型检查
   };
 
-  virtual void visit(class VariableNode &node) {};
-  virtual void visit(class VariableNode_Id_IdVarpart &node) {};
+  virtual void visit(class VariableListNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "VariableListNode should not be Null");
+  };
+  virtual void visit(class VariableListNode_Variable &node) {
+    node.getVariable()->accept(*this);
+  };
+  virtual void visit(class VariableListNode_VariableList_Comma_Variable &node) {
+    node.getVariableList()->accept(*this);
+    node.getVariable()->accept(*this);
+  };
 
-  virtual void visit(class IdVarPartNode &node) {};
-  virtual void visit(class IdVarPartNode_Lbracket_Expression_Rbracket &node) {};
+  virtual void visit(class VariableNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "VariableNode should not be Null");
+  };
+  virtual void visit(class VariableNode_Id_IdVarpart &node) {
+    node.getId()->accept(*this);
+    node.getIdVarpart()->accept(*this);
+    // TODO: 类型检查
+  };
 
-  virtual void visit(class ProcedureCallNode &node) {};
-  virtual void visit(class ProcedureCallNode_Id &node) {};
+  virtual void visit(class IdVarPartNode &node) {
+    cout << "IdVarPartNode is null" << endl;
+  };
   virtual void
-  visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {};
+  visit(class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
+    node.getExpressionList()->accept(*this);
+    // TODO: 类型检查
+  };
 
-  virtual void visit(class ElsePartNode &node) {};
-  virtual void visit(class ElsePartNode_Else_Statement &node) {};
-
-  virtual void visit(class ExpressionListNode &node) {};
-  virtual void visit(class ExpressionListNode_Expression &node) {};
+  virtual void visit(class ProcedureCallNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ProcedureCallNode should not be Null");
+  };
+  virtual void visit(class ProcedureCallNode_Id &node) {
+    node.getId()->accept(*this);
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined procedure: " + id->get<string>());
+    }
+  };
   virtual void
-  visit(class ExpressionListNode_ExpressionList_Comma_Expression &node) {};
+  visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {
+    node.getId()->accept(*this);
+    node.getExpressionList()->accept(*this);
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined procedure: " + id->get<string>());
+    }
+    auto params = record->getType()->get_if<SymbolType::Procedure>();
+    if (params == nullptr) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Not a procedure: " + id->get<string>());
+    }
+    // auto expressions = node.getExpressionList()->getExpressions();
+    // TODO: 检查参数个数和类型
+  };
 
-  virtual void visit(class ExpressionNode &node) {};
-  virtual void visit(class ExpressionNode_SimpleExpression &node) {};
-  virtual void
-  visit(class ExpressionNode_SimpleExpression_Relop_SimpleExpression &node) {};
+  virtual void visit(class ElsePartNode &node) {
+    cout << "no else part" << endl;
+  };
+  virtual void visit(class ElsePartNode_Else_Statement &node) {
+    node.getStatement()->accept(*this);
+  };
 
-  virtual void visit(class SimpleExpressionNode &node) {};
-  virtual void visit(class SimpleExpressionNode_Term &node) {};
+  virtual void visit(class ExpressionListNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ExpressionListNode should not be Null");
+  };
+  virtual void visit(class ExpressionListNode_Expression &node) {
+    node.getExpression()->accept(*this);
+  };
   virtual void
-  visit(class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {};
-  virtual void
-  visit(class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {};
-  virtual void
-  visit(class SimpleExpressionNode_SimpleExpression_Or_Term &node) {};
+  visit(class ExpressionListNode_ExpressionList_Comma_Expression &node) {
+    node.getExpressionList()->accept(*this);
+    node.getExpression()->accept(*this);
+  };
 
-  virtual void visit(class TermNode &node) {};
-  virtual void visit(class TermNode_Factor &node) {};
-  virtual void visit(class TermNode_Term_Mulop_Factor &node) {};
+  virtual void visit(class ExpressionNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "ExpressionNode should not be Null");
+  };
+  virtual void visit(class ExpressionNode_SimpleExpression &node) {
+    node.getSimpleExpression()->accept(*this);
+  };
+  virtual void
+  visit(class ExpressionNode_SimpleExpression_Relop_SimpleExpression &node) {
+    node.getSimpleExpression1()->accept(*this);
+    node.getSimpleExpression2()->accept(*this);
+    // TODO: 类型检查
+  };
 
-  virtual void visit(class FactorNode &node) {};
-  virtual void visit(class FactorNode_Number &node) {};
-  virtual void visit(class FactorNode_CharLiteral &node) {};
-  virtual void visit(class FactorNode_Variable &node) {};
-  virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) {};
-  virtual void visit(class FactorNode_Not_Factor &node) {};
-  virtual void visit(class FactorNode_Minus_Factor &node) {};
+  virtual void visit(class SimpleExpressionNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "SimpleExpressionNode should not be Null");
+  };
+  virtual void visit(class SimpleExpressionNode_Term &node) {
+    node.getTerm()->accept(*this);
+  };
+  virtual void
+  visit(class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {
+    node.getSimpleExpression()->accept(*this);
+    node.getTerm()->accept(*this);
+    // TODO: 类型检查
+  };
+  virtual void
+  visit(class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {
+    node.getSimpleExpression()->accept(*this);
+    node.getTerm()->accept(*this);
+  };
+  virtual void
+  visit(class SimpleExpressionNode_SimpleExpression_Or_Term &node) {
+    node.getSimpleExpression()->accept(*this);
+    node.getTerm()->accept(*this);
+  };
+
+  virtual void visit(class TermNode &node) {
+    throw SemanticException(ErrType::UNDEFINED, "TermNode should not be Null");
+  };
+  virtual void visit(class TermNode_Factor &node) {
+    node.getFactor()->accept(*this);
+  };
+  virtual void visit(class TermNode_Term_Mulop_Factor &node) {
+    node.getTerm()->accept(*this);
+    node.getFactor()->accept(*this);
+    // TODO: 类型检查
+  };
+
+  virtual void visit(class FactorNode &node) {
+    throw SemanticException(ErrType::UNDEFINED,
+                            "FactorNode should not be Null");
+  };
+  virtual void visit(class FactorNode_Number &node) {
+    // TODO: 设置类型
+  };
+  virtual void visit(class FactorNode_CharLiteral &node) {
+    // TODO: 设置类型
+  };
+  virtual void visit(class FactorNode_Variable &node) {
+    node.getVariable()->accept(*this);
+    // TODO: 设置类型
+  };
+  virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) {
+    node.getExpression()->accept(*this);
+    // TODO: 设置类型
+  };
+  virtual void visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {
+    node.getID()->accept(*this);
+    node.getExpressionList()->accept(*this);
+    auto id = node.getID();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined procedure: " + id->get<string>());
+    }
+    // TODO: 检查参数个数和类型
+    // TODO: 设置类型
+  }
+  virtual void visit(class FactorNode_Not_Factor &node) {
+    node.getFactor()->accept(*this);
+    // TODO: 设置类型
+  };
+  virtual void visit(class FactorNode_Minus_Factor &node) {
+    node.getFactor()->accept(*this);
+    // TODO: 设置类型
+  };
 };
 } // namespace XYZ

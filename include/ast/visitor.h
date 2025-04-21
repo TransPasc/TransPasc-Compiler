@@ -138,7 +138,7 @@ public:
 
   virtual void visit(class IdVarPartNode &node) = 0;
   virtual void
-  visit(class IdVarPartNode_Lbracket_Expression_Rbracket &node) = 0;
+  visit(class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) = 0;
 
   virtual void visit(class ProcedureCallNode &node) = 0;
   virtual void visit(class ProcedureCallNode_Id &node) = 0;
@@ -178,6 +178,8 @@ public:
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) = 0;
   virtual void visit(class FactorNode_Not_Factor &node) = 0;
   virtual void visit(class FactorNode_Minus_Factor &node) = 0;
+  virtual void
+  visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) = 0;
 };
 
 } // namespace XYZ
