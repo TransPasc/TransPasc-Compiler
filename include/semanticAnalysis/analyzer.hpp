@@ -585,17 +585,47 @@ public:
   visit(class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {
     node.getSimpleExpression()->accept(*this);
     node.getTerm()->accept(*this);
-    // TODO: 类型检查
+    auto simpleType = node.getSimpleExpression()->getType();
+    auto termType = node.getTerm()->getType();
+    // 假设没有隐式类型转换
+    if (!simpleType->strictEq(*termType)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in addition");
+    }
+    if (!simpleType->strictEq(BasicType::INTEGER) &&
+        !simpleType->strictEq(BasicType::REAL)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary plus");
+    }
   };
   virtual void
   visit(class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {
     node.getSimpleExpression()->accept(*this);
     node.getTerm()->accept(*this);
+    auto simpleType = node.getSimpleExpression()->getType();
+    auto termType = node.getTerm()->getType();
+    // 假设没有隐式类型转换
+    if (!simpleType->strictEq(*termType)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in subtraction");
+    }
+    if (!simpleType->strictEq(BasicType::INTEGER) &&
+        !simpleType->strictEq(BasicType::REAL)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary minus");
+    }
   };
   virtual void
   visit(class SimpleExpressionNode_SimpleExpression_Or_Term &node) {
     node.getSimpleExpression()->accept(*this);
     node.getTerm()->accept(*this);
+    auto simpleType = node.getSimpleExpression()->getType();
+    auto termType = node.getTerm()->getType();
+    if (!simpleType->strictEq(BasicType::BOOLEAN) ||
+        !termType->strictEq(BasicType::BOOLEAN)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in or operation");
+    }
   };
 
   virtual void visit(class TermNode &node) {
