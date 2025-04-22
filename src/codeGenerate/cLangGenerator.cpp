@@ -148,33 +148,94 @@ void CLangGenerator::visit(class ConstValNode_Number &node) {
   m_outputBuffer += std::format("{}", node.getNumber()->getValStr());
 };
 void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {
-  m_outputBuffer +=
-      std::format("'{}'", node.getCharLiteral()->get<std::string>());
+  m_outputBuffer += std::format("'{}'", node.getCharLiteral()->getValStr());
 };
 
-void CLangGenerator::visit(class TypeNode &node) {};
-void CLangGenerator::visit(class TypeNode_BasicType &node) {};
+void CLangGenerator::visit(class TypeNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "TypeNode should not be visited");
+};
+void CLangGenerator::visit(class TypeNode_BasicType &node) {
+  //   nothing need to do
+};
 void CLangGenerator::visit(
-    class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType &node) {};
+    class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType &node) {
+  //   c 语言数组是 type id[][]
+  //   不好直接在这里生成代码
+  //   在上层处理好了
+};
 
-void CLangGenerator::visit(class BasicTypeNode &node) {};
-void CLangGenerator::visit(class BasicTypeNode_Integer &node) {};
-void CLangGenerator::visit(class BasicTypeNode_Real &node) {};
-void CLangGenerator::visit(class BasicTypeNode_Boolean &node) {};
-void CLangGenerator::visit(class BasicTypeNode_Char &node) {};
+void CLangGenerator::visit(class BasicTypeNode &node) {
+  // nothing need to do
+};
+void CLangGenerator::visit(class BasicTypeNode_Integer &node) {
+  // nothing need to do
+};
+void CLangGenerator::visit(class BasicTypeNode_Real &node) {
+  // nothing need to do
+};
+void CLangGenerator::visit(class BasicTypeNode_Boolean &node) {
+  // nothing need to do
+};
+void CLangGenerator::visit(class BasicTypeNode_Char &node) {
+  // nothing need to do
+};
 
-void CLangGenerator::visit(class PeriodNode &node) {};
-void CLangGenerator::visit(class PeriodNode_Number_Dot_Dot_Number &node) {};
+void CLangGenerator::visit(class PeriodNode &node) {
+  // nothing need to do
+};
+void CLangGenerator::visit(class PeriodNode_Number_Dot_Dot_Number &node) {
+  // nothing need to do
+};
 void CLangGenerator::visit(
-    class PeriodNode_Period_Comma_Number_Dot_Dot_Number &node) {};
+    class PeriodNode_Period_Comma_Number_Dot_Dot_Number &node) {
+  // nothing need to do
+};
 
-void CLangGenerator::visit(class VarDeclsNode &node) {};
-void CLangGenerator::visit(class VarDeclsNode_Var_VarDecl_Semicolon &node) {};
+void CLangGenerator::visit(class VarDeclsNode &node) {
+  writeln("// no var decls");
+};
+void CLangGenerator::visit(class VarDeclsNode_Var_VarDecl_Semicolon &node) {
+  writeln("// var decls");
+  node.getVarDecl()->accept(*this);
+};
 
-void CLangGenerator::visit(class VarDeclNode &node) {};
-void CLangGenerator::visit(class VarDeclNode_IdList_Colon_Type &node) {};
+void CLangGenerator::visit(class VarDeclNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VarDeclNode should not be visited");
+};
+void CLangGenerator::g_IdList_Type(std::shared_ptr<IdListNode> idListNode,
+                                   std::shared_ptr<TypeNode> typeNode) {
+  auto type = typeNode->getType();
+  auto typeStr = symbolType2Str(*type);
+  auto ids = idListNode->getAllIds();
+  if (type->is_array()) {
+    // 数组类型
+    // 现在 typeStr 是 type[range1][range2]...的格式
+    // get basic type str and rangeStr by f
+    std::string rangeStr = typeStr.substr(typeStr.find('['));
+    typeStr = typeStr.substr(0, typeStr.find('['));
+
+    for (const auto &id : ids) {
+      m_outputBuffer +=
+          std::format("{} {}{};\n", typeStr, id->getValStr(), rangeStr);
+    }
+    return;
+  }
+  for (const auto &id : ids) {
+    m_outputBuffer += std::format("{} {};\n", typeStr, id->getValStr());
+  }
+}
+
+void CLangGenerator::visit(class VarDeclNode_IdList_Colon_Type &node) {
+  // 调用辅助函数
+  g_IdList_Type(node.getIdList(), node.getType());
+};
 void CLangGenerator::visit(
-    class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type &node) {};
+    class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type &node) {
+  node.getVarDecl()->accept(*this);
+  g_IdList_Type(node.getIdList(), node.getType());
+};
 
 void CLangGenerator::visit(class SubprogramDeclsNode &node) {};
 void CLangGenerator::visit(
@@ -319,10 +380,18 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
       },
       [this](const SymbolType::Array &array) -> std::string {
         if (!array.element_type)
-          return "array[invalid]";
-        return std::format("array[{}..{}] of {}", array.range.first,
-                           array.range.second,
-                           symbolType2Str(*array.element_type));
+          throw CodeGenerateException(
+              ErrType::UNREACH_CODE,
+              "Array element type is not set, this should not happen");
+
+        // 计算数组长度（C风格索引从0开始）
+        int32_t array_size = array.range.second - array.range.first + 1;
+
+        // 递归获取元素类型的字符串表示
+        std::string element_type_str = symbolType2Str(*array.element_type);
+
+        // 组合成C风格数组类型
+        return element_type_str + "[" + std::to_string(array_size) + "]";
       },
       [this](const SymbolType::Record &record) -> std::string {
         std::ostringstream oss;

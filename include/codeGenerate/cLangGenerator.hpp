@@ -208,6 +208,11 @@ public:
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) override;
 
 private:
+  // 公有产生式处理
+  void g_IdList_Type(std::shared_ptr<IdListNode> idList,
+                     std::shared_ptr<TypeNode> type);
+
+private:
   // 生成代码的辅助函数, 写入str到缓冲区
   void writeln(const std::string &str);
   template <class... Ts> struct overloaded : Ts... {

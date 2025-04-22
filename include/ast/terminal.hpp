@@ -49,6 +49,7 @@ public:
       return std::stoi(val);
     }
   }
+
   TerminalNode(Type type, ValT val, size_t line)
       : ASTNode("Terminal", line), value(val), type(type) {}
   // 拷贝构造函数
