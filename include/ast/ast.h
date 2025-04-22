@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -11,6 +12,11 @@ class ASTNode {
 public:
   using ASTNodePtr = std::shared_ptr<ASTNode>;
   ASTNode(const std::string &name, size_t line) : m_name(name), m_line(line) {};
+  // 拷贝构造函数
+  ASTNode(const ASTNode &other)
+      : m_name(other.m_name), m_line(other.m_line),
+        m_children(other.m_children) {}
+  ASTNode &operator=(const ASTNode &) = default;
   virtual ~ASTNode() = default;
   virtual void accept(ASTVisitor &visitor) = 0;
 
@@ -23,11 +29,11 @@ public:
    * 先序遍历
    * @param indent
    */
-  virtual void print(size_t indent) const {
-    printIndent(indent);
-    std::cout << "|- " << m_name << " [ " << m_line << "]" << std::endl;
+  virtual void print(std::string prefix) const {
+    std::cout << prefix;
+    std::cout << m_name << " [ " << m_line << "]" << std::endl;
     for (const auto &child : m_children) {
-      child->print(indent + 2);
+      child->print("|  " + prefix);
     }
   }
   // 只能访问子节点，不能修改
@@ -37,12 +43,6 @@ public:
 protected:
   //  只对子类开放 修改 child 节点
   void addChild(ASTNodePtr child) { m_children.push_back(child); }
-
-  void printIndent(size_t indent) const {
-    for (size_t i = 0; i < indent; ++i) {
-      std::cout << " ";
-    }
-  }
 
 protected:
   std::string m_name;

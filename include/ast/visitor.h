@@ -1,5 +1,5 @@
 #pragma once
-#include "ast/ast.hpp"
+
 namespace XYZ {
 
 class ASTVisitor {
@@ -31,9 +31,9 @@ public:
   virtual void visit(class ConstDeclsNode_Const_ConstDecl &node) = 0;
 
   virtual void visit(class ConstDeclNode &node) = 0;
-  virtual void visit(class ConstDeclNode_Id_Assignop_ConstVal &node) = 0;
+  virtual void visit(class ConstDeclNode_Id_Relop_ConstVal_Semicolon &node) = 0;
   virtual void
-  visit(class ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal &node) = 0;
+  visit(class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) = 0;
 
   virtual void visit(class ConstValNode &node) = 0;
   virtual void visit(class ConstValNode_Plus_Number &node) = 0;
@@ -71,7 +71,8 @@ public:
 
   virtual void visit(class SubprogramNode &node) = 0;
   virtual void
-  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody &node) = 0;
+  visit(class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
+            &node) = 0;
 
   virtual void visit(class SubprogramHeadNode &node) = 0;
   virtual void
@@ -81,7 +82,6 @@ public:
             &node) = 0;
 
   virtual void visit(class FormalParameterNode &node) = 0;
-  virtual void visit(class FormalParameterNode_Empty &node) = 0;
   virtual void
   visit(class FormalParameterNode_Lparen_ParameterList_Rparen &node) = 0;
 
@@ -127,6 +127,7 @@ public:
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) = 0;
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) = 0;
+  virtual void visit(class StatementNode_CompoundStatement &node) = 0;
 
   virtual void visit(class VariableListNode &node) = 0;
   virtual void visit(class VariableListNode_Variable &node) = 0;
@@ -138,7 +139,7 @@ public:
 
   virtual void visit(class IdVarPartNode &node) = 0;
   virtual void
-  visit(class IdVarPartNode_Lbracket_Expression_Rbracket &node) = 0;
+  visit(class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) = 0;
 
   virtual void visit(class ProcedureCallNode &node) = 0;
   virtual void visit(class ProcedureCallNode_Id &node) = 0;
@@ -178,6 +179,8 @@ public:
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) = 0;
   virtual void visit(class FactorNode_Not_Factor &node) = 0;
   virtual void visit(class FactorNode_Minus_Factor &node) = 0;
+  virtual void
+  visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) = 0;
 };
 
 } // namespace XYZ

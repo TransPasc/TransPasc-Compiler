@@ -1,20 +1,22 @@
 #pragma once
 #include "ast/ast.h"
+#include "symbolTable/type.hpp"
 
 namespace XYZ {
-
 // const_val 的基类
 class ConstValNode : public ASTNode {
- public:
+public:
   ConstValNode(size_t line) : ASTNode("ConstVal", line) {}
   ~ConstValNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  //   get type
+  virtual std::shared_ptr<SymbolType> getType() const = 0;
 };
 
 // const_val := PLUS NUMBER
 class ConstValNode_Plus_Number : public ConstValNode {
- public:
+public:
   ConstValNode_Plus_Number(ASTNodePtr plus, ASTNodePtr number, size_t line)
       : ConstValNode(line) {
     addChild(plus);
@@ -24,13 +26,21 @@ class ConstValNode_Plus_Number : public ConstValNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getPlus() const { return m_children[0]; }
-  ASTNodePtr getNumber() const { return m_children[1]; }
+  std::shared_ptr<TerminalNode> getPlus() const {
+    return static_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getNumber() const {
+    return static_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(
+        SymbolType::MakeBasic(BasicType::INTEGER));
+  }
 };
 
 // const_val := MINUS NUMBER
 class ConstValNode_Minus_Number : public ConstValNode {
- public:
+public:
   ConstValNode_Minus_Number(ASTNodePtr minus, ASTNodePtr number, size_t line)
       : ConstValNode(line) {
     addChild(minus);
@@ -40,13 +50,21 @@ class ConstValNode_Minus_Number : public ConstValNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getMinus() const { return m_children[0]; }
-  ASTNodePtr getNumber() const { return m_children[1]; }
+  std::shared_ptr<TerminalNode> getMinus() const {
+    return static_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getNumber() const {
+    return static_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(
+        SymbolType::MakeBasic(BasicType::INTEGER));
+  }
 };
 
 // const_val := NUMBER
 class ConstValNode_Number : public ConstValNode {
- public:
+public:
   ConstValNode_Number(ASTNodePtr number, size_t line) : ConstValNode(line) {
     addChild(number);
   }
@@ -54,12 +72,18 @@ class ConstValNode_Number : public ConstValNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getNumber() const { return m_children[0]; }
+  std::shared_ptr<TerminalNode> getNumber() const {
+    return static_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(
+        SymbolType::MakeBasic(BasicType::INTEGER));
+  }
 };
 
 // const_val := CHAR_LITERAL
 class ConstValNode_CharLiteral : public ConstValNode {
- public:
+public:
   ConstValNode_CharLiteral(ASTNodePtr charLiteral, size_t line)
       : ConstValNode(line) {
     addChild(charLiteral);
@@ -68,7 +92,12 @@ class ConstValNode_CharLiteral : public ConstValNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getCharLiteral() const { return m_children[0]; }
+  std::shared_ptr<TerminalNode> getCharLiteral() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::CHAR));
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

@@ -40,21 +40,21 @@ TEST(SymbolTable, SUC) {
 
   // 进入顶层块并插入变量
   table->enterBlock(); // 进入top block
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("b", 2)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("g", 3)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("b", 2));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("g", 3));
   EXPECT_EQ(table->size(), 3);
 
   // 进入block1并插入变量
   table->enterBlock(); // 进入block1
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 4)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("c", 5)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 4));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("c", 5));
   EXPECT_EQ(table->size(), 5); // top(3) + block1(2)
 
   // 进入block2并插入变量
   table->enterBlock(); // 进入block2
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 6)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("b", 7)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 6));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("b", 7));
   EXPECT_EQ(table->size(), 7); // 累积总数可能不适用，此处应重新考虑测试方式
 
   // --- 在block2中查找c ---
@@ -76,15 +76,15 @@ TEST(SymbolTable, SUC) {
 
   // 进入block3的父块并插入变量
   table->enterBlock(); // 进入block3的父块
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 8)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("b", 9)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("c", 10)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 8));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("b", 9));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("c", 10));
 
   // 进入block3并插入变量
   table->enterBlock(); // 进入block3
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 11)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("b", 12)));
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("c", 13)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 11));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("b", 12));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("c", 13));
 
   // --- 在block3中查找g ---
   res = table->lookup("g");
@@ -101,7 +101,7 @@ TEST(SymbolTable, SUC) {
   table->exitBlock(); // 退出父块，回到top block
 
   // 在top block中插入f
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("f", 14)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("f", 14));
   EXPECT_EQ(table->size(), 4); // a(1), b(2), g(3), f(14)
 
   // 退出顶层块，所有变量应不可见
@@ -129,12 +129,13 @@ TEST(SymbolTable, EdgeCase) {
 TEST(SymbolTable, InsertDuplicateInSameScope) {
   auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
   table->enterBlock();
-  EXPECT_TRUE(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1)));
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1));
 
-  // 同一作用域重复插入
-  EXPECT_FALSE(
-      table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2))); // 应该失败
-  EXPECT_FALSE(table->insert(nullptr)); // 插入空指针应失败
+  // 同一作用域重复插入, throw SymbolAlreadyExists
+  EXPECT_THROW(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2)),
+               XYZ::SymbolTableException); // 应该抛出异常
+  EXPECT_THROW(table->insert(nullptr),
+               XYZ::SymbolTableException); // 插入空指针应失败
 }
 
 TEST(SymbolTable, ExitBlockWithoutEnter) {
@@ -188,8 +189,7 @@ TEST(SymbolTable, CrossScopeShadowing) {
 
   // 子作用域遮蔽
   table->enterBlock();
-  EXPECT_TRUE(
-      table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2))); // 允许遮蔽
+  table->insert(std::make_unique<XYZ::SymbolRecord>("a", 2));
 
   // 验证查找结果
   auto res = table->lookup("a");
@@ -197,6 +197,6 @@ TEST(SymbolTable, CrossScopeShadowing) {
   EXPECT_EQ(res->getLineno(), 2); // 应找到子作用域的a
 
   // 尝试在子作用域重复插入
-  EXPECT_FALSE(
-      table->insert(std::make_unique<XYZ::SymbolRecord>("a", 3))); // 应失败
+  EXPECT_THROW(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 3)),
+               XYZ::SymbolTableException); // 应该抛出异常
 }

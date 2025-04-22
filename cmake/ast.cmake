@@ -12,6 +12,7 @@ if(AST_HEADERS)
     file(WRITE "${AGGREGATED_HEADER}" "// Auto-generated header file aggregating all AST headers\n\n")
     # 添加头文件保护宏 pragma once
     file(APPEND "${AGGREGATED_HEADER}" "#pragma once\n\n")
+    # file(APPEND "${AGGREGATED_HEADER}" "#include \"ast/ast.h\"\n")
 
 
     # 遍历头文件并追加到 ast.hpp

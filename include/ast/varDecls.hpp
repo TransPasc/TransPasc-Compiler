@@ -6,7 +6,7 @@ namespace XYZ {
 // var_decls 的基类
 // var_decls := EMPTY
 class VarDeclsNode : public ASTNode {
- public:
+public:
   VarDeclsNode(size_t line) : ASTNode("VarDecls", line) {}
   ~VarDeclsNode() override = default;
 
@@ -15,7 +15,7 @@ class VarDeclsNode : public ASTNode {
 
 // var_decls := VAR var_decl SEMICOLON
 class VarDeclsNode_Var_VarDecl_Semicolon : public VarDeclsNode {
- public:
+public:
   VarDeclsNode_Var_VarDecl_Semicolon(ASTNodePtr varToken, ASTNodePtr varDecl,
                                      ASTNodePtr semicolon, size_t line)
       : VarDeclsNode(line) {
@@ -27,9 +27,15 @@ class VarDeclsNode_Var_VarDecl_Semicolon : public VarDeclsNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getVarToken() const { return m_children[0]; }
-  ASTNodePtr getVarDecl() const { return m_children[1]; }
-  ASTNodePtr getSemicolon() const { return m_children[2]; }
+  std::shared_ptr<TerminalNode> getVarToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<VarDeclNode> getVarDecl() const {
+    return dynamic_pointer_cast<VarDeclNode>(m_children[1]);
+  }
+  std::shared_ptr<TerminalNode> getSemicolon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[2]);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

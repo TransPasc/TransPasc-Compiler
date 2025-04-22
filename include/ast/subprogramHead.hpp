@@ -5,7 +5,7 @@ namespace XYZ {
 
 // subprogram_head 的基类
 class SubprogramHeadNode : public ASTNode {
- public:
+public:
   SubprogramHeadNode(size_t line) : ASTNode("SubprogramHead", line) {}
   ~SubprogramHeadNode() override = default;
 
@@ -15,7 +15,7 @@ class SubprogramHeadNode : public ASTNode {
 // subprogram_head := PROCEDURE ID formal_parameter
 class SubprogramHeadNode_Procedure_Id_FormalParameter
     : public SubprogramHeadNode {
- public:
+public:
   SubprogramHeadNode_Procedure_Id_FormalParameter(ASTNodePtr procedureToken,
                                                   ASTNodePtr id,
                                                   ASTNodePtr formalParameter,
@@ -29,15 +29,21 @@ class SubprogramHeadNode_Procedure_Id_FormalParameter
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getProcedureToken() const { return m_children[0]; }
-  ASTNodePtr getId() const { return m_children[1]; }
-  ASTNodePtr getFormalParameter() const { return m_children[2]; }
+  std::shared_ptr<TerminalNode> getProcedureToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getId() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<FormalParameterNode> getFormalParameter() const {
+    return dynamic_pointer_cast<FormalParameterNode>(m_children[2]);
+  }
 };
 
 // subprogram_head := FUNCTION ID formal_parameter COLON basic_type
 class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
     : public SubprogramHeadNode {
- public:
+public:
   SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType(
       ASTNodePtr functionToken, ASTNodePtr id, ASTNodePtr formalParameter,
       ASTNodePtr colon, ASTNodePtr basicType, size_t line)
@@ -53,11 +59,21 @@ class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getFunctionToken() const { return m_children[0]; }
-  ASTNodePtr getId() const { return m_children[1]; }
-  ASTNodePtr getFormalParameter() const { return m_children[2]; }
-  ASTNodePtr getColon() const { return m_children[3]; }
-  ASTNodePtr getBasicType() const { return m_children[4]; }
+  std::shared_ptr<TerminalNode> getFunctionToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getId() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<FormalParameterNode> getFormalParameter() const {
+    return dynamic_pointer_cast<FormalParameterNode>(m_children[2]);
+  }
+  std::shared_ptr<TerminalNode> getColon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[3]);
+  }
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
+    return dynamic_pointer_cast<BasicTypeNode>(m_children[4]);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

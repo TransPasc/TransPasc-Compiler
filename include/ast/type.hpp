@@ -5,27 +5,34 @@ namespace XYZ {
 
 // type 的基类
 class TypeNode : public ASTNode {
- public:
+  std::shared_ptr<SymbolType> m_type = std::make_shared<SymbolType>();
+
+public:
   TypeNode(size_t line) : ASTNode("Type", line) {}
   ~TypeNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  void setType(std::shared_ptr<SymbolType> type) { m_type = type; }
+  const std::shared_ptr<SymbolType> &getType() const { return m_type; }
 };
 
 // type := basic_type
 class TypeNode_BasicType : public TypeNode {
- public:
+public:
   TypeNode_BasicType(ASTNodePtr basicType, size_t line) : TypeNode(line) {
     addChild(basicType);
   }
   ~TypeNode_BasicType() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getBasicType() const { return m_children[0]; }
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
+    return dynamic_pointer_cast<BasicTypeNode>(m_children[0]);
+  }
 };
 
 // type := ARRAY LBRACKET period RBRACKET OF basic_type
 class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType : public TypeNode {
- public:
+public:
   TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType(
       ASTNodePtr arrayToken, ASTNodePtr lbracket, ASTNodePtr period,
       ASTNodePtr rbracket, ASTNodePtr ofToken, ASTNodePtr basicType,
@@ -39,13 +46,26 @@ class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType : public TypeNode {
     addChild(basicType);
   }
   ~TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getArrayToken() const { return m_children[0]; }
-  ASTNodePtr getLbracket() const { return m_children[1]; }
-  ASTNodePtr getPeriod() const { return m_children[2]; }
-  ASTNodePtr getRbracket() const { return m_children[3]; }
-  ASTNodePtr getOfToken() const { return m_children[4]; }
-  ASTNodePtr getBasicType() const { return m_children[5]; }
+  std::shared_ptr<TerminalNode> getArrayToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getLbracket() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<PeriodNode> getPeriod() const {
+    return dynamic_pointer_cast<PeriodNode>(m_children[2]);
+  }
+  std::shared_ptr<TerminalNode> getRbracket() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[3]);
+  }
+  std::shared_ptr<TerminalNode> getOfToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[4]);
+  }
+  std::shared_ptr<BasicTypeNode> getBasicType() const {
+    return dynamic_pointer_cast<BasicTypeNode>(m_children[5]);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

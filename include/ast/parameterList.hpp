@@ -1,20 +1,21 @@
 #pragma once
 #include "ast/ast.h"
-
+#include "ast/parameter.hpp"
 namespace XYZ {
 
 // parameter_list 的基类
 class ParameterListNode : public ASTNode {
- public:
+public:
   ParameterListNode(size_t line) : ASTNode("ParameterList", line) {}
   ~ParameterListNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  virtual SymbolType::ParamsType getParams() const = 0;
 };
 
 // parameter_list := parameter
 class ParameterListNode_Parameter : public ParameterListNode {
- public:
+public:
   ParameterListNode_Parameter(ASTNodePtr parameter, size_t line)
       : ParameterListNode(line) {
     addChild(parameter);
@@ -23,13 +24,18 @@ class ParameterListNode_Parameter : public ParameterListNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getParameter() const { return m_children[0]; }
+  std::shared_ptr<ParameterNode> getParameter() const {
+    return dynamic_pointer_cast<ParameterNode>(m_children[0]);
+  }
+  SymbolType::ParamsType getParams() const override {
+    return getParameter()->getParams();
+  }
 };
 
 // parameter_list := parameter_list SEMICOLON parameter
 class ParameterListNode_ParameterList_Semicolon_Parameter
     : public ParameterListNode {
- public:
+public:
   ParameterListNode_ParameterList_Semicolon_Parameter(ASTNodePtr parameterList,
                                                       ASTNodePtr semicolon,
                                                       ASTNodePtr parameter,
@@ -43,9 +49,21 @@ class ParameterListNode_ParameterList_Semicolon_Parameter
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getParameterList() const { return m_children[0]; }
-  ASTNodePtr getSemicolon() const { return m_children[1]; }
-  ASTNodePtr getParameter() const { return m_children[2]; }
+  std::shared_ptr<ParameterListNode> getParameterList() const {
+    return dynamic_pointer_cast<ParameterListNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getSemicolon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<ParameterNode> getParameter() const {
+    return dynamic_pointer_cast<ParameterNode>(m_children[2]);
+  }
+  SymbolType::ParamsType getParams() const override {
+    auto params = getParameterList()->getParams();
+    auto another = getParameter()->getParams();
+    params.insert(params.end(), another.begin(), another.end());
+    return params;
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

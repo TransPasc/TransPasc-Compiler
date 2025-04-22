@@ -4,8 +4,11 @@
 #include <vector>
 
 #include "ast/ast.hpp"
+#include "err.h"
+#include "location.hh"
 #include "parser.hpp"
 #include "scanner.h"
+#include "semanticAnalysis/analyzer.hpp"
 
 namespace XYZ {
 
@@ -14,6 +17,7 @@ public:
   Driver();
 
   int parse();
+  void analyze();
 
   // 添加打印token流的方法
   void printTokens();
@@ -29,22 +33,27 @@ public:
 
   void switchInputStream(std::istream *is);
 
-  static std::shared_ptr<ProgramStructNode> root; // 修改为 static
+  void handleError(const std::string &msg, const location &loc);
+
+  static std::shared_ptr<ProgramStructNode> root;
 
   friend class Parser;
   friend class Scanner;
 
 private:
-  void increaseLocation(unsigned int loc);
+  void increaseLocation(unsigned int leng);
   void increaseLine();
+  void step();
 
-  unsigned int location() const;
+  const location &getLocation() const;
+  int getLine() const;
 
 private:
   Scanner m_scanner;
   Parser m_parser;
-  unsigned int m_location; // Used by scanner
-  unsigned int m_line;     // Used by parser
+  Analyzer m_analyzer;
+  // 声明位置实例
+  location m_location;
 };
 
 } // namespace XYZ

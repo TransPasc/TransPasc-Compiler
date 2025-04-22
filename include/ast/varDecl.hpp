@@ -5,16 +5,16 @@ namespace XYZ {
 
 // var_decl 的基类
 class VarDeclNode : public ASTNode {
- public:
+public:
   VarDeclNode(size_t line) : ASTNode("VarDecl", line) {}
   ~VarDeclNode() override = default;
 
-  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  virtual void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 };
 
 // var_decl := idlist COLON type
 class VarDeclNode_IdList_Colon_Type : public VarDeclNode {
- public:
+public:
   VarDeclNode_IdList_Colon_Type(ASTNodePtr idlist, ASTNodePtr colon,
                                 ASTNodePtr type, size_t line)
       : VarDeclNode(line) {
@@ -23,15 +23,21 @@ class VarDeclNode_IdList_Colon_Type : public VarDeclNode {
     addChild(type);
   }
   ~VarDeclNode_IdList_Colon_Type() override = default;
-
-  ASTNodePtr getIdList() const { return m_children[0]; }
-  ASTNodePtr getColon() const { return m_children[1]; }
-  ASTNodePtr getType() const { return m_children[2]; }
+  virtual void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::shared_ptr<IdListNode> getIdList() const {
+    return dynamic_pointer_cast<IdListNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getColon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<TypeNode> getType() const {
+    return dynamic_pointer_cast<TypeNode>(m_children[2]);
+  }
 };
 
 // var_decl := var_decl SEMICOLON idlist COLON type
 class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type : public VarDeclNode {
- public:
+public:
   VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type(ASTNodePtr varDecl,
                                                   ASTNodePtr semicolon,
                                                   ASTNodePtr idlist,
@@ -45,12 +51,22 @@ class VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type : public VarDeclNode {
     addChild(type);
   }
   ~VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type() override = default;
-
-  ASTNodePtr getVarDecl() const { return m_children[0]; }
-  ASTNodePtr getSemicolon() const { return m_children[1]; }
-  ASTNodePtr getIdList() const { return m_children[2]; }
-  ASTNodePtr getColon() const { return m_children[3]; }
-  ASTNodePtr getType() const { return m_children[4]; }
+  virtual void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::shared_ptr<VarDeclNode> getVarDecl() const {
+    return dynamic_pointer_cast<VarDeclNode>(m_children[0]);
+  }
+  std::shared_ptr<TerminalNode> getSemicolon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[1]);
+  }
+  std::shared_ptr<IdListNode> getIdList() const {
+    return dynamic_pointer_cast<IdListNode>(m_children[2]);
+  }
+  std::shared_ptr<TerminalNode> getColon() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[3]);
+  }
+  std::shared_ptr<TypeNode> getType() const {
+    return dynamic_pointer_cast<TypeNode>(m_children[4]);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

@@ -15,3 +15,8 @@
 - 优化 AST 的输出
 - 完善 ast:exception类
 - 添加 ERROR 类：词法错误、语法错误、语义错误（需要细分）
+- 分离声明和实现
+- 添加 TRUE 、 FALSE 的 TOKEN
+- 提供变长参数列表的 strictEq 函数，只要等于其中一个即可（或者取名叫 strictIn）
+- fix: 部分 TerminalNode 坐标出现错误
+- 貌似符合语句的最后一个分号是可选的，修改相关产生式、类支持

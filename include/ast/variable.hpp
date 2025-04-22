@@ -1,20 +1,25 @@
 #pragma once
 #include "ast/ast.h"
+#include "ast/idVarpart.hpp"
+#include "symbolTable/type.hpp"
 
 namespace XYZ {
 
 // variable 的基类
 class VariableNode : public ASTNode {
- public:
+public:
   VariableNode(size_t line) : ASTNode("Variable", line) {}
   ~VariableNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  virtual std::shared_ptr<SymbolType> getType() const = 0;
 };
 
 // variable := ID id_varpart
 class VariableNode_Id_IdVarpart : public VariableNode {
- public:
+  SymbolType valType;
+
+public:
   VariableNode_Id_IdVarpart(ASTNodePtr id, ASTNodePtr idVarpart, size_t line)
       : VariableNode(line) {
     addChild(id);
@@ -24,8 +29,16 @@ class VariableNode_Id_IdVarpart : public VariableNode {
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
 
-  ASTNodePtr getId() const { return m_children[0]; }
-  ASTNodePtr getIdVarpart() const { return m_children[1]; }
+  std::shared_ptr<TerminalNode> getId() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<IdVarPartNode> getIdVarpart() const {
+    return dynamic_pointer_cast<IdVarPartNode>(m_children[1]);
+  }
+  void setValType(const SymbolType &type) { valType = type; }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(valType);
+  }
 };
 
-}  // namespace XYZ
+} // namespace XYZ

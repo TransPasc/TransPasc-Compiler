@@ -7,6 +7,7 @@
 %define api.value.type variant
 %define parse.assert
 %define api.namespace { XYZ }
+
 %code requires
 {
     #include <iostream>
@@ -42,6 +43,8 @@
 
     using namespace XYZ;
     using ASTNodePtr = std::shared_ptr<ASTNode>;
+
+    int yydebug = 1;
 }
 
 %lex-param { XYZ::Scanner &scanner }
@@ -190,12 +193,16 @@ const_decls : {
     }
 ;
 const_decl :
-    ID ASSIGNOP const_val {
-        $$ = std::make_shared<ConstDeclNode_Id_Assignop_ConstVal>(
-            $1, $2, $3, @1.begin.line);
+    /*
+        Pascal也太愚蠢了吧，初始化和 eq 混用 '=' 号
+        综合考虑下，就先用 RELOP 吧
+    */
+    ID RELOP const_val SEMICOLON{
+        $$ = std::make_shared<ConstDeclNode_Id_Relop_ConstVal_Semicolon>(
+            $1, $2, $3, $4, @1.begin.line);
     } |
-    const_decl SEMICOLON ID ASSIGNOP const_val {
-        $$ = std::make_shared<ConstDeclNode_ConstDecl_Semicolon_Id_Assignop_ConstVal>(
+    const_decl ID RELOP const_val SEMICOLON{
+        $$ = std::make_shared<ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon>(
             $1, $2, $3, $4, $5, @1.begin.line);
     }
 ;
@@ -275,9 +282,10 @@ subprogram_decls :
     }
 ;
 subprogram :
-    subprogram_head SEMICOLON subprogram_body {
-        $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody>(
-            $1, $2, $3, @1.begin.line);
+    /* 又给错误的文法规则 */
+    subprogram_head SEMICOLON subprogram_body SEMICOLON {
+        $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON>(
+            $1, $2, $3, $4, @1.begin.line);
     }
 ;
 subprogram_head :
@@ -334,7 +342,7 @@ subprogram_body :
     }
 ;
 compound_statement :
-    BEGIN statement_list END {
+    BEGIN statement_list END{
         $$ = std::make_shared<CompoundStatementNode_Begin_StatementList_End>(
             $1, $2, $3, @1.begin.line);
     }
@@ -377,6 +385,10 @@ statement : {
     WRITE LPAREN expression_list RPAREN {
         $$ = std::make_shared<StatementNode_Write_Lparen_ExpressionList_Rparen>(
             $1, $2, $3, $4, @1.begin.line);
+    } |
+    /* 支持嵌套 */
+    compound_statement {
+        $$ = std::make_shared<StatementNode_CompoundStatement>($1, @1.begin.line);
     }
 ;
 variable_list :
@@ -495,5 +507,6 @@ factor :
 
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
-    cout << "Error: " << message << endl << "Error location: " << driver.location() << endl;
+
+    driver.handleError(message, loc);
 }
