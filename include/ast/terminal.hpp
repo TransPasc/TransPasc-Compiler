@@ -58,6 +58,7 @@ public:
 
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::string getValStr() { return val2string(); }
   ValT getValue() const { return value; }
   //   泛型 get
   template <typename T> T get() const { return std::get<T>(value); }
@@ -89,7 +90,7 @@ protected:
     } else if (std::holds_alternative<float>(value)) {
       return std::to_string(std::get<float>(value));
     }
-    return "";
+    throw std::runtime_error("Unknown value type");
   }
   std::string type2string() const {
     switch (type) {

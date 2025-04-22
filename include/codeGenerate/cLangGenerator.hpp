@@ -1,5 +1,7 @@
 #pragma once
+#include "codeGenerate/exception.hpp"
 #include "generator.hpp"
+#include "symbolTable/type.hpp"
 namespace XYZ {
 /**
  * @brief c language code generator
@@ -7,11 +9,21 @@ namespace XYZ {
  */
 class CLangGenerator : public Generator {
   std::string m_outputFile;
+  std::string m_outputBuffer;
+  using ErrType = CodeGenerateException::ErrorCode;
 
 public:
   CLangGenerator();
   ~CLangGenerator() override;
+  /**
+   * @brief generate code from AST
+   * if set output file, the code will be write to the file
+   * if not, the code will be
+   * print to the console
+   * @param root the root of the AST
+   */
   void generateCode(ASTNode::ASTNodePtr root) override;
+
   virtual void setOutputFile(const std::string &filename) override;
 
   virtual void visit(class TerminalNode &node) override;
@@ -194,5 +206,14 @@ public:
   virtual void visit(class FactorNode_Minus_Factor &node) override;
   virtual void
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) override;
+
+private:
+  // 生成代码的辅助函数, 写入str到缓冲区
+  void writeln(const std::string &str);
+  template <class... Ts> struct overloaded : Ts... {
+    using Ts::operator()...;
+  };
+  template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+  std::string symbolType2Str(const SymbolType &type);
 };
 } // namespace XYZ

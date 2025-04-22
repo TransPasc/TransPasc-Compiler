@@ -14,6 +14,7 @@ public:
     FILE_NOT_FOUND,   // 文件未找到
     PARSE_ERROR,      // 解析错误
     GENERATION_ERROR, // 生成错误
+    UNREACH_CODE,     // 不可达代码
     UNKNOWN_ERROR     // 未知错误
   };
 
@@ -44,6 +45,8 @@ private:
       return "Parse error: ";
     case ErrorCode::GENERATION_ERROR:
       return "Generation error: ";
+    case ErrorCode::UNREACH_CODE:
+      return "Unreachable code error: ";
     case ErrorCode::UNKNOWN_ERROR:
       return "Unknown error: ";
     default:

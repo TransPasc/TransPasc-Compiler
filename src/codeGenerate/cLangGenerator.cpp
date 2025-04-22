@@ -1,5 +1,13 @@
 #include "codeGenerate/cLangGenerator.hpp"
-
+#include "ast/ast.hpp"
+#include <cassert>
+#include <format>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <variant>
+#include <vector>
 namespace XYZ {
 CLangGenerator::CLangGenerator() : Generator() {
   // Constructor implementation
@@ -13,42 +21,136 @@ void CLangGenerator::setOutputFile(const std::string &filename) {
 }
 
 void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
+  std::cout << "Generating code..." << std::endl;
   root->accept(*this);
+  //   将生成的代码写入文件
+  if (m_outputFile.empty()) {
+    // 如果没有设置输出文件，则打印到控制台
+    std::cout << m_outputBuffer;
+    return;
+  }
+  std::ofstream outFile(m_outputFile);
+  if (outFile.is_open()) {
+    outFile << m_outputBuffer;
+    outFile.close();
+  } else {
+    std::cerr << "Unable to open file: " << m_outputFile << std::endl;
+  }
 }
-void CLangGenerator::visit(class TerminalNode &node) {};
+void CLangGenerator::visit(class TerminalNode &node) {
+  // 处理终结符节点
+  m_outputBuffer += node.get<std::string>();
+  m_outputBuffer += " ";
+};
 
-void CLangGenerator::visit(class ProgramStructNode &node) {};
+void CLangGenerator::visit(class ProgramStructNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProgramStructNode should not be visited");
+};
 void CLangGenerator::visit(
-    class ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot &node) {};
+    class ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot &node) {
+  // 处理程序结构节点
+  writeln("// Generated C code by Pascal Compiler");
+  writeln("#include <stdio.h>");
+  writeln("#include <stdlib.h>");
+  node.getProgramHead()->accept(*this);
+  node.getSemicolon()->accept(*this);
+  node.getProgramBody()->accept(*this);
+};
 
-void CLangGenerator::visit(class ProgramHeadNode &node) {};
+void CLangGenerator::visit(class ProgramHeadNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProgramHeadNode should not be visited");
+};
 void CLangGenerator::visit(
-    class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen &node) {};
-void CLangGenerator::visit(class ProgramHeadNode_Program_Id &node) {};
+    class ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen &node) {
+  // TODO:暂不支持
+  throw CodeGenerateException(
+      ErrType::UNREACH_CODE,
+      "ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen should not be visited, "
+      "because we don't support this");
+};
+void CLangGenerator::visit(class ProgramHeadNode_Program_Id &node) {
+  // nothing need to do
+};
 
-void CLangGenerator::visit(class ProgramBodyNode &node) {};
+void CLangGenerator::visit(class ProgramBodyNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProgramBodyNode should not be visited");
+};
 void CLangGenerator::visit(
     class ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement
-        &node) {};
+        &node) {
 
-void CLangGenerator::visit(class IdListNode &node) {};
-void CLangGenerator::visit(class IdListNode_Id &node) {};
-void CLangGenerator::visit(class IdListNode_IdList_Comma_Id &node) {};
+  node.getConstDecls()->accept(*this);
+  node.getVarDecls()->accept(*this);
+  node.getSubprogramDecls()->accept(*this);
+  node.getCompoundStatement()->accept(*this);
+};
 
-void CLangGenerator::visit(class ConstDeclsNode &node) {};
-void CLangGenerator::visit(class ConstDeclsNode_Const_ConstDecl &node) {};
+void CLangGenerator::visit(class IdListNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "IdListNode should not be visited");
+};
+void CLangGenerator::visit(class IdListNode_Id &node) {
+  node.getId()->accept(*this);
+};
+void CLangGenerator::visit(class IdListNode_IdList_Comma_Id &node) {
+  node.getIdList()->accept(*this);
+  node.getComma()->accept(*this);
+  node.getId()->accept(*this);
+};
 
-void CLangGenerator::visit(class ConstDeclNode &node) {};
+void CLangGenerator::visit(class ConstDeclsNode &node) {
+  writeln("// no const decls");
+};
+void CLangGenerator::visit(class ConstDeclsNode_Const_ConstDecl &node) {
+  writeln("// const decls");
+  node.getConstDecl()->accept(*this);
+};
+
+void CLangGenerator::visit(class ConstDeclNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ConstDeclNode should not be visited");
+};
 void CLangGenerator::visit(
-    class ConstDeclNode_Id_Relop_ConstVal_Semicolon &node) {};
+    class ConstDeclNode_Id_Relop_ConstVal_Semicolon &node) {
+  auto type = node.getConstVal()->getType();
+  std::string buf = std::format("const {} {} = ", symbolType2Str(*type),
+                                node.getId()->get<std::string>());
+  m_outputBuffer += buf;
+  node.getConstVal()->accept(*this);
+  m_outputBuffer += ";\n";
+};
 void CLangGenerator::visit(
-    class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) {};
+    class ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon &node) {
+  node.getConstDecl()->accept(*this);
 
-void CLangGenerator::visit(class ConstValNode &node) {};
-void CLangGenerator::visit(class ConstValNode_Plus_Number &node) {};
-void CLangGenerator::visit(class ConstValNode_Minus_Number &node) {};
-void CLangGenerator::visit(class ConstValNode_Number &node) {};
-void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {};
+  auto type = node.getConstVal()->getType();
+  std::string buf = std::format("const {} {} = ", symbolType2Str(*type),
+                                node.getId()->get<std::string>());
+  m_outputBuffer += buf;
+  node.getConstVal()->accept(*this);
+  m_outputBuffer += ";\n";
+};
+
+void CLangGenerator::visit(class ConstValNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ConstValNode should not be visited");
+};
+void CLangGenerator::visit(class ConstValNode_Plus_Number &node) {
+  m_outputBuffer += std::format("+{}", node.getNumber()->getValStr());
+};
+void CLangGenerator::visit(class ConstValNode_Minus_Number &node) {
+  m_outputBuffer += std::format("-{}", node.getNumber()->getValStr());
+};
+void CLangGenerator::visit(class ConstValNode_Number &node) {
+  m_outputBuffer += std::format("{}", node.getNumber()->getValStr());
+};
+void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {
+  m_outputBuffer +=
+      std::format("'{}'", node.getCharLiteral()->get<std::string>());
+};
 
 void CLangGenerator::visit(class TypeNode &node) {};
 void CLangGenerator::visit(class TypeNode_BasicType &node) {};
@@ -191,4 +293,78 @@ void CLangGenerator::visit(class FactorNode_Not_Factor &node) {};
 void CLangGenerator::visit(class FactorNode_Minus_Factor &node) {};
 void CLangGenerator::visit(
     class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {};
+
+void CLangGenerator::writeln(const std::string &str) {
+  m_outputBuffer += str + "\n";
+}
+std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
+  static const auto printer = overloaded{
+      [](std::monostate) -> std::string { return "undefined"; },
+      [](BasicType basic) -> std::string {
+        switch (basic) {
+        case BasicType::INTEGER:
+          return "int";
+        case BasicType::REAL:
+          return "float";
+        case BasicType::BOOLEAN:
+          return "bool";
+        case BasicType::CHAR:
+          return "char";
+        case BasicType::STRING:
+          return "string";
+        default:
+          assert(false && "Unhandled BasicType");
+          __builtin_unreachable();
+        }
+      },
+      [this](const SymbolType::Array &array) -> std::string {
+        if (!array.element_type)
+          return "array[invalid]";
+        return std::format("array[{}..{}] of {}", array.range.first,
+                           array.range.second,
+                           symbolType2Str(*array.element_type));
+      },
+      [this](const SymbolType::Record &record) -> std::string {
+        std::ostringstream oss;
+        oss << "record{";
+        bool is_first = true;
+        for (const auto &field : record.fields) {
+          if (!is_first)
+            oss << "; ";
+          oss << field.name << ": " << symbolType2Str(*field.type);
+          is_first = false;
+        }
+        oss << "}";
+        return oss.str();
+      },
+      [this](const SymbolType::Function &func) -> std::string {
+        std::ostringstream oss;
+        oss << "function(";
+        bool is_first = true;
+        for (const auto &param : func.param_types) {
+          if (!is_first)
+            oss << ", ";
+          oss << symbolType2Str(param->first);
+          is_first = false;
+        }
+        oss << ") -> " << symbolType2Str(*func.return_type);
+        return oss.str();
+      },
+      [this](const SymbolType::Procedure &proc) -> std::string {
+        std::ostringstream oss;
+        oss << "procedure(";
+        bool is_first = true;
+        for (const auto &param : proc.param_types) {
+          if (!is_first)
+            oss << ", ";
+          oss << symbolType2Str(param->first);
+          is_first = false;
+        }
+        oss << ")";
+        return oss.str();
+      },
+      [](auto &&) -> std::string { return "unsupported_type"; } // 兜底
+  };
+  return type.visit(printer);
+}
 } // namespace XYZ
