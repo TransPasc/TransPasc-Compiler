@@ -18,3 +18,4 @@
 - 分离声明和实现
 - 添加 TRUE 、 FALSE 的 TOKEN
 - 提供变长参数列表的 strictEq 函数，只要等于其中一个即可（或者取名叫 strictIn）
+- fix: 部分 TerminalNode 坐标出现错误

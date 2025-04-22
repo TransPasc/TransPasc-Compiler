@@ -505,7 +505,6 @@ public:
   virtual void
   visit(class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
     node.getExpressionList()->accept(*this);
-    // TODO: 类型检查
   };
 
   virtual void visit(class ProcedureCallNode &node) {
@@ -521,6 +520,7 @@ public:
                               "Undefined procedure: " + id->get<string>());
     }
   };
+
   virtual void
   visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {
     node.getId()->accept(*this);
@@ -531,13 +531,28 @@ public:
       throw SemanticException(ErrType::UNDEFINED,
                               "Undefined procedure: " + id->get<string>());
     }
-    auto params = record->getType()->get_if<SymbolType::Procedure>();
-    if (params == nullptr) {
+    auto procedureType = record->getType()->get_if<SymbolType::Procedure>();
+    if (procedureType == nullptr) {
       throw SemanticException(ErrType::UNSUPPORTED,
                               "Not a procedure: " + id->get<string>());
     }
-    // auto expressions = node.getExpressionList()->getExpressions();
-    // TODO: 检查参数个数和类型
+    auto expTypes = node.getExpressionList()->getTypeList();
+    auto params = procedureType->param_types;
+    // TODO: 将下面的代码提取到一个函数中
+    // 检查参数个数
+    if (expTypes.size() != params.size()) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible number of parameters");
+    }
+    // 检查参数类型
+    for (size_t i = 0; i < expTypes.size(); ++i) {
+      auto expType = expTypes[i];
+      auto paramType = params[i];
+      if (paramType->first.strictEq(*expType) == false) {
+        throw SemanticException(ErrType::UNSUPPORTED,
+                                "Incompatible types in procedure call");
+      }
+    }
   };
 
   virtual void visit(class ElsePartNode &node) {
