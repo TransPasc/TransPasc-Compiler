@@ -395,7 +395,11 @@ public:
   };
   virtual void
   visit(class CompoundStatementNode_Begin_StatementList_End &node) {
+    // 进入新的块
+    symbolTable->enterBlock();
     node.getStatementList()->accept(*this);
+    // 退出当前块
+    symbolTable->exitBlock();
   };
 
   virtual void visit(class StatementListNode &node) {
