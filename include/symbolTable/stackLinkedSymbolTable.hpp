@@ -62,6 +62,7 @@ public:
   bool update(std::shared_ptr<SymbolRecord> record) override {
     throw XYZ::SymbolTableException(ErrType::UnsupportedOperation);
   }
+  //   查找
   std::shared_ptr<SymbolRecord> lookup(const SymbolName &name) override {
     auto [record, idx] = _lookup(name);
     return record;
@@ -111,9 +112,6 @@ private:
   _lookup(const SymbolName &name) const {
     auto index = hashTable[hash(name)];
     //   如果hash表中没有找到
-    if (index == -1) {
-      return {nullptr, -1};
-    }
     if (index < 0 || index >= symbolTable.size()) {
       return {nullptr, -1};
     }

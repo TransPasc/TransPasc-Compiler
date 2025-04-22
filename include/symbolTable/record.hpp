@@ -26,7 +26,7 @@ class SymbolRecord {
   std::vector<int32_t> m_ref_lineno;
 
 public:
-  SymbolRecord(std::string name, int32_t lineno,
+  SymbolRecord(std::string name, int32_t lineno = -1,
                std::shared_ptr<SymbolType> type = nullptr, int32_t nxt = -1)
       : m_name(name), m_lineno(lineno), m_type(type), m_next(nxt) {}
   virtual ~SymbolRecord() = default;

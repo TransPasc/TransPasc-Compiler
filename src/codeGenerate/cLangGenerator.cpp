@@ -21,8 +21,14 @@ void CLangGenerator::setOutputFile(const std::string &filename) {
 }
 
 void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
+  symbolTable = std::make_shared<StackLinkedSymbolTable>();
+  //   默认 block
+  symbolTable->enterBlock();
+
   std::cout << "Generating code..." << std::endl;
   root->accept(*this);
+  symbolTable->exitBlock();
+
   //   将生成的代码写入文件
   if (m_outputFile.empty()) {
     // 如果没有设置输出文件，则打印到控制台
@@ -253,10 +259,12 @@ void CLangGenerator::visit(class SubprogramNode &node) {
 void CLangGenerator::visit(
     class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
         &node) {
+  symbolTable->enterBlock();
   node.getSubprogramHead()->accept(*this);
   m_outputBuffer += " {\n";
   node.getSubprogramBody()->accept(*this);
   m_outputBuffer += "}";
+  symbolTable->exitBlock();
 };
 
 void CLangGenerator::visit(class SubprogramHeadNode &node) {
@@ -282,25 +290,77 @@ void CLangGenerator::visit(
   m_outputBuffer += ")";
 };
 
-void CLangGenerator::visit(class FormalParameterNode &node) {};
+void CLangGenerator::visit(class FormalParameterNode &node) {
+  m_outputBuffer += "/* no params */";
+};
 void CLangGenerator::visit(
-    class FormalParameterNode_Lparen_ParameterList_Rparen &node) {};
+    class FormalParameterNode_Lparen_ParameterList_Rparen &node) {
+  node.getParameterList()->accept(*this);
+};
 
-void CLangGenerator::visit(class ParameterListNode &node) {};
-void CLangGenerator::visit(class ParameterListNode_Parameter &node) {};
+void CLangGenerator::visit(class ParameterListNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ParameterListNode should not be visited");
+};
+void CLangGenerator::visit(class ParameterListNode_Parameter &node) {
+  node.getParameter()->accept(*this);
+};
 void CLangGenerator::visit(
-    class ParameterListNode_ParameterList_Semicolon_Parameter &node) {};
+    class ParameterListNode_ParameterList_Semicolon_Parameter &node) {
+  node.getParameterList()->accept(*this);
+  m_outputBuffer += ", ";
+  node.getParameter()->accept(*this);
+};
 
-void CLangGenerator::visit(class ParameterNode &node) {};
-void CLangGenerator::visit(class ParameterNode_VarParameter &node) {};
-void CLangGenerator::visit(class ParameterNode_ValueParameter &node) {};
+void CLangGenerator::visit(class ParameterNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ParameterNode should not be visited");
+};
+void CLangGenerator::visit(class ParameterNode_VarParameter &node) {
+  m_isRefParam = true;
+  node.getVarParameter()->accept(*this);
+  m_isRefParam = false;
+};
+void CLangGenerator::visit(class ParameterNode_ValueParameter &node) {
+  node.getValueParameter()->accept(*this);
+};
 
-void CLangGenerator::visit(class VarParameterNode &node) {};
-void CLangGenerator::visit(class VarParameterNode_Var_ValueParameter &node) {};
+void CLangGenerator::visit(class VarParameterNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VarParameterNode should not be visited");
+};
+void CLangGenerator::visit(class VarParameterNode_Var_ValueParameter &node) {
 
-void CLangGenerator::visit(class ValueParameterNode &node) {};
+  node.getValueParameter()->accept(*this);
+};
+
+void CLangGenerator::visit(class ValueParameterNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ValueParameterNode should not be visited");
+};
 void CLangGenerator::visit(
-    class ValueParameterNode_IdList_Colon_BasicType &node) {};
+    class ValueParameterNode_IdList_Colon_BasicType &node) {
+  auto type = node.getBasicType()->getType();
+  auto ids = node.getIdList()->getAllIds();
+  auto typeStr = symbolType2Str(*type);
+  if (m_isRefParam) {
+    // 引用参数
+    typeStr = std::format("{} *", typeStr);
+  }
+  for (const auto &id : ids) {
+    // 将 id 加入符号表
+    auto record = std::make_unique<SymbolRecord>(id->getValStr());
+    auto type = std::make_shared<SymbolType>();
+    if (m_isRefParam)
+      type->set_ref();
+    symbolTable->insert(std::move(record));
+
+    m_outputBuffer += std::format("{} {}", typeStr, id->getValStr());
+    if (id != ids.back()) {
+      m_outputBuffer += ", ";
+    }
+  }
+};
 
 void CLangGenerator::visit(class SubprogramBodyNode &node) {};
 void CLangGenerator::visit(
