@@ -237,21 +237,50 @@ void CLangGenerator::visit(
   g_IdList_Type(node.getIdList(), node.getType());
 };
 
-void CLangGenerator::visit(class SubprogramDeclsNode &node) {};
+void CLangGenerator::visit(class SubprogramDeclsNode &node) {
+  writeln("// subprogram decls end");
+};
 void CLangGenerator::visit(
-    class SubprogramDeclsNode_SubprogramDecls_Subprogram &node) {};
+    class SubprogramDeclsNode_SubprogramDecls_Subprogram &node) {
+  writeln("// subprogram decls");
+  node.getSubprogram()->accept(*this);
+  node.getSubprogramDecls()->accept(*this);
+};
 
-void CLangGenerator::visit(class SubprogramNode &node) {};
+void CLangGenerator::visit(class SubprogramNode &node) {
+  writeln("// subprogram node");
+};
 void CLangGenerator::visit(
     class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
-        &node) {};
+        &node) {
+  node.getSubprogramHead()->accept(*this);
+  m_outputBuffer += " {\n";
+  node.getSubprogramBody()->accept(*this);
+  m_outputBuffer += "}";
+};
 
-void CLangGenerator::visit(class SubprogramHeadNode &node) {};
+void CLangGenerator::visit(class SubprogramHeadNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SubprogramHeadNode should not be visited");
+};
 void CLangGenerator::visit(
-    class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {};
+    class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {
+  // void func
+  m_outputBuffer += std::format("void {}(", node.getId()->getValStr());
+
+  node.getFormalParameter()->accept(*this);
+  m_outputBuffer += ")";
+};
 void CLangGenerator::visit(
     class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
-        &node) {};
+        &node) {
+  // retType func
+  m_outputBuffer +=
+      std::format("{} {}(", symbolType2Str(*node.getBasicType()->getType()),
+                  node.getId()->getValStr());
+  node.getFormalParameter()->accept(*this);
+  m_outputBuffer += ")";
+};
 
 void CLangGenerator::visit(class FormalParameterNode &node) {};
 void CLangGenerator::visit(
