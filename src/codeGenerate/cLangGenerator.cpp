@@ -62,6 +62,7 @@ void CLangGenerator::visit(
   writeln("// Generated C code by Pascal Compiler");
   writeln("#include <stdio.h>");
   writeln("#include <stdlib.h>");
+  writeln("#include <stdbool.h>");
   node.getProgramHead()->accept(*this);
   node.getSemicolon()->accept(*this);
   node.getProgramBody()->accept(*this);
@@ -280,8 +281,8 @@ void CLangGenerator::visit(class SubprogramHeadNode &node) {
 void CLangGenerator::visit(
     class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {
   // 将 func id 加入符号表
-  // TODO: 将 params 加入符号表
-  auto type = SymbolType::MakeFunction(nullptr, {});
+  auto params = node.getFormalParameter()->getParams();
+  auto type = SymbolType::MakeFunction(nullptr, params);
   auto record = std::make_unique<SymbolRecord>(node.getId()->getValStr());
   record->setType(std::make_shared<SymbolType>(type));
   symbolTable->insert(std::move(record));
@@ -295,8 +296,8 @@ void CLangGenerator::visit(
     class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
         &node) {
   // 将 func id 加入符号表
-  // TODO: 将 params 加入符号表
-  auto type = SymbolType::MakeFunction(nullptr, {});
+  auto params = node.getFormalParameter()->getParams();
+  auto type = SymbolType::MakeFunction(nullptr, params);
   auto record = std::make_unique<SymbolRecord>(node.getId()->getValStr());
   record->setType(std::make_shared<SymbolType>(type));
   symbolTable->insert(std::move(record));
@@ -523,7 +524,7 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
 
   } else if (params.size()) {
     // func call
-    // 处理参数
+    // TODO:处理参数
     auto param = params[0];
     auto type = param->first;
     if (type.is_ref_type()) {
