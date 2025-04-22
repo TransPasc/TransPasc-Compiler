@@ -38,6 +38,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 file(GLOB_RECURSE AST_SOURCES
     src/ast/*.cpp
 )
+# get all *.cpp files in src/codeGenerate
+file(GLOB_RECURSE CODE_GENERATE_SOURCES
+    src/codeGenerate/*.cpp
+)
 
 # 添加可执行文件
 add_executable(a.out
@@ -46,6 +50,7 @@ add_executable(a.out
     ${FLEX_Scanner_OUTPUTS}
     ${BISON_Parser_OUTPUTS}
     ${AST_SOURCES}  # Include the AST sources
+    ${CODE_GENERATE_SOURCES}  # Include the code generation sources
 )
 
 include(cmake/main.cmake)

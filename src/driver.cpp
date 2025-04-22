@@ -173,10 +173,27 @@ void Driver::handleError(const std::string &msg, const location &loc) {
 }
 void Driver::analyze() {
   if (!root)
+    //   先进行语法分析
     parse();
   if (root) {
     m_analyzer.analyze(root);
   } else {
     std::cerr << "AST is empty, cannot analyze." << std::endl;
+  }
+}
+
+void Driver::setOutputFileName(const std::string &filename) {
+  m_outputFileName = filename;
+  std::cout << "Output file set to: " << m_outputFileName << std::endl;
+}
+void Driver::generateCode(std::shared_ptr<Generator> generator) {
+  if (root) {
+    // 先进行语义分析
+    analyze();
+    // 生成代码
+    generator->setOutputFile(m_outputFileName);
+    generator->generateCode(root);
+  } else {
+    std::cerr << "AST is empty, cannot generate code." << std::endl;
   }
 }

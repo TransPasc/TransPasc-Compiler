@@ -49,6 +49,7 @@ public:
       return std::stoi(val);
     }
   }
+
   TerminalNode(Type type, ValT val, size_t line)
       : ASTNode("Terminal", line), value(val), type(type) {}
   // 拷贝构造函数
@@ -58,6 +59,7 @@ public:
 
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::string getValStr() { return val2string(); }
   ValT getValue() const { return value; }
   //   泛型 get
   template <typename T> T get() const { return std::get<T>(value); }
@@ -79,6 +81,7 @@ public:
       throw std::runtime_error("expect " + str + ", but got " + res);
     }
   }
+  bool isRelOp() const { return type == Type::RELOP; }
 
 protected:
   std::string val2string() const {
@@ -89,7 +92,7 @@ protected:
     } else if (std::holds_alternative<float>(value)) {
       return std::to_string(std::get<float>(value));
     }
-    return "";
+    throw std::runtime_error("Unknown value type");
   }
   std::string type2string() const {
     switch (type) {

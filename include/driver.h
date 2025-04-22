@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "ast/ast.hpp"
+#include "codeGenerate/generator.hpp"
 #include "err.h"
 #include "location.hh"
 #include "parser.hpp"
@@ -13,11 +14,16 @@
 namespace XYZ {
 
 class Driver {
+  std::string m_outputFileName;
+
 public:
   Driver();
-
+  // 语法分析
   int parse();
+  //   语义分析
   void analyze();
+  // 代码生成
+  void generateCode(std::shared_ptr<Generator> generator);
 
   // 添加打印token流的方法
   void printTokens();
@@ -34,6 +40,8 @@ public:
   void switchInputStream(std::istream *is);
 
   void handleError(const std::string &msg, const location &loc);
+
+  void setOutputFileName(const std::string &filename);
 
   static std::shared_ptr<ProgramStructNode> root;
 
