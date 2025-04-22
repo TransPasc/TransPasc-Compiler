@@ -19,6 +19,8 @@ std::shared_ptr<TerminalNode> FactorNode_Number::getNumber() const {
   return dynamic_pointer_cast<TerminalNode>(m_children[0]);
 }
 std::shared_ptr<SymbolType> FactorNode_Number::getType() const {
+  // TODO: 这里需要根据实际情况返回类型
+  // 目前假设返回整数类型
   return std::make_shared<SymbolType>(
       SymbolType::MakeBasic(BasicType::INTEGER));
 }

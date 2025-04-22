@@ -16,3 +16,4 @@
 - 完善 ast:exception类
 - 添加 ERROR 类：词法错误、语法错误、语义错误（需要细分）
 - 分离声明和实现
+- 添加 TRUE 、 FALSE 的 TOKEN

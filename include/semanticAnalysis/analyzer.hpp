@@ -419,10 +419,10 @@ public:
     node.getExpression()->accept(*this);
     auto leftType = node.getVariable()->getType();
     auto rightType = node.getExpression()->getType();
-    if (!leftType->strictEq(*rightType)) {
-      throw SemanticException(ErrType::UNSUPPORTED,
-                              "Incompatible types in assignment");
-    }
+    // if (!leftType->strictEq(*rightType)) {
+    //   throw SemanticException(ErrType::UNSUPPORTED,
+    //                           "Incompatible types in assignment");
+    // }
     // TODO: 变量赋值
     // auto id = node.getVariable()->getId();
     // auto record = symbolTable->lookup(id->get<string>());
@@ -487,7 +487,16 @@ public:
   virtual void visit(class VariableNode_Id_IdVarpart &node) {
     node.getId()->accept(*this);
     node.getIdVarpart()->accept(*this);
-    // TODO: 类型检查
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined variable: " + id->get<string>());
+    }
+    auto type = record->getType();
+    // TODO: 这里没有考虑数组的情况
+    // auto idVarPart = node.getIdVarpart();
+    node.setValType(*type);
   };
 
   virtual void visit(class IdVarPartNode &node) {
@@ -606,20 +615,27 @@ public:
                             "FactorNode should not be Null");
   };
   virtual void visit(class FactorNode_Number &node) {
-    // TODO: 设置类型
+    // nothing to do
+    // 因为在词法分析阶段已经处理过了
+    node.getNumber()->accept(*this);
   };
   virtual void visit(class FactorNode_CharLiteral &node) {
-    // TODO: 设置类型
+    // TODO: charliteral 失败貌似不正确
+    // nothing to do
+    // 因为在词法分析阶段已经处理过了
+    node.getCharLiteral()->accept(*this);
   };
   virtual void visit(class FactorNode_Variable &node) {
+    // 转发到变量节点
     node.getVariable()->accept(*this);
-    // TODO: 设置类型
   };
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) {
+    // 括号表达式
+    // 无需校验，转发到exp即可
     node.getExpression()->accept(*this);
-    // TODO: 设置类型
   };
   virtual void visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {
+    // 函数调用
     node.getID()->accept(*this);
     node.getExpressionList()->accept(*this);
     auto id = node.getID();
@@ -628,16 +644,44 @@ public:
       throw SemanticException(ErrType::UNDEFINED,
                               "Undefined procedure: " + id->get<string>());
     }
-    // TODO: 检查参数个数和类型
-    // TODO: 设置类型
+    auto funcType = record->getType()->get_if<SymbolType::Function>();
+    if (funcType == nullptr) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Not a function: " + id->get<string>());
+    }
+    auto expTypes = node.getExpressionList()->getTypeList();
+    //  检查参数个数和类型
+    auto params = funcType->param_types;
+    if (params.size() != expTypes.size()) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible number of parameters");
+    }
+    for (size_t i = 0; i < params.size(); ++i) {
+      if (!params[i]->first.strictEq(*expTypes[i])) {
+        throw SemanticException(ErrType::UNSUPPORTED,
+                                "Incompatible types in function call");
+      }
+    }
+    //  设置类型
+    auto retType = funcType->return_type;
+    node.setRetType(*retType);
   }
   virtual void visit(class FactorNode_Not_Factor &node) {
     node.getFactor()->accept(*this);
-    // TODO: 设置类型
+    auto type = node.getFactor()->getType();
+    if (!type->strictEq(BasicType::BOOLEAN)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary not");
+    }
   };
   virtual void visit(class FactorNode_Minus_Factor &node) {
     node.getFactor()->accept(*this);
-    // TODO: 设置类型
+    auto type = node.getFactor()->getType();
+    if (!type->strictEq(BasicType::INTEGER) &&
+        !type->strictEq(BasicType::REAL)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary minus");
+    }
   };
 };
 } // namespace XYZ
