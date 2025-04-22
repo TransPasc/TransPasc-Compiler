@@ -607,7 +607,14 @@ public:
   virtual void visit(class TermNode_Term_Mulop_Factor &node) {
     node.getTerm()->accept(*this);
     node.getFactor()->accept(*this);
-    // TODO: 类型检查
+    auto termType = node.getTerm()->getType();
+    auto factorType = node.getFactor()->getType();
+    // TODO: 类型检查 (这里假设没有隐式类型转换)
+    if (!termType->strictEq(*factorType)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in multiplication");
+    }
+    // TODO: 除0检查
   };
 
   virtual void visit(class FactorNode &node) {
