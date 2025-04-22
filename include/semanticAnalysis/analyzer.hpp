@@ -494,9 +494,29 @@ public:
                               "Undefined variable: " + id->get<string>());
     }
     auto type = record->getType();
-    // TODO: 这里没有考虑数组的情况
-    // auto idVarPart = node.getIdVarpart();
-    node.setValType(*type);
+
+    auto expTypes = node.getIdVarpart()->getTypeList();
+    if (0 == expTypes.size()) {
+      node.setValType(*type);
+      return;
+    }
+    if (!type->is_array()) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Not an array: " + id->get<string>() +
+                                  " in variable node");
+    }
+    auto arrayType = type->get_if<SymbolType::Array>();
+    if (arrayType == nullptr) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Not an array: " + id->get<string>() +
+                                  " in variable node");
+    }
+    auto subType = arrayType->getSubType(expTypes);
+    if (subType == nullptr) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in array subscript");
+    }
+    node.setValType(*subType);
   };
 
   virtual void visit(class IdVarPartNode &node) {

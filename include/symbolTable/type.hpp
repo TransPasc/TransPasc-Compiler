@@ -1,8 +1,8 @@
 #pragma once
 
+#include "semanticAnalysis/exception.hpp"
 #include "symbolTable/exception.hpp"
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <variant>
@@ -33,6 +33,50 @@ public:
 
     Array(std::shared_ptr<SymbolType> elem, int32_t low, int32_t high)
         : element_type(std::move(elem)), range(low, high) {}
+    /**
+     * @brief 根据索引类型获取元素类型
+     * @param indexType
+     * @return std::shared_ptr<SymbolType>
+     */
+    std::shared_ptr<SymbolType> getElementType(SymbolType &indexType) const {
+      if (!indexType.is_basic()) {
+        throw SemanticException(SemanticException::ErrorType::UNSUPPORTED,
+                                "Array index type must be basic type");
+      }
+      if (indexType.strictEq(BasicType::INTEGER)) {
+        return element_type;
+      }
+      //   暂时不支持其他类型
+      throw SemanticException(SemanticException::ErrorType::UNSUPPORTED,
+                              "Array index type must be INTEGER");
+    }
+    /**
+     * @brief 根据索引列表获取元素类型
+     * 递归获取元素类型
+     * @param idxTypes
+     * @return std::shared_ptr<SymbolType>
+     */
+    std::shared_ptr<SymbolType>
+    getSubType(const std::vector<std::shared_ptr<SymbolType>> &idxTypes) const {
+      if (idxTypes.empty()) {
+        throw SemanticException(SemanticException::ErrorType::UNSUPPORTED,
+                                "Index types cannot be empty");
+      }
+      auto curType = *this;
+      for (int i = 0; i < idxTypes.size(); ++i) {
+        auto idxType = idxTypes[i];
+        auto tmp = curType.getElementType(*idxType)->get_if<Array>();
+        if (!tmp) { // 如果不是数组类型, 说明已经到达最后一个元素
+          if (i == idxTypes.size() - 1) {
+            return curType.getElementType(*idxType);
+          }
+          throw SemanticException(SemanticException::ErrorType::UNSUPPORTED,
+                                  "Index type mismatch");
+        }
+        curType = *tmp;
+      }
+      return nullptr;
+    }
   };
 
   struct Record {
