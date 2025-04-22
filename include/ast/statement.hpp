@@ -226,5 +226,19 @@ public:
     return std::dynamic_pointer_cast<TerminalNode>(m_children[3]);
   }
 };
+// statement := compound_statement
+class StatementNode_CompoundStatement : public StatementNode {
+public:
+  StatementNode_CompoundStatement(ASTNodePtr compoundStatementNode, size_t line)
+      : StatementNode(line) {
+    addChild(compoundStatementNode);
+  }
+  ~StatementNode_CompoundStatement() override = default;
 
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  std::shared_ptr<CompoundStatementNode> getCompoundStatement() const {
+    return std::dynamic_pointer_cast<CompoundStatementNode>(m_children[0]);
+  }
+};
 } // namespace XYZ

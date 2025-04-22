@@ -385,6 +385,10 @@ statement : {
     WRITE LPAREN expression_list RPAREN {
         $$ = std::make_shared<StatementNode_Write_Lparen_ExpressionList_Rparen>(
             $1, $2, $3, $4, @1.begin.line);
+    } |
+    /* 支持嵌套 */
+    compound_statement {
+        $$ = std::make_shared<StatementNode_CompoundStatement>($1, @1.begin.line);
     }
 ;
 variable_list :

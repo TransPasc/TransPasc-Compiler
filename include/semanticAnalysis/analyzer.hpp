@@ -419,35 +419,55 @@ public:
     node.getExpression()->accept(*this);
     auto leftType = node.getVariable()->getType();
     auto rightType = node.getExpression()->getType();
-    // if (!leftType->strictEq(*rightType)) {
-    //   throw SemanticException(ErrType::UNSUPPORTED,
-    //                           "Incompatible types in assignment");
-    // }
-    // TODO: 变量赋值
-    // auto id = node.getVariable()->getId();
-    // auto record = symbolTable->lookup(id->get<string>());
-    // if (record == nullptr) {
-    //   throw SemanticException(ErrType::UNDEFINED,
-    //                           "Undefined variable: " + id->get<string>());
-    // }
-    // auto type = record->getType();
-    // node.setType(type);
+    if (!leftType->strictEq(*rightType)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in assignment");
+    }
   };
   virtual void visit(class StatementNode_Id_Assignop_Expression &node) {
     node.getId()->accept(*this);
     node.getExpression()->accept(*this);
-    // TODO: 变量赋值
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined variable: " + id->get<string>());
+    }
+    auto type = record->getType();
+    auto expType = node.getExpression()->getType();
+
+    auto funcType = type->get_if<SymbolType::Function>();
+    if (funcType) {
+      //   是函数类型
+      auto retType = funcType->return_type;
+      if (retType->strictEq(*expType) == false) {
+        throw SemanticException(ErrType::UNSUPPORTED,
+                                "Incompatible types in assignment to function");
+      }
+      return;
+    }
+    // 不是函数类型，是变量类型
+    if (type->strictEq(*expType) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in assignment");
+    }
   };
   virtual void visit(class StatementNode_ProcedureCall &node) {
     node.getProcedureCall()->accept(*this);
   };
+
   virtual void
   visit(class StatementNode_If_Expression_Then_Statement_ElsePart &node) {
     node.getExpression()->accept(*this);
-    // TODO: 类型检查 是否为布尔类型
+    auto type = node.getExpression()->getType();
+    if (type->strictEq(BasicType::BOOLEAN) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in if statement");
+    }
     node.getStatement()->accept(*this);
     node.getElsePart()->accept(*this);
   };
+
   virtual void visit(
       class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
           &node) {
@@ -455,17 +475,40 @@ public:
     node.getExpression1()->accept(*this);
     node.getExpression2()->accept(*this);
     node.getStatement()->accept(*this);
-    // TODO: 类型检查
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined variable: " + id->get<string>());
+    }
+    // TODO: 循环变量暂时只支持整数
+    auto type = record->getType();
+    if (type->strictEq(BasicType::INTEGER) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in for statement");
+    }
+    auto exp1Type = node.getExpression1()->getType();
+    auto exp2Type = node.getExpression2()->getType();
+    if (exp1Type->strictEq(BasicType::INTEGER) == false ||
+        exp2Type->strictEq(BasicType::INTEGER) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in for statement");
+    }
   };
+
   virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) {
     node.getVariableList()->accept(*this);
-    // TODO: 类型检查
+    // TODO: 读取文件类型检查
   };
+
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {
     node.getExpressionList()->accept(*this);
-    // TODO: 类型检查
+    // TODO: 写入文件类型检查
+  };
+  virtual void visit(class StatementNode_CompoundStatement &node) {
+    node.getCompoundStatement()->accept(*this);
   };
 
   virtual void visit(class VariableListNode &node) {
