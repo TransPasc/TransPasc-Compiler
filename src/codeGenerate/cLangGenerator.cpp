@@ -45,7 +45,7 @@ void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
 }
 void CLangGenerator::visit(class TerminalNode &node) {
   // 处理终结符节点
-  m_outputBuffer += node.get<std::string>();
+  m_outputBuffer += node.getValStr();
   m_outputBuffer += " ";
 };
 
@@ -362,87 +362,292 @@ void CLangGenerator::visit(
   }
 };
 
-void CLangGenerator::visit(class SubprogramBodyNode &node) {};
+void CLangGenerator::visit(class SubprogramBodyNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SubprogramBodyNode should not be visited");
+};
 void CLangGenerator::visit(
-    class SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement &node) {};
+    class SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement &node) {
+  node.getConstDecls()->accept(*this);
+  node.getVarDecls()->accept(*this);
+  node.getCompoundStatement()->accept(*this);
+};
 
-void CLangGenerator::visit(class CompoundStatementNode &node) {};
+void CLangGenerator::visit(class CompoundStatementNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "CompoundStatementNode should not be visited");
+};
 void CLangGenerator::visit(
-    class CompoundStatementNode_Begin_StatementList_End &node) {};
+    class CompoundStatementNode_Begin_StatementList_End &node) {
+  // 处理复合语句节点
+  m_outputBuffer += "{\n";
+  node.getStatementList()->accept(*this);
+  m_outputBuffer += "}\n";
+};
 
-void CLangGenerator::visit(class StatementListNode &node) {};
-void CLangGenerator::visit(class StatementListNode_Statement &node) {};
+void CLangGenerator::visit(class StatementListNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "StatementListNode should not be visited");
+};
+void CLangGenerator::visit(class StatementListNode_Statement &node) {
+  // 处理语句列表节点
+  node.getStatement()->accept(*this);
+};
 void CLangGenerator::visit(
-    class StatementListNode_StatementList_Semicolon_Statement &node) {};
+    class StatementListNode_StatementList_Semicolon_Statement &node) {
+  node.getStatementList()->accept(*this);
+  m_outputBuffer += ";\n";
+  node.getStatement()->accept(*this);
+};
 
-void CLangGenerator::visit(class StatementNode &node) {};
+void CLangGenerator::visit(class StatementNode &node) { writeln("// null"); };
 void CLangGenerator::visit(
-    class StatementNode_Variable_Assignop_Expression &node) {};
-void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {};
-void CLangGenerator::visit(class StatementNode_ProcedureCall &node) {};
+    class StatementNode_Variable_Assignop_Expression &node) {
+  // 处理赋值语句节点
+  node.getVariable()->accept(*this);
+  m_outputBuffer += " = ";
+  node.getExpression()->accept(*this);
+};
+void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
+  // 处理赋值语句节点
+  m_outputBuffer += std::format("{} = ", node.getId()->getValStr());
+  node.getExpression()->accept(*this);
+};
+void CLangGenerator::visit(class StatementNode_ProcedureCall &node) {
+  // 处理过程调用语句节点
+  node.getProcedureCall()->accept(*this);
+  m_outputBuffer += ";\n";
+};
 void CLangGenerator::visit(
-    class StatementNode_If_Expression_Then_Statement_ElsePart &node) {};
+    class StatementNode_If_Expression_Then_Statement_ElsePart &node) {
+  // 处理条件语句节点
+  m_outputBuffer += "if (";
+  node.getExpression()->accept(*this);
+  m_outputBuffer += ") {\n";
+  node.getStatement()->accept(*this);
+  m_outputBuffer += "}\n";
+  node.getElsePart()->accept(*this);
+};
 void CLangGenerator::visit(
     class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
-        &node) {};
+        &node) {
+  // 处理for循环语句节点
+  m_outputBuffer += std::format("for ({} = ", node.getId()->getValStr());
+  node.getExpression1()->accept(*this);
+  m_outputBuffer += " ; ";
+  node.getExpression2()->accept(*this);
+  m_outputBuffer += ";) {\n";
+  node.getStatement()->accept(*this);
+  m_outputBuffer += "}\n";
+};
 void CLangGenerator::visit(
-    class StatementNode_Read_Lparen_VariableList_Rparen &node) {};
+    class StatementNode_Read_Lparen_VariableList_Rparen &node) {
+  //   TODO: 使用 c 的文件读写函数
+  m_outputBuffer += "fread(";
+  node.getVariableList()->accept(*this);
+  m_outputBuffer += ");\n";
+};
 void CLangGenerator::visit(
-    class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {};
-void CLangGenerator::visit(class StatementNode_CompoundStatement &node) {};
+    class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {
+  // TODO: 使用 c 的文件读写函数
+  m_outputBuffer += "fwrite(";
+  node.getExpressionList()->accept(*this);
+  m_outputBuffer += ");\n";
+};
+void CLangGenerator::visit(class StatementNode_CompoundStatement &node) {
+  // 处理复合语句节点
+  m_outputBuffer += "{\n";
+  node.getCompoundStatement()->accept(*this);
+  m_outputBuffer += "}\n";
+};
 
-void CLangGenerator::visit(class VariableListNode &node) {};
-void CLangGenerator::visit(class VariableListNode_Variable &node) {};
+void CLangGenerator::visit(class VariableListNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VariableListNode should not be visited");
+};
+void CLangGenerator::visit(class VariableListNode_Variable &node) {
+  node.getVariable()->accept(*this);
+};
 void CLangGenerator::visit(
-    class VariableListNode_VariableList_Comma_Variable &node) {};
+    class VariableListNode_VariableList_Comma_Variable &node) {
+  node.getVariableList()->accept(*this);
+  m_outputBuffer += ", ";
+  node.getVariable()->accept(*this);
+};
 
-void CLangGenerator::visit(class VariableNode &node) {};
-void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {};
+void CLangGenerator::visit(class VariableNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VariableNode should not be visited");
+};
+void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
+  // 处理变量节点
+  m_outputBuffer += node.getId()->getValStr();
+  if (node.getIdVarpart()) {
+    m_outputBuffer += "[";
+    node.getIdVarpart()->accept(*this);
+    m_outputBuffer += "]";
+  }
+};
 
-void CLangGenerator::visit(class IdVarPartNode &node) {};
+void CLangGenerator::visit(class IdVarPartNode &node) {
+  // nothing need to do
+};
 void CLangGenerator::visit(
-    class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {};
+    class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
+  // 处理数组下标
+  node.getExpressionList()->accept(*this);
+};
 
-void CLangGenerator::visit(class ProcedureCallNode &node) {};
-void CLangGenerator::visit(class ProcedureCallNode_Id &node) {};
+void CLangGenerator::visit(class ProcedureCallNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProcedureCallNode should not be visited");
+};
+void CLangGenerator::visit(class ProcedureCallNode_Id &node) {
+  // 处理过程调用节点
+  m_outputBuffer += std::format("{}();", node.getId()->getValStr());
+};
 void CLangGenerator::visit(
-    class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {};
+    class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {
+  m_outputBuffer += std::format("{}(", node.getId()->getValStr());
+  node.getExpressionList()->accept(*this);
+  m_outputBuffer += ");\n";
+};
 
-void CLangGenerator::visit(class ElsePartNode &node) {};
-void CLangGenerator::visit(class ElsePartNode_Else_Statement &node) {};
+void CLangGenerator::visit(class ElsePartNode &node) {
+  m_outputBuffer += "/* no else part */";
+};
+void CLangGenerator::visit(class ElsePartNode_Else_Statement &node) {
 
-void CLangGenerator::visit(class ExpressionListNode &node) {};
-void CLangGenerator::visit(class ExpressionListNode_Expression &node) {};
-void CLangGenerator::visit(
-    class ExpressionListNode_ExpressionList_Comma_Expression &node) {};
+  m_outputBuffer += "else {\n";
+  node.getStatement()->accept(*this);
+  m_outputBuffer += "}\n";
+};
 
-void CLangGenerator::visit(class ExpressionNode &node) {};
-void CLangGenerator::visit(class ExpressionNode_SimpleExpression &node) {};
+void CLangGenerator::visit(class ExpressionListNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ExpressionListNode should not be visited");
+};
+void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
+  // 处理表达式列表节点
+  node.getExpression()->accept(*this);
+};
 void CLangGenerator::visit(
-    class ExpressionNode_SimpleExpression_Relop_SimpleExpression &node) {};
+    class ExpressionListNode_ExpressionList_Comma_Expression &node) {
+  node.getExpressionList()->accept(*this);
+  m_outputBuffer += ", ";
+  node.getExpression()->accept(*this);
+};
 
-void CLangGenerator::visit(class SimpleExpressionNode &node) {};
-void CLangGenerator::visit(class SimpleExpressionNode_Term &node) {};
+void CLangGenerator::visit(class ExpressionNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ExpressionNode should not be visited");
+};
+void CLangGenerator::visit(class ExpressionNode_SimpleExpression &node) {
+  // 处理简单表达式节点
+  node.getSimpleExpression()->accept(*this);
+};
 void CLangGenerator::visit(
-    class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {};
-void CLangGenerator::visit(
-    class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {};
-void CLangGenerator::visit(
-    class SimpleExpressionNode_SimpleExpression_Or_Term &node) {};
+    class ExpressionNode_SimpleExpression_Relop_SimpleExpression &node) {
+  // 处理关系表达式节点
+  m_outputBuffer += "(";
+  node.getSimpleExpression1()->accept(*this);
+  m_outputBuffer += " ";
+  node.getRelop()->accept(*this);
+  m_outputBuffer += " ";
+  node.getSimpleExpression2()->accept(*this);
+  m_outputBuffer += ")";
+};
 
-void CLangGenerator::visit(class TermNode &node) {};
-void CLangGenerator::visit(class TermNode_Factor &node) {};
-void CLangGenerator::visit(class TermNode_Term_Mulop_Factor &node) {};
-
-void CLangGenerator::visit(class FactorNode &node) {};
-void CLangGenerator::visit(class FactorNode_Number &node) {};
-void CLangGenerator::visit(class FactorNode_CharLiteral &node) {};
-void CLangGenerator::visit(class FactorNode_Variable &node) {};
-void CLangGenerator::visit(class FactorNode_Lparen_Expression_Rparen &node) {};
-void CLangGenerator::visit(class FactorNode_Not_Factor &node) {};
-void CLangGenerator::visit(class FactorNode_Minus_Factor &node) {};
+void CLangGenerator::visit(class SimpleExpressionNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SimpleExpressionNode should not be visited");
+};
+void CLangGenerator::visit(class SimpleExpressionNode_Term &node) {
+  node.getTerm()->accept(*this);
+};
 void CLangGenerator::visit(
-    class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {};
+    class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {
+  // 处理加法运算符
+  m_outputBuffer += "(";
+  node.getSimpleExpression()->accept(*this);
+  m_outputBuffer += " + ";
+  node.getTerm()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(
+    class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {
+  // 处理减法运算符
+  m_outputBuffer += "(";
+  node.getSimpleExpression()->accept(*this);
+  m_outputBuffer += " - ";
+  node.getTerm()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(
+    class SimpleExpressionNode_SimpleExpression_Or_Term &node) {
+  // 处理或运算符
+  m_outputBuffer += "(";
+  node.getSimpleExpression()->accept(*this);
+  m_outputBuffer += " || ";
+  node.getTerm()->accept(*this);
+  m_outputBuffer += ")";
+};
+
+void CLangGenerator::visit(class TermNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "TermNode should not be visited");
+};
+void CLangGenerator::visit(class TermNode_Factor &node) {
+  node.getFactor()->accept(*this);
+};
+void CLangGenerator::visit(class TermNode_Term_Mulop_Factor &node) {
+  // 处理乘法运算符
+  m_outputBuffer += "(";
+  node.getTerm()->accept(*this);
+  m_outputBuffer += " * ";
+  node.getFactor()->accept(*this);
+  m_outputBuffer += ")";
+};
+
+void CLangGenerator::visit(class FactorNode &node) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "FactorNode should not be visited");
+};
+void CLangGenerator::visit(class FactorNode_Number &node) {
+  node.getNumber()->accept(*this);
+};
+void CLangGenerator::visit(class FactorNode_CharLiteral &node) {
+  node.getCharLiteral()->accept(*this);
+};
+void CLangGenerator::visit(class FactorNode_Variable &node) {
+  node.getVariable()->accept(*this);
+};
+void CLangGenerator::visit(class FactorNode_Lparen_Expression_Rparen &node) {
+  // 处理括号表达式
+  m_outputBuffer += "(";
+  node.getExpression()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(class FactorNode_Not_Factor &node) {
+  m_outputBuffer += "(";
+  m_outputBuffer += "!";
+  node.getFactor()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(class FactorNode_Minus_Factor &node) {
+  m_outputBuffer += "(";
+  m_outputBuffer += "-";
+  node.getFactor()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(
+    class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {
+  // 处理函数调用节点
+  m_outputBuffer += std::format("{}(", node.getID()->getValStr());
+
+  node.getExpressionList()->accept(*this);
+  m_outputBuffer += ")";
+};
 
 void CLangGenerator::writeln(const std::string &str) {
   m_outputBuffer += str + "\n";
