@@ -571,7 +571,19 @@ public:
   visit(class ExpressionNode_SimpleExpression_Relop_SimpleExpression &node) {
     node.getSimpleExpression1()->accept(*this);
     node.getSimpleExpression2()->accept(*this);
-    // TODO: 类型检查
+    auto type1 = node.getSimpleExpression1()->getType();
+    auto type2 = node.getSimpleExpression2()->getType();
+    // 假设没有隐式类型转换
+    if (!type1->strictEq(*type2)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in relational operation");
+    }
+    if (!type1->strictEq(BasicType::INTEGER) &&
+        !type1->strictEq(BasicType::REAL) &&
+        !type1->strictEq(BasicType::CHAR)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in relational operation");
+    }
   };
 
   virtual void visit(class SimpleExpressionNode &node) {
