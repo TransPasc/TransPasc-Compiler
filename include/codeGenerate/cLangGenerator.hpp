@@ -14,6 +14,8 @@ class CLangGenerator : public Generator {
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
+  std::string m_expList_split = ", ";
+  SymbolType::ParamsType params = {};
 
 public:
   CLangGenerator();
@@ -223,5 +225,7 @@ private:
   };
   template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
   std::string symbolType2Str(const SymbolType &type);
+  // 将 Pascal relop 转换为 C 语言的 relop
+  std::string relop2cStyle(const std::string &relop);
 };
 } // namespace XYZ

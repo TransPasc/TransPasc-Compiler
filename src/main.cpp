@@ -41,10 +41,16 @@ void generateCLangCode(Driver &driver) {
 }
 } // namespace MENU
 int main(int argc, char **argv) {
+  cout << "welcome to the Pascal Compiler!" << endl;
   Driver driver;
   if (argc > 1) {
     string path = argv[1];
     MENU::readFromFile(driver, path);
+    if (argc > 2) {
+      string outputPath = argv[2];
+      cout << "Output will be saved to: " << outputPath << endl;
+      driver.setOutputFileName(outputPath);
+    }
   } else {
     cout << "No input file provided. Reading from standard input." << endl;
     driver.switchInputStream(&cin);

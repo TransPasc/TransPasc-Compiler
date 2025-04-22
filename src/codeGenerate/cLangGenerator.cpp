@@ -45,9 +45,12 @@ void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
 }
 void CLangGenerator::visit(class TerminalNode &node) {
   // 处理终结符节点
-  m_outputBuffer += node.getValStr();
-  m_outputBuffer += " ";
-};
+  if (node.isRelOp()) {
+    m_outputBuffer += std::format("{} ", relop2cStyle(node.getValStr()));
+    return;
+  }
+  m_outputBuffer += std::format("{} ", node.getValStr());
+}
 
 void CLangGenerator::visit(class ProgramStructNode &node) {
   throw CodeGenerateException(ErrType::UNREACH_CODE,
@@ -91,7 +94,10 @@ void CLangGenerator::visit(
   node.getConstDecls()->accept(*this);
   node.getVarDecls()->accept(*this);
   node.getSubprogramDecls()->accept(*this);
+  //   main func
+  m_outputBuffer += "int main() {\n";
   node.getCompoundStatement()->accept(*this);
+  m_outputBuffer += "}\n";
 };
 
 void CLangGenerator::visit(class IdListNode &node) {
@@ -244,13 +250,13 @@ void CLangGenerator::visit(
 };
 
 void CLangGenerator::visit(class SubprogramDeclsNode &node) {
-  writeln("// subprogram decls end");
+  // nothing need to do
 };
 void CLangGenerator::visit(
     class SubprogramDeclsNode_SubprogramDecls_Subprogram &node) {
+  node.getSubprogramDecls()->accept(*this);
   writeln("// subprogram decls");
   node.getSubprogram()->accept(*this);
-  node.getSubprogramDecls()->accept(*this);
 };
 
 void CLangGenerator::visit(class SubprogramNode &node) {
@@ -259,7 +265,7 @@ void CLangGenerator::visit(class SubprogramNode &node) {
 void CLangGenerator::visit(
     class SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON
         &node) {
-  symbolTable->enterBlock();
+  // 处理子程序节点, 在 head 中 enter block
   node.getSubprogramHead()->accept(*this);
   m_outputBuffer += " {\n";
   node.getSubprogramBody()->accept(*this);
@@ -273,19 +279,32 @@ void CLangGenerator::visit(class SubprogramHeadNode &node) {
 };
 void CLangGenerator::visit(
     class SubprogramHeadNode_Procedure_Id_FormalParameter &node) {
+  // 将 func id 加入符号表
+  // TODO: 将 params 加入符号表
+  auto type = SymbolType::MakeFunction(nullptr, {});
+  auto record = std::make_unique<SymbolRecord>(node.getId()->getValStr());
+  record->setType(std::make_shared<SymbolType>(type));
+  symbolTable->insert(std::move(record));
   // void func
   m_outputBuffer += std::format("void {}(", node.getId()->getValStr());
-
+  symbolTable->enterBlock();
   node.getFormalParameter()->accept(*this);
   m_outputBuffer += ")";
 };
 void CLangGenerator::visit(
     class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
         &node) {
+  // 将 func id 加入符号表
+  // TODO: 将 params 加入符号表
+  auto type = SymbolType::MakeFunction(nullptr, {});
+  auto record = std::make_unique<SymbolRecord>(node.getId()->getValStr());
+  record->setType(std::make_shared<SymbolType>(type));
+  symbolTable->insert(std::move(record));
   // retType func
   m_outputBuffer +=
       std::format("{} {}(", symbolType2Str(*node.getBasicType()->getType()),
                   node.getId()->getValStr());
+  symbolTable->enterBlock();
   node.getFormalParameter()->accept(*this);
   m_outputBuffer += ")";
 };
@@ -353,6 +372,7 @@ void CLangGenerator::visit(
     auto type = std::make_shared<SymbolType>();
     if (m_isRefParam)
       type->set_ref();
+    record->setType(type);
     symbolTable->insert(std::move(record));
 
     m_outputBuffer += std::format("{} {}", typeStr, id->getValStr());
@@ -410,11 +430,26 @@ void CLangGenerator::visit(
 };
 void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
   // 处理赋值语句节点
-  m_outputBuffer += std::format("{} = ", node.getId()->getValStr());
+  auto record = symbolTable->lookup(node.getId()->getValStr());
+  // 处理 return 语句
+  if (record && record->getType() && record->getType()->is_function()) {
+    m_outputBuffer += "return ";
+    node.getExpression()->accept(*this);
+    m_outputBuffer += ";\n";
+    return;
+  }
+  //   处理需不需要解引用
+  if (record && record->getType() && record->getType()->is_ref_type()) {
+    m_outputBuffer += std::format("*{} = ", node.getId()->getValStr());
+
+  } else {
+    m_outputBuffer += std::format("{} = ", node.getId()->getValStr());
+  }
   node.getExpression()->accept(*this);
 };
 void CLangGenerator::visit(class StatementNode_ProcedureCall &node) {
   // 处理过程调用语句节点
+  m_outputBuffer += "/* procedure call */\n";
   node.getProcedureCall()->accept(*this);
   m_outputBuffer += ";\n";
 };
@@ -442,15 +477,15 @@ void CLangGenerator::visit(
 };
 void CLangGenerator::visit(
     class StatementNode_Read_Lparen_VariableList_Rparen &node) {
-  //   TODO: 使用 c 的文件读写函数
-  m_outputBuffer += "fread(";
+  // TODO: 使用 c 的读写函数
+  m_outputBuffer += std::format("scanf(\"%d\", &");
   node.getVariableList()->accept(*this);
   m_outputBuffer += ");\n";
 };
 void CLangGenerator::visit(
     class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {
-  // TODO: 使用 c 的文件读写函数
-  m_outputBuffer += "fwrite(";
+  // TODO: 使用 c 的读写函数
+  m_outputBuffer += std::format("printf(\"%d\\n\", ");
   node.getExpressionList()->accept(*this);
   m_outputBuffer += ");\n";
 };
@@ -481,12 +516,26 @@ void CLangGenerator::visit(class VariableNode &node) {
 };
 void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
   // 处理变量节点
-  m_outputBuffer += node.getId()->getValStr();
-  if (node.getIdVarpart()) {
-    m_outputBuffer += "[";
-    node.getIdVarpart()->accept(*this);
-    m_outputBuffer += "]";
+  //   auto record = symbolTable->lookup(node.getId()->getValStr());
+  auto type = node.getType();
+  if (type->is_ref_type()) {
+    m_outputBuffer += std::format("*{}", node.getId()->getValStr());
+
+  } else if (params.size()) {
+    // func call
+    // 处理参数
+    auto param = params[0];
+    auto type = param->first;
+    if (type.is_ref_type()) {
+      m_outputBuffer += std::format("&{}", node.getId()->getValStr());
+    } else {
+      m_outputBuffer += std::format("{}", node.getId()->getValStr());
+    }
+    params.erase(params.begin());
+  } else {
+    m_outputBuffer += std::format("{}", node.getId()->getValStr());
   }
+  node.getIdVarpart()->accept(*this);
 };
 
 void CLangGenerator::visit(class IdVarPartNode &node) {
@@ -495,7 +544,11 @@ void CLangGenerator::visit(class IdVarPartNode &node) {
 void CLangGenerator::visit(
     class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
   // 处理数组下标
+  m_outputBuffer += "[";
+  m_expList_split = "][";
   node.getExpressionList()->accept(*this);
+  m_expList_split = ", ";
+  m_outputBuffer += "]";
 };
 
 void CLangGenerator::visit(class ProcedureCallNode &node) {
@@ -534,7 +587,7 @@ void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
 void CLangGenerator::visit(
     class ExpressionListNode_ExpressionList_Comma_Expression &node) {
   node.getExpressionList()->accept(*this);
-  m_outputBuffer += ", ";
+  m_outputBuffer += m_expList_split;
   node.getExpression()->accept(*this);
 };
 
@@ -604,7 +657,7 @@ void CLangGenerator::visit(class TermNode_Term_Mulop_Factor &node) {
   // 处理乘法运算符
   m_outputBuffer += "(";
   node.getTerm()->accept(*this);
-  m_outputBuffer += " * ";
+  node.getMulop()->accept(*this);
   node.getFactor()->accept(*this);
   m_outputBuffer += ")";
 };
@@ -644,8 +697,12 @@ void CLangGenerator::visit(
     class FactorNode_ID_Lparen_ExpressionList_Rparen &node) {
   // 处理函数调用节点
   m_outputBuffer += std::format("{}(", node.getID()->getValStr());
-
+  auto record = symbolTable->lookup(node.getID()->getValStr());
+  auto type = record->getType();
+  auto funcType = type->get<SymbolType::Function>();
+  params = funcType.param_types;
   node.getExpressionList()->accept(*this);
+  params.clear();
   m_outputBuffer += ")";
 };
 
@@ -729,5 +786,21 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
       [](auto &&) -> std::string { return "unsupported_type"; } // 兜底
   };
   return type.visit(printer);
+}
+std::string CLangGenerator::relop2cStyle(const std::string &relop) {
+  if (relop == "<") {
+    return "<";
+  } else if (relop == "<=") {
+    return "<=";
+  } else if (relop == ">") {
+    return ">";
+  } else if (relop == ">=") {
+    return ">=";
+  } else if (relop == "=") {
+    return "==";
+  } else if (relop == "<>") {
+    return "!=";
+  }
+  throw CodeGenerateException(ErrType::UNREACH_CODE, "Unknown relop: " + relop);
 }
 } // namespace XYZ

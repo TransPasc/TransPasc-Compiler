@@ -81,6 +81,7 @@ public:
       throw std::runtime_error("expect " + str + ", but got " + res);
     }
   }
+  bool isRelOp() const { return type == Type::RELOP; }
 
 protected:
   std::string val2string() const {
