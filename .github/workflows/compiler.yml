@@ -8,7 +8,24 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check CMake Version
+        run: cmake --version
+
+      - name: Check Ninja Version
+        run: ninja --version
+
+      - name: Check Git Version
+        run: git --version
   build:
+    needs: check
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-13, windows-2022]
@@ -44,20 +61,54 @@ jobs:
         run: |
           choco install ninja -y
           choco upgrade ninja -y
+          echo "C:\ProgramData\chocolatey\lib\ninja\tools" >> $GITHUB_PATH
+
+      - name: Verify Ninja
+        run: ninja --version
+
+      - name: Install Cross Compilers
+        run: |
+          case "${{ matrix.os }}-${{ matrix.arch }}" in
+              "ubuntu-22.04-arm64")
+                  sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+                  ;;
+              "windows-2022-arm64")
+                  choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
+                  ;;
+              "macos-13-arm64")
+                  echo "No installation required for macOS arm64"
+                  ;;
+          esac
 
       - uses: actions/cache@v4
         with:
           path: |
             ~/.ccache
             ${{ env.BUILD_DIR }}
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt','cmake/*.cmake') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt','toolchains/*.cmake') }}
+
+      - name: Validate Toolchains
+        run: |
+          if [ ! -f "toolchains/${{ matrix.os }}/${{ matrix.arch }}.cmake" ]; then
+              echo "::error::Missing toolchain file for ${{ matrix.os }}/${{ matrix.arch }}"
+              exit 1
+          fi
+
+      - name: Debug Environment
+        run: |
+          echo "PATH: $PATH"
+          echo "CC: $CC"
+          echo "CXX: $CXX"
+          cmake --version
 
       - name: Configure CMake
         shell: bash
         run: |
+          TOOLCHAIN_DIR="cmake/toolchains/${{ matrix.os }}"
+          TOOLCHAIN_FILE="${TOOLCHAIN_DIR}/${{ matrix.arch }}.cmake"
           cmake -B ${{ env.BUILD_DIR }} \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DCMAKE_TOOLCHAIN_FILE=toolchains/${{ matrix.arch }}.cmake \
+                -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
                 -GNinja
 
       - name: Build
