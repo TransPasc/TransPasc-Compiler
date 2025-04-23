@@ -50,37 +50,47 @@ jobs:
       - name: Setup Toolchain
         uses: msys2/setup-msys2@v2
         if: runner.os == 'Windows'
-      - name: Install Ninja
+
+      - name: Install Dependencies
         if: runner.os != 'Windows'
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
             sudo apt-get update
             sudo apt-get install -y ninja-build
+            if [ "${{ matrix.arch }}" == "arm64" ]; then
+              sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            fi
           elif [ "${{ matrix.os }}" == "macos-13" ]; then
             brew update
             brew install ninja
+            if [ "${{ matrix.arch }}" == "arm64" ]; then
+              # Install arm64 specific dependencies
+            fi
           fi
-      - name: Install Ninja on Windows
+      - name: Install Dependencies on Windows
         if: runner.os == 'Windows'
         run: |
           choco install ninja -y
           choco upgrade ninja -y
           echo "C:\ProgramData\chocolatey\lib\ninja\tools" >> $GITHUB_PATH
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
+            echo "C:\llvm\bin" >> $GITHUB_PATH
+            pacman -S mingw-w64-x86_64-flex
+          fi
 
-      - name: Verify Ninja
-        run: ninja --version
-
-      - name: Install Cross Compilers
+      - name: Verify Dependencies
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-22.04" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-              sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libfl-dev:aarch64
-          elif [ "${{ matrix.os }}" == "windows-2022" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-              choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
-              pacman -S mingw-w64-x86_64-flex
-          elif [ "${{ matrix.os }}" == "macos-13" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
-              echo "No installation required for macOS arm64"
-          elif [ "${{ matrix.os }}" == "ubuntu-22.04" ] && [ "${{ matrix.arch }}" == "x64" ]; then
-              sudo apt-get install gcc g++ flex libfl-dev
+          ninja --version
+          flex --version
+          bison --version
+          if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
+            gcc --version
+            g++ --version
+          elif [ "${{ matrix.os }}" == "macos-13" ]; then
+            clang --version
+          elif [ "${{ matrix.os }}" == "windows-2022" ]; then
+            clang --version
           fi
 
       - uses: actions/cache@v4
@@ -109,15 +119,20 @@ jobs:
         run: |
           TOOLCHAIN_DIR="cmake/toolchains/${{ matrix.os }}"
           TOOLCHAIN_FILE="${TOOLCHAIN_DIR}/${{ matrix.arch }}.cmake"
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04" || "${{ matrix.os }}" == "macos-13" ]]; then
+            GENERATOR="Unix Makefiles"
+          else
+            GENERATOR="Ninja"
+          fi
           cmake -B ${{ env.BUILD_DIR }} \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
                 -DENABLE_TESTS=OFF \
-                -GNinja
+                -G${GENERATOR}
 
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }} --parallel --target a.out
+        run: cmake --build ${{ env.BUILD_DIR }} --parallel --target a.out --config Release
 
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
@@ -125,6 +140,7 @@ jobs:
           name: compiler-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ env.BUILD_DIR }}/bin/*
           if-no-files-found: error
+          retention-days: 1
 
   create-release:
     needs: build
