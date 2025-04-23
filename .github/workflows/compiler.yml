@@ -25,7 +25,7 @@ jobs:
       - name: Check Git Version
         run: git --version
       - name: Check Flex Version
-        run: fle --version
+        run: flex --version
       - name: Check Bison Version
         run: bison --version
   build:
