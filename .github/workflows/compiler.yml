@@ -86,14 +86,7 @@ jobs:
           ninja --version
           flex --version
           bison --version
-          if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
-            gcc --version
-            g++ --version
-          elif [ "${{ matrix.os }}" == "macos-13" ]; then
-            clang --version
-          elif [ "${{ matrix.os }}" == "windows-2022" ]; then
-            clang --version
-          fi
+          g++ --version
 
       - uses: actions/cache@v4
         with:
@@ -130,7 +123,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
                 -DENABLE_TESTS=OFF \
-                -G${GENERATOR}
+                -G "${GENERATOR}"
 
       - name: Build
         shell: bash
