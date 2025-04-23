@@ -89,7 +89,7 @@ jobs:
 
       - name: Validate Toolchains
         run: |
-          if [ ! -f "toolchains/${{ matrix.os }}/${{ matrix.arch }}.cmake" ]; then
+          if [ ! -f "cmake/toolchains/${{ matrix.os }}/${{ matrix.arch }}.cmake" ]; then
               echo "::error::Missing toolchain file for ${{ matrix.os }}/${{ matrix.arch }}"
               exit 1
           fi
