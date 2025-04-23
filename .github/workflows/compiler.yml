@@ -50,7 +50,7 @@ jobs:
         run: cmake --build ${{ env.BUILD_DIR }} --parallel
 
       - name: Package Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: compiler-${{ matrix.os }}-${{ matrix.arch }}
           path: ${{ env.BUILD_DIR }}/bin/*
