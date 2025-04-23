@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.0"
+/* %require "3.0" */
 %defines
 %define api.parser.class { Parser }
 
@@ -52,7 +52,7 @@
 %parse-param { XYZ::Scanner &scanner }
 %parse-param { XYZ::Driver &driver }
 %locations
-%define parse.trace
+/* %define parse.trace */
 %define parse.error verbose
 
 %define api.token.prefix {TOKEN_}

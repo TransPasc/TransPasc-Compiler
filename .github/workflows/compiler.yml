@@ -24,10 +24,10 @@ jobs:
 
       - name: Check Git Version
         run: git --version
-      - name: Check Flex&Bison Version
-        run: |
-          flex --version
-          bison --version
+      - name: Check Flex Version
+        run: fle --version
+      - name: Check Bison Version
+        run: bison --version
   build:
     needs: check
     strategy:
@@ -72,17 +72,16 @@ jobs:
 
       - name: Install Cross Compilers
         run: |
-          case "${{ matrix.os }}-${{ matrix.arch }}" in
-              "ubuntu-22.04-arm64")
-                  sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-                  ;;
-              "windows-2022-arm64")
-                  choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
-                  ;;
-              "macos-13-arm64")
-                  echo "No installation required for macOS arm64"
-                  ;;
-          esac
+          if [ "${{ matrix.os }}" == "ubuntu-22.04" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+              sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libfl-dev:aarch64
+          elif [ "${{ matrix.os }}" == "windows-2022" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+              choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
+              pacman -S mingw-w64-x86_64-flex
+          elif [ "${{ matrix.os }}" == "macos-13" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
+              echo "No installation required for macOS arm64"
+          elif [ "${{ matrix.os }}" == "ubuntu-22.04" ] && [ "${{ matrix.arch }}" == "x64" ]; then
+              sudo apt-get install gcc g++ flex libfl-dev
+          fi
 
       - uses: actions/cache@v4
         with:
