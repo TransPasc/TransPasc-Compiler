@@ -20,3 +20,4 @@
 - 提供变长参数列表的 strictEq 函数，只要等于其中一个即可（或者取名叫 strictIn）
 - fix: 部分 TerminalNode 坐标出现错误
 - 貌似符合语句的最后一个分号是可选的，修改相关产生式、类支持
+- 使用Graphviz展示 AST(定义新的 visitor), [参考文档](./docs/Graphviz.md)
