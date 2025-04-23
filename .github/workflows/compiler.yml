@@ -1,0 +1,78 @@
+name: Cross-Platform Compiler
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-13, windows-2022]
+        arch: [x64, arm64]
+        build_type: [Release]
+      fail-fast: false
+      max-parallel: 3
+
+    runs-on: ${{ matrix.os }}
+    env:
+      BUILD_DIR: build-${{ matrix.os }}-${{ matrix.arch }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Toolchain
+        uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ccache
+            ${{ env.BUILD_DIR }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt','cmake/*.cmake') }}
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DCMAKE_TOOLCHAIN_FILE=toolchains/${{ matrix.arch }}.cmake \
+                -GNinja
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} --parallel
+
+      - name: Package Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiler-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ env.BUILD_DIR }}/bin/*
+          if-no-files-found: error
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/**/*
+          body: |
+            Multi-platform build for ${{ github.ref_name }}
+            Supported systems:
+            - Windows x64/arm64
+            - Linux x64/arm64
+            - macOS x64/arm64
