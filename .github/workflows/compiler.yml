@@ -114,12 +114,11 @@ jobs:
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
                 -DENABLE_TESTS=OFF \
-                -GNinja \
-                --target a.out
+                -GNinja
 
       - name: Build
         shell: bash
-        run: cmake --build ${{ env.BUILD_DIR }} --parallel
+        run: cmake --build ${{ env.BUILD_DIR }} --parallel --target a.out
 
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
