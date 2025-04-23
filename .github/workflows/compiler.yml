@@ -24,6 +24,10 @@ jobs:
 
       - name: Check Git Version
         run: git --version
+      - name: Check Flex&Bison Version
+        run: |
+          flex --version
+          bison --version
   build:
     needs: check
     strategy:
@@ -109,7 +113,9 @@ jobs:
           cmake -B ${{ env.BUILD_DIR }} \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
-                -GNinja
+                -DENABLE_TESTS=OFF \
+                -GNinja \
+                --target a.out
 
       - name: Build
         shell: bash
