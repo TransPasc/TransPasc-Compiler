@@ -30,7 +30,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         if: runner.os == 'Windows'
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.ccache
