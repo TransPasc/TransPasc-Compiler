@@ -64,20 +64,22 @@ jobs:
             brew update
             brew install ninja
             if [ "${{ matrix.arch }}" == "arm64" ]; then
-              # Install arm64 specific dependencies
+              echo "Installing arm64 specific dependencies"
             fi
           fi
       - name: Install Dependencies on Windows
         if: runner.os == 'Windows'
+        shell: powershell
         run: |
           choco install ninja -y
           choco upgrade ninja -y
-          echo "C:\ProgramData\chocolatey\lib\ninja\tools" >> $GITHUB_PATH
-          if [ "${{ matrix.arch }}" == "arm64" ]; then
-            choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64"
-            echo "C:\llvm\bin" >> $GITHUB_PATH
-            pacman -S mingw-w64-x86_64-flex
-          fi
+          $env:PATH = "C:\ProgramData\chocolatey\lib\ninja\tools;$env:PATH"
+
+          if ("${{ matrix.arch }}" -eq "arm64") {
+              choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64" -y
+              $env:PATH += ";C:\llvm\bin"
+              choco install winflexbison -y
+          }
 
       - name: Verify Dependencies
         run: |
