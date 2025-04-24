@@ -52,6 +52,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             artifacts/**/*
+          token: ${{ secrets.TRANSPASCAL_CI }}
           body: |
             Multi-platform build for ${{ github.ref_name }}
             Supported systems:
