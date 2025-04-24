@@ -30,11 +30,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: artifacts
-    # 检查tag
-    - name: Checkout latest tag
-      run: |
-        latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-        git checkout $latest_tag
+    # # 检查tag
+    # - name: Checkout latest tag
+    #   run: |
+    #     latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+    #     git checkout $latest_tag
+
     # 将 kpc-linux-amd64 移动到 EduCoder 目录
     - name: Move kpc-linux-amd64 to EduCoder directory
       run: |
