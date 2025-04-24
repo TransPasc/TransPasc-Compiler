@@ -86,9 +86,15 @@ jobs:
           ls -a artifacts
           echo "Moving kpc-linux-amd64 to EduCoder directory"
           pwd
-          rm -f EduCoder/bin/pascc
+          echo "Renaming kpc-linux-amd64 to pascc"
           mv artifacts/kpc-linux-amd64 EduCoder/bin/pascc
-          cd EduCoder
+          ls -a EduCoder/bin
+
+          cd EduCoder/bin
+          echo "adding execute permission to pascc"
+          chmod +x pascc
+          cd ..
+
           git config --global user.name "EduCoder Bot"
           git config --global user.email "bot@educoder.com"
           git add .
