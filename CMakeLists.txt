@@ -46,7 +46,7 @@ file(GLOB_RECURSE CODE_GENERATE_SOURCES
 )
 
 # 添加可执行文件
-add_executable(a.out
+add_executable(kpc
     src/main.cpp
     src/driver.cpp
     ${FLEX_Scanner_OUTPUTS}
@@ -64,25 +64,9 @@ if(ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 
-
-# 设置编译选项
-
-# 所有平台通用规则
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)  # 不在目标系统查找可执行文件
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)    # 只在目标系统查找库文件
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)    # 只在目标系统查找头文件
-# 自动检测架构
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCH_TYPE x64)
-else()
-    set(ARCH_TYPE x86)
-endif()
-
-# output CXX Version and Path
-message(STATUS "CXX Version: ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "CXX ID: ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "CXX Architecture: ${ARCH_TYPE}")
-# output CMAKE_CXX_FLAGS
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-# output CXX std version
-message(STATUS "CMAKE_CXX_STANDARD: ${CMAKE_CXX_STANDARD}")
+# install kpc to bin
+install(TARGETS kpc
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/static
+)
