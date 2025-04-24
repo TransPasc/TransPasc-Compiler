@@ -2,6 +2,7 @@
 /* %require "3.0" */
 %defines
 %define api.parser.class { Parser }
+/* %define api.parser.class "Parser" */
 
 %define api.token.constructor
 %define api.value.type variant

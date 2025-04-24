@@ -8,28 +8,7 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Check CMake Version
-        run: cmake --version
-
-      - name: Check Ninja Version
-        run: ninja --version
-
-      - name: Check Git Version
-        run: git --version
-      - name: Check Flex Version
-        run: flex --version
-      - name: Check Bison Version
-        run: bison --version
   build:
-    needs: check
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-13, windows-2022]
@@ -57,12 +36,12 @@ jobs:
           if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
             sudo apt-get update
             sudo apt-get install -y ninja-build
+            sudo apt-get install -y flex bison libfl-dev
             if [ "${{ matrix.arch }}" == "arm64" ]; then
               sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
             fi
           elif [ "${{ matrix.os }}" == "macos-13" ]; then
             brew update
-            brew install ninja
             if [ "${{ matrix.arch }}" == "arm64" ]; then
               echo "Installing arm64 specific dependencies"
             fi
@@ -74,11 +53,12 @@ jobs:
           choco install ninja -y
           choco upgrade ninja -y
           $env:PATH = "C:\ProgramData\chocolatey\lib\ninja\tools;$env:PATH"
+          choco install winflexbison -y
+          $env:PATH = "C:\ProgramData\chocolatey\lib\winflexbison\tools;$env:PATH"
 
           if ("${{ matrix.arch }}" -eq "arm64") {
               choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64" -y
               $env:PATH += ";C:\llvm\bin"
-              choco install winflexbison -y
           }
 
       - name: Verify Dependencies
