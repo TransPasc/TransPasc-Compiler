@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    envs:
+    env:
       EduCoder_USER: ${{ secrets.EduCoder_USER }}
       EduCoder_PASS: ${{ secrets.EduCoder_PASS }}
       EduCoder_REPO: ${{ secrets.EduCoder_REPO }}
