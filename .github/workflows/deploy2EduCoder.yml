@@ -21,6 +21,8 @@ jobs:
     # 克隆私有仓库（使用Secrets）
     - name: Clone private repository
       run: |
+        pwd
+        ll
         git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
         cd EduCoder
     # 下载最新的 tag 的 Artifacts
