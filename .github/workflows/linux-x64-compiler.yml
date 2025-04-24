@@ -70,7 +70,6 @@ jobs:
   deploy-to-educoder:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -87,11 +86,20 @@ jobs:
           ls -a artifacts
           echo "Moving kpc-linux-amd64 to EduCoder directory"
           pwd
-          cp artifacts/kpc-linux-amd64 EduCoder/pascc
-          cd EduCoder
+          echo "Renaming kpc-linux-amd64 to pascc"
+          ls -a artifacts/kpc-linux-amd64
+          mv artifacts/kpc-linux-amd64/* EduCoder/bin/
+          ls -a EduCoder/bin
+
+          cd EduCoder/bin
+          mv kpc-linux-amd64 pascc
+          echo "adding execute permission to pascc"
+          chmod +x pascc
+          cd ..
+
           git config --global user.name "EduCoder Bot"
           git config --global user.email "bot@educoder.com"
-          git add pascc
-          git commit -m "Deploying pascc to EduCoder"
+          git add .
+          git commit -m "Deploying pascc to EduCoder by Github Actions"
           git push https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git
           echo "Deployment to EduCoder completed"
