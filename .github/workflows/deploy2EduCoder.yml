@@ -22,7 +22,7 @@ jobs:
     - name: Clone private repository
       run: |
         pwd
-        ll
+        ls
         git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
         cd EduCoder
     # 下载最新的 tag 的 Artifacts
@@ -39,7 +39,7 @@ jobs:
     - name: Move kpc-linux-amd64 to EduCoder directory
       run: |
         pwd
-        ll
+        ls
         mv artifacts/kpc-linux-amd64 EduCoder/pascc
     # 将 pascc 文件添加到 Git
     - name: Add pascc to Git
