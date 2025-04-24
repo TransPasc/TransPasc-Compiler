@@ -30,13 +30,13 @@ jobs:
       - name: Build
         run: |
           cmake --build build --config Release --target kpc
-          mv build/kpc build/kpc-x64
+          mv build/kpc build/kpc-linux-amd64
 
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kpc-x64
-          path: build/kpc-x64
+          name: kpc-linux-amd64
+          path: build/kpc-linux-amd64
           if-no-files-found: error
           retention-days: 1
 
