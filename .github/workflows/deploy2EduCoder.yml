@@ -25,7 +25,6 @@ jobs:
         pwd
         git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
         ls -a
-        ls -a ..
     # 下载最新的 tag 的 Artifacts
     - name: Download Artifacts
       uses: actions/download-artifact@v4
