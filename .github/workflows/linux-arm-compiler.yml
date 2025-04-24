@@ -35,13 +35,15 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ubuntu-22.04/arm64.cmake -DENABLE_TESTS=OFF
 
       - name: Build
-        run: cmake --build build --config Release --target kpc
+        run: |
+          cmake --build build --config Release --target kpc
+          mv build/kpc build/kpc-arm64
 
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kpc-arm64
-          path: build/kpc
+          path: build/kpc-arm64
           if-no-files-found: error
           retention-days: 1
 
@@ -63,4 +65,6 @@ jobs:
           body: |
             Multi-platform build for ${{ github.ref_name }}
             Supported systems:
-            - Linux arm64
+            - Windows x64/arm64
+            - Linux x64/arm64
+            - macOS x64/arm64
