@@ -187,13 +187,18 @@ void Driver::setOutputFileName(const std::string &filename) {
   std::cout << "Output file set to: " << m_outputFileName << std::endl;
 }
 void Driver::generateCode(std::shared_ptr<Generator> generator) {
-  if (root) {
-    // 先进行语义分析
-    analyze();
-    // 生成代码
-    generator->setOutputFile(m_outputFileName);
-    generator->generateCode(root);
-  } else {
+  if (!root)
+    //   先进行语法分析
+    parse();
+
+  if (!root) {
     std::cerr << "AST is empty, cannot generate code." << std::endl;
+    exit(1);
   }
+
+  // 先进行语义分析
+  analyze();
+  // 生成代码
+  generator->setOutputFile(m_outputFileName);
+  generator->generateCode(root);
 }

@@ -1,5 +1,4 @@
-#ifndef INTERPRETER_H
-#define INTERPRETER_H
+#pragma once
 
 #include <vector>
 
@@ -42,6 +41,8 @@ public:
   void handleError(const std::string &msg, const location &loc);
 
   void setOutputFileName(const std::string &filename);
+  // TODO: Implement the set_verbose method
+  void set_verbose(bool verbose) {};
 
   static std::shared_ptr<ProgramStructNode> root;
 
@@ -65,5 +66,3 @@ private:
 };
 
 } // namespace XYZ
-
-#endif // INTERPRETER_H

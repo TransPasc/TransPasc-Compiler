@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
+# 定义版本号宏
+set(PROJECT_VERSION "0.0.x")
+
 project(BisonFlexExample CXX)
 
 option(DEBUG "Enable debug mode" ON)
@@ -43,23 +46,18 @@ ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# get all *.cpp files in src/ast
-file(GLOB_RECURSE AST_SOURCES
-    src/ast/*.cpp
-)
-# get all *.cpp files in src/codeGenerate
-file(GLOB_RECURSE CODE_GENERATE_SOURCES
-    src/codeGenerate/*.cpp
-)
+file(GLOB_RECURSE SOURCES src/*.cpp)
 
 # 添加可执行文件
 add_executable(kpc
-    src/main.cpp
-    src/driver.cpp
     ${FLEX_Scanner_OUTPUTS}
     ${BISON_Parser_OUTPUTS}
-    ${AST_SOURCES}  # Include the AST sources
-    ${CODE_GENERATE_SOURCES}  # Include the code generation sources
+    ${SOURCES}  # Include all source files
+)
+target_compile_definitions(kpc
+    PRIVATE
+        __KPC_VERSION__="${PROJECT_VERSION}"
+        __DEBUG__=${DEBUG}
 )
 
 include(cmake/main.cmake)
@@ -70,10 +68,3 @@ if(ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
-# install kpc to bin
-install(TARGETS kpc
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib/static
-)

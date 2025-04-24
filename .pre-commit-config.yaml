@@ -36,6 +36,7 @@ repos:
             "--inline-suppr",
             "--project=build/compile_commands.json",
             "--suppress=*:*build/parser.hpp",
+            "--check-level=exhaustive",
             "-i",
             "build",
           ]

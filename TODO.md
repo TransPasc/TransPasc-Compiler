@@ -23,3 +23,4 @@
 - 使用Graphviz展示 AST(定义新的 visitor), [参考文档](./docs/Graphviz.md)
 - 完成其他平台的 CI/CD
 - 自动收集两个 tag 之间的 commit message, 用来填充 deploy CI/CD 的 Change Log
+- 统一 Menu 的传参为 config

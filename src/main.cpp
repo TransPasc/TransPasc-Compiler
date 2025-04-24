@@ -1,65 +1,39 @@
-#include <fstream>
-#include <iostream>
-
-#include "codeGenerate/cLangGenerator.hpp"
+#include "cli/cli.hpp"
 #include "driver.h"
+#include "menu/menu.hpp"
 #include "parser.hpp"
 #include "scanner.h"
+#include <iostream>
+#include <memory>
 
 using namespace XYZ;
-using namespace std;
-namespace MENU {
-// TODO: 移动到专门的menu.cpp文件, 引入 argparse
-using namespace std;
-void showMenu() {}
-void readFromFile(Driver &driver, string path) {
-  auto inputFile = new ifstream(path);
-  if (inputFile->fail()) {
-    cerr << "Error opening file." << endl;
-    exit(1);
-  }
-  driver.switchInputStream(inputFile);
-  cout << "Reading from file: " << path << endl;
-}
-void printTokens(Driver &driver) { driver.printTokens(); }
-void parse(Driver &driver) {
-  int res = driver.parse();
-  if (res != 0) {
-    cout << "Parse failed. Error code: " << res << endl;
-    return;
-  }
-  driver.printAST();
-}
-void semanticAnalysis(Driver &driver) {
-  driver.analyze();
-  cout << "Semantic analysis completed." << endl;
-}
-void generateCLangCode(Driver &driver) {
-  auto generator = make_shared<CLangGenerator>();
-  driver.generateCode(generator);
-  cout << "C language code generation completed." << endl;
-}
-} // namespace MENU
-int main(int argc, char **argv) {
-  cout << "welcome to the Pascal Compiler!" << endl;
+
+int main(int argc, char *argv[]) {
+
   Driver driver;
-  if (argc > 1) {
-    string path = argv[1];
-    MENU::readFromFile(driver, path);
-    if (argc > 2) {
-      string outputPath = argv[2];
-      cout << "Output will be saved to: " << outputPath << endl;
-      driver.setOutputFileName(outputPath);
-    }
-  } else {
-    cout << "No input file provided. Reading from standard input." << endl;
-    driver.switchInputStream(&cin);
+  auto config = parse_arguments(argc, argv);
+  if (!config.is_valid_format()) {
+    std::cout << "Invalid configuration format." << endl;
+    return 1;
   }
 
-  //   MENU::printTokens(driver);
-  MENU::parse(driver);
-  //   MENU::semanticAnalysis(driver);
-  MENU::generateCLangCode(driver);
+  auto menuManager = std::make_shared<Menu>();
+
+  if (config.show_version) {
+    menuManager->showVersion();
+    return 0;
+  }
+
+  driver.set_verbose(config.verbose);
+  if (!config.input_path.empty()) {
+    menuManager->readFromFile(driver, config);
+  }
+  if (!config.output_path.empty()) {
+    menuManager->setOutputFileName(driver, config.output_path);
+  }
+
+  // 代码生成路由
+  menuManager->generateCode(driver, config.format);
 
   return 0;
 }
