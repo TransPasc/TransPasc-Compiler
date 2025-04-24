@@ -66,3 +66,32 @@ jobs:
             - Windows x64/arm64
             - Linux x64/arm64
             - macOS x64/arm64
+
+  deploy-to-educoder:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Deploy to EduCoder
+        env:
+          EduCoder_USER: ${{ secrets.EduCoder_USER }}
+          EduCoder_PASS: ${{ secrets.EduCoder_PASS }}
+          EduCoder_REPO: ${{ secrets.EduCoder_REPO }}
+        run: |
+          echo "Deploying to EduCoder"
+          git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
+          ls -a
+          ls -a artifacts
+          echo "Moving kpc-linux-amd64 to EduCoder directory"
+          pwd
+          cp artifacts/kpc-linux-amd64 EduCoder/pascc
+          cd EduCoder
+          git config --global user.name "EduCoder Bot"
+          git config --global user.email "bot@educoder.com"
+          git add pascc
+          git commit -m "Deploying pascc to EduCoder"
+          git push https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git
+          echo "Deployment to EduCoder completed"
