@@ -8,6 +8,10 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
   pull_request:
     branches: [ main ]
+  workflow_run:
+    workflows: ["CMake Test"]
+    types:
+      - completed
 
 jobs:
   build:

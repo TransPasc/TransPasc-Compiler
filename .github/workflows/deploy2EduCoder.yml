@@ -1,0 +1,55 @@
+name: Deploy to EduCoder
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Linux x64 Compiler"]
+    types:
+      - completed
+  push:
+  pull_request:
+    branches:
+      - main
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    env:
+      EduCoder_USER: ${{ secrets.EduCoder_USER }}
+      EduCoder_PASS: ${{ secrets.EduCoder_PASS }}
+      EduCoder_REPO: ${{ secrets.EduCoder_REPO }}
+    steps:
+    - uses: actions/checkout@v4
+    # 克隆私有仓库（使用Secrets）
+    - name: Clone private repository
+      run: |
+        pwd
+        git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
+        ls -a
+    # 下载最新的 tag 的 Artifacts
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    # # 检查tag
+    # - name: Checkout latest tag
+    #   run: |
+    #     latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+    #     git checkout $latest_tag
+
+    # 将 kpc-linux-amd64 移动到 EduCoder 目录
+    - name: Move kpc-linux-amd64 to EduCoder directory
+      run: |
+        pwd
+        ls -a
+        echo "Moving kpc-linux-amd64 to EduCoder directory"
+        ls -a artifacts
+        mv artifacts/kpc-linux-amd64 EduCoder/pascc
+    # 将 pascc 文件添加到 Git
+    - name: Add pascc to Git
+      run: |
+        cd EduCoder
+        git config --global user.name "EduCoder Bot"
+        git config --global user.email "bot@educoder.com"
+        git add pascc
+        git commit -m "Deploying pascc to EduCoder"
+        git push https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git

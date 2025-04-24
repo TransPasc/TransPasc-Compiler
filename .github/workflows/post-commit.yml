@@ -1,3 +1,4 @@
+name: lint
 on:
     workflow_dispatch:
 # TODO: 在 github 上没能正确运行， 配置有问题
