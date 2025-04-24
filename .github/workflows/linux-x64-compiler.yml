@@ -87,7 +87,7 @@ jobs:
           ls -a artifacts
           echo "Moving kpc-linux-amd64 to EduCoder directory"
           pwd
-          cp artifacts/kpc-linux-amd64 EduCoder/pascc
+          mv artifacts/kpc-linux-amd64 EduCoder/pascc
           cd EduCoder
           git config --global user.name "EduCoder Bot"
           git config --global user.email "bot@educoder.com"
