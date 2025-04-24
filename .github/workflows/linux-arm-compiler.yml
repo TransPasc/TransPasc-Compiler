@@ -1,4 +1,4 @@
-name: Linux x64 Compiler
+name: Linux ARM Compiler
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
   pull_request:
     branches: [ main ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,20 +21,26 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y flex bison libfl-dev
+          sudo apt-get install -y flex bison libfl-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
       - name: Verify Dependencies
         run: |
           flex --version
           bison --version
+          aarch64-linux-gnu-gcc --version
+          aarch64-linux-gnu-g++ --version
+
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ubuntu-22.04/arm64.cmake -DENABLE_TESTS=OFF
+
       - name: Build
         run: cmake --build build --config Release --target kpc
 
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kpc
+          name: kpc-arm64
           path: build/kpc
           if-no-files-found: error
           retention-days: 1
@@ -56,6 +63,4 @@ jobs:
           body: |
             Multi-platform build for ${{ github.ref_name }}
             Supported systems:
-            - Windows x64/arm64
-            - Linux x64/arm64
-            - macOS x64/arm64
+            - Linux arm64
