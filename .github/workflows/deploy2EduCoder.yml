@@ -11,29 +11,39 @@ on:
     branches:
       - main
 jobs:
-  build:
+  upload:
     runs-on: ubuntu-latest
     env:
       EduCoder_USER: ${{ secrets.EduCoder_USER }}
       EduCoder_PASS: ${{ secrets.EduCoder_PASS }}
       EduCoder_REPO: ${{ secrets.EduCoder_REPO }}
     steps:
-    # 步骤1：克隆私有仓库（使用Secrets）
+    # 克隆私有仓库（使用Secrets）
     - name: Clone private repository
       run: |
         git clone https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git EduCoder
         cd EduCoder
-    # 步骤2：获取编译产物
-    - name: Get build artifacts
+    # 下载最新的 tag 的 Artifacts
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: kpc-linux-amd64
+        path: artifacts
+    # 检查tag
+    - name: Checkout latest tag
       run: |
-        mkdir -p EduCoder/build
-        cp -r ../build/* EduCoder/bin/
-    # 步骤3：push到EduCoder
-    - name: Push to EduCoder
+        latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+        git checkout $latest_tag
+    # 将 kpc-linux-amd64 移动到 EduCoder 目录
+    - name: Move kpc-linux-amd64 to EduCoder directory
+      run: |
+        mv artifacts/kpc-linux-amd64 EduCoder/pascc
+    # 将 pascc 文件添加到 Git
+    - name: Add pascc to Git
       run: |
         cd EduCoder
         git config --global user.name "EduCoder Bot"
         git config --global user.email "bot@educoder.com"
-        git add .
-        git commit -m "Deploying to EduCoder"
+        git add pascc
+        git commit -m "Deploying pascc to EduCoder"
         git push https://${EduCoder_USER}:${EduCoder_PASS}@${EduCoder_REPO}.git
