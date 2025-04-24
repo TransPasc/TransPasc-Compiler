@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
-project(BisonFlexExample)
+project(BisonFlexExample CXX)
+
 option(DEBUG "Enable debug mode" ON)
 # 指定 c++ 20 标准
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 
 if(DEBUG)
     message(STATUS "Debug mode is enabled")
@@ -44,7 +46,7 @@ file(GLOB_RECURSE CODE_GENERATE_SOURCES
 )
 
 # 添加可执行文件
-add_executable(a.out
+add_executable(kpc
     src/main.cpp
     src/driver.cpp
     ${FLEX_Scanner_OUTPUTS}
@@ -61,3 +63,10 @@ if(ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+# install kpc to bin
+install(TARGETS kpc
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/static
+)

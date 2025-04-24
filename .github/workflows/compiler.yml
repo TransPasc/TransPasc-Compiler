@@ -1,0 +1,135 @@
+name: Cross-Platform Compiler
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-13, windows-2022]
+        arch: [x64, arm64]
+        build_type: [Release]
+      fail-fast: false
+      max-parallel: 3
+
+    runs-on: ${{ matrix.os }}
+    env:
+      BUILD_DIR: build-${{ matrix.os }}-${{ matrix.arch }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Toolchain
+        uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
+
+      - name: Install Dependencies
+        if: runner.os != 'Windows'
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
+            sudo apt-get update
+            sudo apt-get install -y ninja-build
+            sudo apt-get install -y flex bison libfl-dev
+            if [ "${{ matrix.arch }}" == "arm64" ]; then
+              sudo apt-get install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            fi
+          elif [ "${{ matrix.os }}" == "macos-13" ]; then
+            brew update
+            if [ "${{ matrix.arch }}" == "arm64" ]; then
+              echo "Installing arm64 specific dependencies"
+            fi
+          fi
+      - name: Install Dependencies on Windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          choco install ninja -y
+          choco upgrade ninja -y
+          $env:PATH = "C:\ProgramData\chocolatey\lib\ninja\tools;$env:PATH"
+          choco install winflexbison -y
+          $env:PATH = "C:\ProgramData\chocolatey\lib\winflexbison\tools;$env:PATH"
+
+          if ("${{ matrix.arch }}" -eq "arm64") {
+              choco install llvm --params="/InstallDir:C:\llvm /Targets:ARM64" -y
+              $env:PATH += ";C:\llvm\bin"
+          }
+
+      - name: Verify Dependencies
+        run: |
+          ninja --version
+          flex --version
+          bison --version
+          g++ --version
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ccache
+            ${{ env.BUILD_DIR }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('CMakeLists.txt','toolchains/*.cmake') }}
+
+      - name: Validate Toolchains
+        run: |
+          if [ ! -f "cmake/toolchains/${{ matrix.os }}/${{ matrix.arch }}.cmake" ]; then
+              echo "::error::Missing toolchain file for ${{ matrix.os }}/${{ matrix.arch }}"
+              exit 1
+          fi
+
+      - name: Debug Environment
+        run: |
+          echo "PATH: $PATH"
+          echo "CC: $CC"
+          echo "CXX: $CXX"
+          cmake --version
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          TOOLCHAIN_DIR="cmake/toolchains/${{ matrix.os }}"
+          TOOLCHAIN_FILE="${TOOLCHAIN_DIR}/${{ matrix.arch }}.cmake"
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04" || "${{ matrix.os }}" == "macos-13" ]]; then
+            GENERATOR="Unix Makefiles"
+          else
+            GENERATOR="Ninja"
+          fi
+          cmake -B ${{ env.BUILD_DIR }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
+                -DENABLE_TESTS=OFF \
+                -G "${GENERATOR}"
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.BUILD_DIR }} --parallel --target a.out --config Release
+
+      - name: Package Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiler-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ env.BUILD_DIR }}/bin/*
+          if-no-files-found: error
+          retention-days: 1
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/**/*
+          body: |
+            Multi-platform build for ${{ github.ref_name }}
+            Supported systems:
+            - Windows x64/arm64
+            - Linux x64/arm64
+            - macOS x64/arm64
