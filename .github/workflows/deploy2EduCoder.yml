@@ -1,6 +1,7 @@
 name: Deploy to EduCoder
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Linux x64 Compiler"]
     types:
