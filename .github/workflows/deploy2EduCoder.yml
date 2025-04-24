@@ -18,6 +18,7 @@ jobs:
       EduCoder_PASS: ${{ secrets.EduCoder_PASS }}
       EduCoder_REPO: ${{ secrets.EduCoder_REPO }}
     steps:
+    - uses: actions/checkout@v4
     # 克隆私有仓库（使用Secrets）
     - name: Clone private repository
       run: |
