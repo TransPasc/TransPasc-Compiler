@@ -6,10 +6,6 @@ on:
     workflows: ["Linux x64 Compiler"]
     types:
       - completed
-  push:
-  pull_request:
-    branches:
-      - main
 jobs:
   upload:
     runs-on: ubuntu-latest
