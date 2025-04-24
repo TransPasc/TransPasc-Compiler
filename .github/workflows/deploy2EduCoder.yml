@@ -41,6 +41,8 @@ jobs:
       run: |
         pwd
         ls -a
+        echo "Moving kpc-linux-amd64 to EduCoder directory"
+        ls -a artifacts
         mv artifacts/kpc-linux-amd64 EduCoder/pascc
     # 将 pascc 文件添加到 Git
     - name: Add pascc to Git
