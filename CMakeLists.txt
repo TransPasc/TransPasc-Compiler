@@ -5,6 +5,13 @@ option(DEBUG "Enable debug mode" ON)
 # 指定 c++ 20 标准
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+# 设置编译器
+# TODO: 应该根据平台来设置编译器, toolchains
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+elseif(MSVC)
+    add_compile_options($<$<CONFIG:RELEASE>:/MT> $<$<CONFIG:DEBUG>:/MTd>)
+endif()
 
 
 if(DEBUG)

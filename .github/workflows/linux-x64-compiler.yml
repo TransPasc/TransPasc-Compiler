@@ -30,6 +30,7 @@ jobs:
       - name: Build
         run: |
           cmake --build build --config Release --target kpc
+          chmod +x build/kpc
           mv build/kpc build/kpc-linux-amd64
 
       - name: Package Artifacts
