@@ -1,12 +1,16 @@
 #pragma once
 
+#define dispatch(production) virtual void visit(class production &node) = 0
+
 namespace XYZ {
 
 class ASTVisitor {
 public:
   virtual ~ASTVisitor() = default;
 
-  virtual void visit(class TerminalNode &node) = 0;
+  // TODO: make it much denser and informative as possible
+  dispatch(TerminalNode);
+  // /  virtual void visit(class TerminalNode &node) = 0;
 
   virtual void visit(class ProgramStructNode &node) = 0;
   virtual void visit(
@@ -143,6 +147,7 @@ public:
 
   virtual void visit(class ProcedureCallNode &node) = 0;
   virtual void visit(class ProcedureCallNode_Id &node) = 0;
+  dispatch(ProcedureCallNode_Id_Lparen_Rparen);
   virtual void
   visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) = 0;
 
@@ -184,3 +189,5 @@ public:
 };
 
 } // namespace XYZ
+
+#undef dispatch

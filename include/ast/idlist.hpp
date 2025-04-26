@@ -18,14 +18,14 @@ public:
   virtual std::shared_ptr<TerminalNode> getId() const { return nullptr; }
   IDListType getAllIds() const {
     IDListType ids;
-    auto id = getId();
-    if (id) {
-      ids.push_back(id);
-    }
-    auto idlist = getIdList();
-    if (idlist) {
+
+    if (auto idlist = getIdList(); idlist) {
       auto idlist_ids = idlist->getAllIds();
       ids.insert(ids.end(), idlist_ids.begin(), idlist_ids.end());
+    }
+
+    if (auto id = getId(); id) {
+      ids.push_back(id);
     }
     return ids;
   }

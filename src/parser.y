@@ -418,6 +418,9 @@ id_varpart :
 procedure_call :
     ID {
         $$ = std::make_shared<ProcedureCallNode_Id>($1, @1.begin.line);
+    }|
+    ID LPAREN RPAREN {
+        $$ = std::make_shared<ProcedureCallNode_Id_Lparen_Rparen>($1, $2, $3, @1.begin.line);
     } |
     ID LPAREN expression_list RPAREN {
         $$ = std::make_shared<ProcedureCallNode_Id_Lparen_ExpressionList_Rparen>(

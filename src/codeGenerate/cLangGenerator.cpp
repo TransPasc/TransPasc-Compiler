@@ -4,10 +4,13 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
+
 namespace XYZ {
 CLangGenerator::CLangGenerator() : Generator() {
   // Constructor implementation
@@ -428,6 +431,7 @@ void CLangGenerator::visit(
   node.getVariable()->accept(*this);
   m_outputBuffer += " = ";
   node.getExpression()->accept(*this);
+  m_outputBuffer += ";\n";
 };
 void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
   // 处理赋值语句节点
@@ -447,6 +451,7 @@ void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
     m_outputBuffer += std::format("{} = ", node.getId()->getValStr());
   }
   node.getExpression()->accept(*this);
+  m_outputBuffer += ";\n";
 };
 void CLangGenerator::visit(class StatementNode_ProcedureCall &node) {
   // 处理过程调用语句节点
@@ -468,28 +473,49 @@ void CLangGenerator::visit(
     class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
         &node) {
   // 处理for循环语句节点
+
+  // init
   m_outputBuffer += std::format("for ({} = ", node.getId()->getValStr());
   node.getExpression1()->accept(*this);
-  m_outputBuffer += " ; ";
+  m_outputBuffer += "; ";
+
+  // condition
+  m_outputBuffer += std::format("{} <= ", node.getId()->getValStr());
   node.getExpression2()->accept(*this);
-  m_outputBuffer += ";) {\n";
+  m_outputBuffer += "; ";
+
+  // increment
+  m_outputBuffer += std::format("{}++", node.getId()->getValStr());
+
+  // statement
+  m_outputBuffer += ") {\n";
   node.getStatement()->accept(*this);
   m_outputBuffer += "}\n";
 };
 void CLangGenerator::visit(
     class StatementNode_Read_Lparen_VariableList_Rparen &node) {
-  // TODO: 使用 c 的读写函数
-  m_outputBuffer += std::format("scanf(\"%d\", &");
+  auto types = node.getVariableList()->getTypeList();
+  auto fmtStr = getCStyleIOFormatStr(types);
+  m_outputBuffer += std::format("scanf(\"{}\", ", fmtStr);
+  is_scanf = true;
   node.getVariableList()->accept(*this);
+  is_scanf = false;
   m_outputBuffer += ");\n";
 };
+
 void CLangGenerator::visit(
     class StatementNode_Write_Lparen_ExpressionList_Rparen &node) {
-  // TODO: 使用 c 的读写函数
-  m_outputBuffer += std::format("printf(\"%d\\n\", ");
+  /**
+   * From: $Statement ::= $Write ( $ExpressionList )
+   * To: printf(format, $ExpressionList);
+   */
+  auto types = node.getExpressionList()->getTypeList();
+  auto fmtStr = getCStyleIOFormatStr(types);
+  m_outputBuffer += std::format("printf(\"{}\", ", fmtStr);
   node.getExpressionList()->accept(*this);
   m_outputBuffer += ");\n";
-};
+}
+
 void CLangGenerator::visit(class StatementNode_CompoundStatement &node) {
   // 处理复合语句节点
   m_outputBuffer += "{\n";
@@ -533,6 +559,8 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
       m_outputBuffer += std::format("{}", node.getId()->getValStr());
     }
     params.erase(params.begin());
+  } else if (is_scanf) {
+    m_outputBuffer += std::format("&{}", node.getId()->getValStr());
   } else {
     m_outputBuffer += std::format("{}", node.getId()->getValStr());
   }
@@ -557,6 +585,10 @@ void CLangGenerator::visit(class ProcedureCallNode &node) {
                               "ProcedureCallNode should not be visited");
 };
 void CLangGenerator::visit(class ProcedureCallNode_Id &node) {
+  // 处理过程调用节点
+  m_outputBuffer += std::format("{}();", node.getId()->getValStr());
+};
+void CLangGenerator::visit(class ProcedureCallNode_Id_Lparen_Rparen &node) {
   // 处理过程调用节点
   m_outputBuffer += std::format("{}();", node.getId()->getValStr());
 };
@@ -622,20 +654,20 @@ void CLangGenerator::visit(class SimpleExpressionNode_Term &node) {
 void CLangGenerator::visit(
     class SimpleExpressionNode_SimpleExpression_Plus_Term &node) {
   // 处理加法运算符
-  m_outputBuffer += "(";
+  // m_outputBuffer += "(";
   node.getSimpleExpression()->accept(*this);
   m_outputBuffer += " + ";
   node.getTerm()->accept(*this);
-  m_outputBuffer += ")";
+  // m_outputBuffer += ")";
 };
 void CLangGenerator::visit(
     class SimpleExpressionNode_SimpleExpression_Minus_Term &node) {
   // 处理减法运算符
-  m_outputBuffer += "(";
+  // m_outputBuffer += "(";
   node.getSimpleExpression()->accept(*this);
   m_outputBuffer += " - ";
   node.getTerm()->accept(*this);
-  m_outputBuffer += ")";
+  // m_outputBuffer += ")";
 };
 void CLangGenerator::visit(
     class SimpleExpressionNode_SimpleExpression_Or_Term &node) {
@@ -656,11 +688,11 @@ void CLangGenerator::visit(class TermNode_Factor &node) {
 };
 void CLangGenerator::visit(class TermNode_Term_Mulop_Factor &node) {
   // 处理乘法运算符
-  m_outputBuffer += "(";
+  // m_outputBuffer += "(";
   node.getTerm()->accept(*this);
   node.getMulop()->accept(*this);
   node.getFactor()->accept(*this);
-  m_outputBuffer += ")";
+  // m_outputBuffer += ")";
 };
 
 void CLangGenerator::visit(class FactorNode &node) {
@@ -684,7 +716,7 @@ void CLangGenerator::visit(class FactorNode_Lparen_Expression_Rparen &node) {
 };
 void CLangGenerator::visit(class FactorNode_Not_Factor &node) {
   m_outputBuffer += "(";
-  m_outputBuffer += "!";
+  m_outputBuffer += "~";
   node.getFactor()->accept(*this);
   m_outputBuffer += ")";
 };
@@ -789,19 +821,77 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
   return type.visit(printer);
 }
 std::string CLangGenerator::relop2cStyle(const std::string &relop) {
-  if (relop == "<") {
-    return "<";
-  } else if (relop == "<=") {
-    return "<=";
-  } else if (relop == ">") {
-    return ">";
-  } else if (relop == ">=") {
-    return ">=";
-  } else if (relop == "=") {
-    return "==";
-  } else if (relop == "<>") {
-    return "!=";
+  const static std::unordered_map<std::string, std::string> relop_map = {
+      {"<", "<"},   {">", ">"},   {"<=", "<="}, {"=", "=="},
+      {"!=", "!="}, {">=", ">="}, {"<>", "!="}};
+  auto it = relop_map.find(relop);
+  if (it != relop_map.end()) {
+    return it->second;
   }
   throw CodeGenerateException(ErrType::UNREACH_CODE, "Unknown relop: " + relop);
+}
+std::string CLangGenerator::getCStyleIOFormatStr(
+    const std::vector<std::shared_ptr<SymbolType>> &types) {
+  static const auto visitor = overloaded{
+      [](std::monostate) -> std::string {
+        throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                    "Invalid type for C-style IO format");
+      },
+      [](BasicType basic) -> std::string {
+        using std::literals::operator""s;
+        switch (basic) {
+        case BasicType::INTEGER:
+          return "%d"s;
+        case BasicType::REAL:
+          // 2.0000000000000000E+000
+          // we should use scientific format
+          // so use %E with a length of 20
+          // and exponential should be of length 3
+          return "%20.16E"s;
+        case BasicType::BOOLEAN:
+          return "%d"s;
+        case BasicType::CHAR:
+          return "%c"s;
+        case BasicType::STRING:
+          return "%s"s;
+        default:
+          assert(false && "Unhandled BasicType");
+          __builtin_unreachable();
+        }
+      },
+      [this](const SymbolType::Array &array) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Array type is not supported for C-style IO format");
+      },
+      [this](const SymbolType::Record &record) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Record type is not supported for C-style IO format");
+      },
+      [this](const SymbolType::Function &func) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Function type is not supported for C-style IO format");
+      },
+      [this](const SymbolType::Procedure &proc) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Procedure type is not supported for C-style IO format");
+      },
+      [](auto &&) -> std::string {
+        throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                    "Unsupported type for C-style IO format");
+      } // 兜底
+  };
+  std::string formatStr;
+  for (size_t i = 0; i < types.size(); ++i) {
+    formatStr += types[i]->visit(visitor);
+    if (i + 1 != types.size()) {
+      // TODO: 确定 Pascal 的分隔符
+      formatStr += " ";
+    }
+  }
+  return formatStr;
 }
 } // namespace XYZ

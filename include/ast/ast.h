@@ -42,7 +42,27 @@ public:
 
 protected:
   //  只对子类开放 修改 child 节点
-  void addChild(ASTNodePtr child) { m_children.push_back(child); }
+  // use template to make it support multiple ASTNode
+  // 基础版本：处理单个节点
+  template <typename T> void addChild(std::shared_ptr<T> child) {
+    static_assert(std::is_base_of_v<ASTNode, T>,
+                  "Child must inherit from ASTNode");
+
+    if (!child) {
+      std::cerr << "Error: null child\n";
+      return;
+    }
+    m_children.push_back(child);
+  }
+
+  // 重载版本：支持多个参数
+  template <typename First, typename... Rest>
+  void addChild(First &&first, Rest &&...rest) {
+    addChild(std::forward<First>(first));  // 处理第一个参数
+    addChild(std::forward<Rest>(rest)...); // 递归处理剩余参数
+  }
+
+  // void addChild(ASTNodePtr child) { m_children.push_back(child); }
 
 protected:
   std::string m_name;
