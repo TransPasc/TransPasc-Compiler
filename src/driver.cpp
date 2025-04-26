@@ -157,6 +157,9 @@ void Driver::step() { m_location.step(); }
 const location &Driver::getLocation() const { return m_location; }
 int Driver::getLine() const { return m_location.begin.line; }
 void Driver::printAST() {
+  if (!root)
+    //   先进行语法分析
+    parse();
   if (root) {
     root->print("");
   } else {

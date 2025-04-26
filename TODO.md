@@ -1,13 +1,9 @@
 # TODO LIST
 
 - 引入 docker, 消除环境差异
-- 加入 github actions CI/CD, 实现发布
-- 补充 README 中的词法规则(需和 scanner.l 对应)
-- 补充 README 中的文法规则(需和 parser.y 对应)
 - 添加各种各样的，正确/错误测试样例
 - 添加自测程序/脚本
 - 编译器支持单独输出 TOKEN 流、AST、语义信息、符号表 等
-- 增加 arg parse, 来控制编译器的行为(如 -h --version -o)
 - 对 TOKEN 流、AST、语义信息、符号表 等支持黑盒测试
 - 引入日志库
 - fix: 输出的ast 的 location 信息错误
@@ -21,6 +17,7 @@
 - fix: 部分 TerminalNode 坐标出现错误
 - 貌似符合语句的最后一个分号是可选的，修改相关产生式、类支持
 - 使用Graphviz展示 AST(定义新的 visitor), [参考文档](./docs/Graphviz.md)
-- 完成其他平台的 CI/CD
+- 完成其他平台编译部署的 CI/CD
 - 自动收集两个 tag 之间的 commit message, 用来填充 deploy CI/CD 的 Change Log
 - 统一 Menu 的传参为 config
+- 将集成测试脚本加入 github ci

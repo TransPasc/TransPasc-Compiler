@@ -587,7 +587,15 @@ public:
                               "Undefined procedure: " + id->get<string>());
     }
   };
-
+  virtual void visit(class ProcedureCallNode_Id_Lparen_Rparen &node) {
+    node.getId()->accept(*this);
+    auto id = node.getId();
+    auto record = symbolTable->lookup(id->get<string>());
+    if (record == nullptr) {
+      throw SemanticException(ErrType::UNDEFINED,
+                              "Undefined procedure: " + id->get<string>());
+    }
+  };
   virtual void
   visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {
     node.getId()->accept(*this);

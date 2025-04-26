@@ -1,18 +1,15 @@
 import os
 import sys
-# import cProfile
 import subprocess
 import multiprocessing
-import filecmp
 import time
 from collections import defaultdict
-# from tracemalloc import start
-from concurrent.futures import ThreadPoolExecutor
 
 DIFF = "diff"
 FPC = "fpc"
 CC = "cc"
 TIMEOUT = 5
+
 
 def process_case(args) -> dict[str, str]:
     name, pas_path, in_path, output_base = args
@@ -69,6 +66,14 @@ def process_case(args) -> dict[str, str]:
         if fpc_res.returncode != 0:
             raise Exception(f"Pascal编译失败:\n{fpc_res.stderr}")
 
+        with open(testcase_answer, "w") as f_ans:
+            subprocess.run(
+                [fpc_output_executable_better_name],
+                stdin=open(testcase_input),
+                stdout=f_ans,
+                stderr=f_ans,
+            )
+
         # 生成C文件
         kpc_res = subprocess.run(
             [kpc_path, "-i", pas_path, "-o", c_source],
@@ -86,20 +91,13 @@ def process_case(args) -> dict[str, str]:
         if cc_res.returncode != 0:
             raise Exception(f"C编译失败:\n{cc_res.stderr.decode()}")
 
-        # 执行测试
-        with open(testcase_answer, "w") as f_ans, open(testcase_output, "w") as f_out:
-            subprocess.run(
-                [fpc_output_executable_better_name],
-                stdin=open(testcase_input),
-                stdout=f_ans,
-                stderr=f_ans,
-            )
+        with open(testcase_output, "w") as f_out:
             subprocess.run(
                 [cc_output_executable],
                 stdin=open(testcase_input),
                 stdout=f_out,
                 stderr=f_out,
-                timeout=TIMEOUT
+                timeout=TIMEOUT,
             )
 
         # 结果比对
@@ -110,9 +108,9 @@ def process_case(args) -> dict[str, str]:
             text=True,
         )
         if diff.returncode != 0:
-          with open(testcase_diff, "w") as f:
-            f.write(diff.stdout)
-            raise Exception("输出不一致")
+            with open(testcase_diff, "w") as f:
+                f.write(diff.stdout)
+                raise Exception("输出不一致")
 
     except Exception as e:
         result["status"] = "failed"
@@ -123,12 +121,15 @@ def process_case(args) -> dict[str, str]:
             f.write(result["log"])
     end_time = time.time()
     result["time_usage"] = end_time - start_time
-    if result["status"] == "success":
-        print(f"\033[92m{result['name']}: {result['status']}\033[0m")
-    else:
-        print(
-            f"\033[91m{result['name']}: {result['status']}\033[0m : {result['short_report']}"
-        )
+
+    # get text_message from the result
+    text_message = (
+        f"\033[92m{result['name']}: {result['status']}\033[0m"
+        if result["status"] == "success"
+        else f"\033[91m{result['name']}: {result['status']}\033[0m : {result['short_report']}"
+    )
+
+    print(text_message)
     return result
 
 

@@ -16,6 +16,7 @@ class CLangGenerator : public Generator {
   std::shared_ptr<SymbolTable> symbolTable;
   std::string m_expList_split = ", ";
   SymbolType::ParamsType params = {};
+  bool is_scanf = false;
 
 public:
   CLangGenerator();
@@ -172,6 +173,7 @@ public:
 
   virtual void visit(class ProcedureCallNode &node) override;
   virtual void visit(class ProcedureCallNode_Id &node) override;
+  virtual void visit(class ProcedureCallNode_Id_Lparen_Rparen &node) override;
   virtual void
   visit(class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) override;
 
@@ -224,8 +226,17 @@ private:
     using Ts::operator()...;
   };
   template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
   std::string symbolType2Str(const SymbolType &type);
   // 将 Pascal relop 转换为 C 语言的 relop
   std::string relop2cStyle(const std::string &relop);
+
+  /**
+   * @brief 通过符号类型转换为 C 语言的输入输出的 format 字符串
+   * @param types 符号类型列表
+   * @return std::string
+   */
+  std::string
+  getCStyleIOFormatStr(const std::vector<std::shared_ptr<SymbolType>> &types);
 };
 } // namespace XYZ
