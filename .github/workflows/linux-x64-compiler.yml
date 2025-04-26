@@ -86,6 +86,8 @@ jobs:
           ls -a artifacts
           echo "Moving kpc-linux-amd64 to EduCoder directory"
           pwd
+          echo "rm  EduCoder/bin/pascc"
+          rm -rf EduCoder/bin/pascc
           echo "Renaming kpc-linux-amd64 to pascc"
           ls -a artifacts/kpc-linux-amd64
           mv artifacts/kpc-linux-amd64/* EduCoder/bin/
