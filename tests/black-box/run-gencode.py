@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 DIFF = "diff"
 FPC = "fpc"
 CC = "cc"
-
+TIMEOUT = 5
 
 def process_case(args) -> dict[str, str]:
     name, pas_path, in_path, output_base = args
@@ -73,6 +73,7 @@ def process_case(args) -> dict[str, str]:
         kpc_res = subprocess.run(
             [kpc_path, "-i", pas_path, "-o", c_source],
             capture_output=True,
+            timeout=TIMEOUT,
         )
         if kpc_res.returncode != 0:
             raise Exception(f"C代码生成失败:\n{kpc_res.stderr.decode()}")
@@ -91,34 +92,43 @@ def process_case(args) -> dict[str, str]:
                 [fpc_output_executable_better_name],
                 stdin=open(testcase_input),
                 stdout=f_ans,
-                stderr=subprocess.DEVNULL,
+                stderr=f_ans,
             )
             subprocess.run(
                 [cc_output_executable],
                 stdin=open(testcase_input),
                 stdout=f_out,
-                stderr=subprocess.DEVNULL,
-                timeout=1,
+                stderr=f_out,
+                timeout=TIMEOUT
             )
 
         # 结果比对
-        if not filecmp.cmp(testcase_answer, testcase_output, shallow=False):
-            diff = subprocess.run(
-                [DIFF, testcase_answer, testcase_output],
-                capture_output=True,
-                text=True,
-            )
-            with open(testcase_diff, "w") as f:
-                f.write(diff.stdout)
+
+        diff = subprocess.run(
+            [DIFF, "-b", testcase_answer, testcase_output],
+            capture_output=True,
+            text=True,
+        )
+        if diff.returncode != 0:
+          with open(testcase_diff, "w") as f:
+            f.write(diff.stdout)
             raise Exception("输出不一致")
 
     except Exception as e:
         result["status"] = "failed"
         result["log"] = str(e)
         result["short_report"] = str(e).split(":")[0]
-
+        # write the log to the file
+        with open(os.path.join(log_dir, f"{name}.log"), "w") as f:
+            f.write(result["log"])
     end_time = time.time()
     result["time_usage"] = end_time - start_time
+    if result["status"] == "success":
+        print(f"\033[92m{result['name']}: {result['status']}\033[0m")
+    else:
+        print(
+            f"\033[91m{result['name']}: {result['status']}\033[0m : {result['short_report']}"
+        )
     return result
 
 
@@ -176,15 +186,8 @@ def main():
     stats = defaultdict(int)
     for res in results:
         stats[res["status"]] += 1
-        # print result in colorful style
-        if res["status"] == "success":
-            print(f"\033[92m{res['name']}:{res['pas_path']} {res['status']}\033[0m")
-        else:
-            print(
-                f"\033[91m{res['name']}:{res['pas_path']} {res['status']}\033[0m : {res['short_report']}"
-            )
-
     print(f"\n统计结果: 成功 {stats['success']}, 失败 {stats['failed']}")
+    print(f"通过率: {stats['success'] / len(cases) * 100:.2f}%")
 
 
 if __name__ == "__main__":
