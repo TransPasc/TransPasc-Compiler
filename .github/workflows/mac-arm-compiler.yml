@@ -28,6 +28,8 @@ jobs:
           brew update
           echo "update bison to bison 3.8+"
           brew install bison
+          echo 'export PATH="/usr/local/opt/bison/bin:$PATH"' >> ~/.zshrc
+          source ~/.zshrc
       - name: Verify Dependencies
         run: |
           flex --version
