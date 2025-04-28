@@ -4,11 +4,11 @@
 namespace fs = std::filesystem;
 
 OutputConfig parse_arguments(int argc, char **argv) {
-  argparse::ArgumentParser program("pascalc", "1.0.0");
+  argparse::ArgumentParser program("kpc");
 
   // 核心参数定义
   program.add_argument("-i", "--input")
-      .required()
+      .default_value("")
       .help("Input Pascal source file");
 
   program.add_argument("-o", "--output")
@@ -17,7 +17,8 @@ OutputConfig parse_arguments(int argc, char **argv) {
   program.add_argument("-f", "--format")
       .default_value(std::string("c"))
       .choices("c", "llvm-ir", "risc-v", "token", "ast")
-      .help("Output format (default: c)");
+      .help("Output format (default: c, supported: c, llvm-ir, riscv, token, "
+            "ast)");
 
   program.add_argument("-v", "--verbose")
       .default_value(false)
@@ -42,6 +43,7 @@ OutputConfig parse_arguments(int argc, char **argv) {
   OutputConfig config;
   config.input_path = program.get<std::string>("--input");
   config.verbose = program.get<bool>("--verbose");
+  config.show_version = program.get<bool>("--version");
 
   // 自动生成输出路径
   if (program.is_used("--output")) {
@@ -85,7 +87,9 @@ std::string detect_format_from_extension(const std::string &output_path) {
       {".s", "risc-v"},
       {".tokens", "token"},
       {".ast", "ast"}};
-
+  if (output_path.empty()) {
+    throw std::runtime_error("No input file");
+  }
   fs::path p(output_path);
   std::string ext = p.extension().string();
 
