@@ -26,8 +26,8 @@ jobs:
       - name: Install Dependencies
         run: |
           brew update
-          echo "update bison to bison 3.8"
-          brew install bison@3
+          echo "update bison to bison 3.8+"
+          brew install bison
       - name: Verify Dependencies
         run: |
           flex --version
