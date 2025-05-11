@@ -40,7 +40,7 @@ jobs:
           cmake -B build `
             -DCMAKE_BUILD_TYPE=Release `
             -DFLEX_EXECUTABLE=D:/win_flex_bison/win_flex.exe `
-            -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe
+            -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe `
             -DCMAKE_INCLUDE_PATH=D:/win_flex_bison/include
 
       # 编译阶段
