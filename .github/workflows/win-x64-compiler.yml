@@ -22,7 +22,7 @@ jobs:
       # 安装win-flex-bison
       - name: Setup win-flex-bison
         run: |
-          $url = "https://sourceforge.net/projects/winflexbison/files/latest/download"
+          $url = "https://github.com/lexxmark/winflexbison/releases/download/v2.5.25/win_flex_bison-2.5.25.zip"
           Invoke-WebRequest -Uri $url -OutFile win_flex_bison.zip
           Expand-Archive -Path win_flex_bison.zip -DestinationPath D:\win_flex_bison
           echo "D:\win_flex_bison" >> $env:GITHUB_PATH
