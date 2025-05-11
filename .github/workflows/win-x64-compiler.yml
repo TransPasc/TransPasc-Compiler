@@ -26,6 +26,8 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile win_flex_bison.zip
           Expand-Archive -Path win_flex_bison.zip -DestinationPath D:\win_flex_bison
           echo "D:\win_flex_bison" >> $env:GITHUB_PATH
+          # 输出D:/win_flex_bison/下的所有路径
+          Get-ChildItem -Path D:\win_flex_bison
 
       # 验证工具链
       - name: Verify Dependencies
@@ -41,7 +43,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release `
             -DFLEX_EXECUTABLE=D:/win_flex_bison/win_flex.exe `
             -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe `
-            -DCMAKE_INCLUDE_PATH=D:/win_flex_bison/include
+            -DCMAKE_INCLUDE_PATH=D:/win_flex_bison
 
       # 编译阶段
       - name: Build
