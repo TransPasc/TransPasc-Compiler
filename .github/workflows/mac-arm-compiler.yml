@@ -26,13 +26,15 @@ jobs:
       - name: Install Dependencies
         run: |
           brew update
-          echo "update bison to bison 3.8+"
           brew install bison
-          echo 'export PATH="/opt/homebrew/opt/bison/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
-          export LDFLAGS="-L/opt/homebrew/opt/bison/lib"
+          # 直接覆盖PATH而非依赖.profile文件
+          echo "Bison路径：$(brew --prefix bison)/bin"
+          echo "PATH=$(brew --prefix bison)/bin:$PATH" >> $GITHUB_ENV
+          # 设置编译链接库路径（可选）
+          echo "LDFLAGS=-L$(brew --prefix bison)/lib" >> $GITHUB_ENV
       - name: Verify Dependencies
         run: |
+          which bison
           flex --version
           bison --version
           clang --version
