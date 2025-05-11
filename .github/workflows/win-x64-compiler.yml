@@ -1,0 +1,54 @@
+name: Windows Build
+
+on:
+  # push:
+  #   tags:
+  #     - 'v*'
+  #   branches: [ main ]
+  # TODO:
+  push:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 安装win-flex-bison
+      - name: Setup win-flex-bison
+        run: |
+          $url = "https://sourceforge.net/projects/winflexbison/files/latest/download"
+          Invoke-WebRequest -Uri $url -OutFile win_flex_bison.zip
+          Expand-Archive -Path win_flex_bison.zip -DestinationPath D:\win_flex_bison
+          echo "D:\win_flex_bison" >> $env:GITHUB_PATH
+
+      # 验证工具链
+      - name: Verify Dependencies
+        run: |
+          win_flex --version
+          win_bison --version
+          cmake --version
+
+      # CMake配置（关键调整）
+      - name: Configure CMake
+        run: |
+          cmake -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DFLEX_EXECUTABLE=D:/win_flex_bison/win_flex.exe `
+            -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe
+
+      # 编译阶段
+      - name: Build
+        run: cmake --build build --config Release --target kpc
+
+      # 产物打包
+      - name: Package Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kpc-windows-x64
+          path: build/Release/kpc.exe
