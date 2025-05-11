@@ -759,7 +759,6 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
           return "string";
         default:
           assert(false && "Unhandled BasicType");
-          __builtin_unreachable();
         }
       },
       [this](const SymbolType::Array &array) -> std::string {
@@ -856,7 +855,6 @@ std::string CLangGenerator::getCStyleIOFormatStr(
           return "%s"s;
         default:
           assert(false && "Unhandled BasicType");
-          __builtin_unreachable();
         }
       },
       [this](const SymbolType::Array &array) -> std::string {
