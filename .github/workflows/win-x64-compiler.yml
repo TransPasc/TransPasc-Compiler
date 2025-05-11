@@ -1,4 +1,4 @@
-name: Windows Build
+name: Windows x64 Build
 
 on:
   # push:
@@ -19,6 +19,12 @@ jobs:
         with:
           submodules: recursive
 
+      # 安装 MinGW-w64 (GCC)
+      - name: Setup MinGW-w64
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+
       # 安装win-flex-bison
       - name: Setup win-flex-bison
         run: |
@@ -35,23 +41,25 @@ jobs:
           win_flex --version
           win_bison --version
           cmake --version
+          gcc --version
+          g++ --version
 
-      # CMake配置（关键调整）
       - name: Configure CMake
         run: |
           cmake -B build `
+            -G "MinGW Makefiles" `
             -DCMAKE_BUILD_TYPE=Release `
             -DFLEX_EXECUTABLE=D:/win_flex_bison/win_flex.exe `
             -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe `
-            -DCMAKE_CXX_FLAGS=-ID:/win_flex_bison
+            -DCMAKE_CXX_FLAGS="-ID:/win_flex_bison"
 
       # 编译阶段
       - name: Build
-        run: cmake --build build --config Release --target kpc
+        run: cmake --build build --config Release --target kpc-win-amd64
 
       # 产物打包
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kpc-windows-x64
-          path: build/Release/kpc.exe
+          path: build/kpc-win-amd64.exe
