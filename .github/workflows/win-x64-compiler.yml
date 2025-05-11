@@ -41,11 +41,10 @@ jobs:
       - name: Configure CMake
         run: |
           cmake -B build `
-            -G "MinGW Makefiles" `
             -DCMAKE_BUILD_TYPE=Release `
             -DFLEX_EXECUTABLE=D:/win_flex_bison/win_flex.exe `
             -DBISON_EXECUTABLE=D:/win_flex_bison/win_bison.exe `
-            -DCMAKE_CXX_FLAGS="-ID:/win_flex_bison"
+            -DCMAKE_CXX_FLAGS="-ID:/win_flex_bison /EHsc /wd4005 /wd4267 /W3"
 
       # 编译阶段
       - name: Build
@@ -60,3 +59,23 @@ jobs:
         with:
           name: kpc-windows-x64
           path: build/kpc-win-amd64.exe
+  create-release:
+    needs: build
+    runs-on: windows-latest
+    # if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/**/*
+          token: ${{ secrets.TRANSPASCAL_CI }}
+          body: |
+            Multi-platform build for ${{ github.ref_name }}
+            Supported systems:
+            - Windows x64/arm64
+            - Linux x64/arm64
+            - MacOS arm64
