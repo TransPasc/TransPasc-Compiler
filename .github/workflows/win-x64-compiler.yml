@@ -19,12 +19,6 @@ jobs:
         with:
           submodules: recursive
 
-      # 安装 MinGW-w64 (GCC)
-      - name: Setup MinGW-w64
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
-
       # 安装win-flex-bison
       - name: Setup win-flex-bison
         run: |
