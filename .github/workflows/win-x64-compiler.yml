@@ -68,17 +68,17 @@ jobs:
       - name: Build
         run: |
           cmake --build build --config Release --target kpc
+          # rename kpc.exe to kpc-win-amd64.exe
+          Rename-Item -Path build/kpc.exe -NewName kpc-win-amd64.exe
           # show build/
           Get-ChildItem -Path build
-          # rename kpc.exe to kpc-win-amd64.exe
-          Rename-Item -Path build/kpc -NewName build/kpc-win-amd64
 
       # 产物打包
       - name: Package Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kpc-windows-amd64
-          path: build/kpc-win-amd64
+          path: build/kpc-win-amd64.exe
   create-release:
     needs: build
     runs-on: windows-latest
