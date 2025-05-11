@@ -21,9 +21,9 @@ jobs:
 
       # 安装 MinGW-w64 (GCC)
       - name: Setup MinGW-w64
-        run: |
-          pacman -Sy --noconfirm mingw-w64-x86_64-toolchain
-          echo "C:\msys64\mingw64\bin" >> $GITHUB_PATH
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
       # 安装win-flex-bison
       - name: Setup win-flex-bison
