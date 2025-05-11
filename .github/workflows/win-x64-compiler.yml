@@ -49,7 +49,10 @@ jobs:
 
       # 编译阶段
       - name: Build
-        run: cmake --build build --config Release --target kpc-win-amd64
+        run: |
+          cmake --build build --config Release --target kpc
+          # rename kpc.exe to kpc-win-amd64.exe
+          Rename-Item -Path build/kpc.exe -NewName build/kpc-win-amd64.exe
 
       # 产物打包
       - name: Package Artifacts
