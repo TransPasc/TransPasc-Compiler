@@ -45,6 +45,8 @@ jobs:
           cmake --version
           gcc --version
           g++ --version
+          where g++
+
 
       - name: Configure CMake
         run: |
