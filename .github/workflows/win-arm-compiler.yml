@@ -1,0 +1,67 @@
+name: Windows arm Build
+
+on:
+  # push:
+  #   tags:
+  #     - 'v*'
+  #   branches: [ main ]
+  # TODO:
+  push:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+jobs:
+  # 原x64构建任务保持不变
+  build:
+    runs-on: windows-11-arm  # 使用官方ARM64运行器[5](@ref)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # ARM64专用工具链配置
+      - name: Setup ARM64 Clang Toolchain
+        run: |
+          # 安装LLVM Clang ARM64版（示例URL需替换为实际下载地址）
+          $url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-17.0.6/LLVM-17.0.6-win64-arm64.exe"
+          Invoke-WebRequest -Uri $url -OutFile llvm-arm64.exe
+          Start-Process -Wait -FilePath .\llvm-arm64.exe -ArgumentList "/S","/NCRC","/D=C:\llvm-arm64"
+
+          # 添加Clang到系统路径
+          echo "C:\llvm-arm64\bin" >> $env:GITHUB_PATH
+
+      # 其他步骤与x64版本保持结构一致
+      - name: Configure CMake (ARM64)
+        run: |
+          cmake -B build `
+          -G "MinGW Makefiles" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_C_COMPILER=C:/llvm-arm64/bin/clang.exe `
+          -DCMAKE_CXX_COMPILER=C:/llvm-arm64/bin/clang++.exe `
+          -DCMAKE_C_FLAGS="-target aarch64-pc-windows-msvc" `
+          -DCMAKE_CXX_FLAGS="-target aarch64-pc-windows-msvc"
+
+      - name: Build ARM64
+        run: |
+          cmake --build build --config Release --target kpc
+          Rename-Item -Path build/kpc.exe -NewName kpc-win-arm64.exe
+  create-release:
+    needs: build
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/**/*
+          token: ${{ secrets.TRANSPASCAL_CI }}
+          body: |
+            Multi-platform build for ${{ github.ref_name }}
+            Supported systems:
+            - Windows x64/arm64
+            - Linux x64/arm64
+            - MacOS arm64
