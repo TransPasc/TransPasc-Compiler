@@ -51,6 +51,10 @@ void CLangGenerator::visit(class TerminalNode &node) {
   if (node.isRelOp()) {
     m_outputBuffer += std::format("{} ", relop2cStyle(node.getValStr()));
     return;
+  } 
+  if (node.isMulOp()) {
+    m_outputBuffer += std::format("{} ", mulop2cStyle(node.getValStr()));
+    return;
   }
   m_outputBuffer += std::format("{} ", node.getValStr());
 }
@@ -828,6 +832,15 @@ std::string CLangGenerator::relop2cStyle(const std::string &relop) {
     return it->second;
   }
   throw CodeGenerateException(ErrType::UNREACH_CODE, "Unknown relop: " + relop);
+}
+std::string CLangGenerator::mulop2cStyle(const std::string &mulop) {
+  const static std::unordered_map<std::string, std::string> mulop_map = {
+      {"div", "/"}, {"mod", "%"}, {"and", "&&"}, {"*", "*"}, {"/", "/"}};
+  auto it = mulop_map.find(mulop);
+  if (it != mulop_map.end()) {
+    return it->second;
+  }
+  throw CodeGenerateException(ErrType::UNREACH_CODE, "Unknown mulop: " + mulop);
 }
 std::string CLangGenerator::getCStyleIOFormatStr(
     const std::vector<std::shared_ptr<SymbolType>> &types) {
