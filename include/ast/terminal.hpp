@@ -29,6 +29,7 @@ public:
     PERIOD,
     KEYWORD, // 新增关键字类型
     CHAR_LITERAL,
+    BOOL_LITERAL,
     QUOTE,         // 新增字符串类型
     STRING_LITERAL // 新增字符串类型
   };

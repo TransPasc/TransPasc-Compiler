@@ -715,6 +715,9 @@ void CLangGenerator::visit(class FactorNode_Number &node) {
 void CLangGenerator::visit(class FactorNode_CharLiteral &node) {
   node.getCharLiteral()->accept(*this);
 };
+void CLangGenerator::visit(class FactorNode_BoolLiteral &node) {
+  node.getBoolLiteral()->accept(*this);
+};
 void CLangGenerator::visit(class FactorNode_Variable &node) {
   node.getVariable()->accept(*this);
 };

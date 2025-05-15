@@ -73,7 +73,9 @@ TO "to"
 READ "read"
 WRITE "write"
 NOT "not"
-
+TRUE "true"
+FALSE "false"
+BOOL_LITERAL ({TRUE}|{FALSE})
 
 RELOP (<=|>=|<>|<|>|=)
 PLUS \+
@@ -270,6 +272,11 @@ LINE_COMMENT \/\/[^\n]*
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
     return XYZ::Parser::make_OR(ptr, m_driver.getLocation());
 }
+{BOOL_LITERAL}      {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::BOOL_LITERAL, yytext, m_driver.getLine());
+    return XYZ::Parser::make_BOOL_LITERAL(ptr, m_driver.getLocation());
+}
+
 
 {RELOP}    {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::RELOP, yytext, m_driver.getLine());

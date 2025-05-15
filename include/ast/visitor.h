@@ -180,6 +180,7 @@ public:
   virtual void visit(class FactorNode &node) = 0;
   virtual void visit(class FactorNode_Number &node) = 0;
   virtual void visit(class FactorNode_CharLiteral &node) = 0;
+  virtual void visit(class FactorNode_BoolLiteral &node) = 0;
   virtual void visit(class FactorNode_Variable &node) = 0;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) = 0;
   virtual void visit(class FactorNode_Not_Factor &node) = 0;

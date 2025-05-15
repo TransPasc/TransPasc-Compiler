@@ -207,6 +207,7 @@ public:
   virtual void visit(class FactorNode &node) override;
   virtual void visit(class FactorNode_Number &node) override;
   virtual void visit(class FactorNode_CharLiteral &node) override;
+  virtual void visit(class FactorNode_BoolLiteral &node) override;
   virtual void visit(class FactorNode_Variable &node) override;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) override;
   virtual void visit(class FactorNode_Not_Factor &node) override;
