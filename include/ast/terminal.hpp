@@ -82,6 +82,7 @@ public:
     }
   }
   bool isRelOp() const { return type == Type::RELOP; }
+  bool isMulOp() const { return type == Type::MULOP; }
 
 protected:
   std::string val2string() const {

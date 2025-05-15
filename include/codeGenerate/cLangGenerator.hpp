@@ -230,6 +230,7 @@ private:
   std::string symbolType2Str(const SymbolType &type);
   // 将 Pascal relop 转换为 C 语言的 relop
   std::string relop2cStyle(const std::string &relop);
+  std::string mulop2cStyle(const std::string &mulop);
 
   /**
    * @brief 通过符号类型转换为 C 语言的输入输出的 format 字符串

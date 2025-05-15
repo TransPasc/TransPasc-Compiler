@@ -271,11 +271,6 @@ LINE_COMMENT \/\/[^\n]*
     return XYZ::Parser::make_OR(ptr, m_driver.getLocation());
 }
 
-{ID}    {
-    /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
-    return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
-}
 {RELOP}    {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::RELOP, yytext, m_driver.getLine());
     return XYZ::Parser::make_RELOP(ptr, m_driver.getLocation());
@@ -333,7 +328,11 @@ LINE_COMMENT \/\/[^\n]*
     return XYZ::Parser::make_RBRACKET(ptr, m_driver.getLocation());
 }
 
-
+{ID}    {
+    /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
+    return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
+}
 <<EOF>>     { return yyterminate(); }
 
 .           {
