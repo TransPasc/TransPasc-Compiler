@@ -764,6 +764,9 @@ public:
     // 因为在词法分析阶段已经处理过了
     node.getCharLiteral()->accept(*this);
   };
+  virtual void visit(class FactorNode_BoolLiteral &node) {
+    node.getBoolLiteral()->accept(*this);
+  };
   virtual void visit(class FactorNode_Variable &node) {
     // 转发到变量节点
     node.getVariable()->accept(*this);

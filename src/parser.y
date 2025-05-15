@@ -92,6 +92,7 @@
 %token <ASTNodePtr> ARRAY OF PROCEDURE FUNCTION
 %token <ASTNodePtr> FOR RECORD TYPE LABEL CASE GOTO
 %token <ASTNodePtr> CHAR BOOLEAN STRING INTEGER REAL
+%token <ASTNodePtr> BOOL_LITERAL
 
 /* node */
 %type <ASTNodePtr> program_struct
@@ -486,6 +487,9 @@ factor :
     } |
     CHAR_LITERAL {
         $$ = std::make_shared<FactorNode_CharLiteral>($1, @1.begin.line);
+    } |
+    BOOL_LITERAL {
+        $$ = std::make_shared<FactorNode_BoolLiteral>($1, @1.begin.line);
     } |
     variable {
         $$ = std::make_shared<FactorNode_Variable>($1, @1.begin.line);

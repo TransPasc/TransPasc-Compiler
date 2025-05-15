@@ -42,6 +42,23 @@ std::shared_ptr<SymbolType> FactorNode_CharLiteral::getType() const {
   return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::CHAR));
 }
 
+// FactorNode_BoolLiteral
+FactorNode_BoolLiteral::FactorNode_BoolLiteral(ASTNodePtr boolLiteral,
+                                               size_t line)
+    : FactorNode(line) {
+  addChild(boolLiteral);
+}
+FactorNode_BoolLiteral::~FactorNode_BoolLiteral() = default;
+void FactorNode_BoolLiteral::accept(ASTVisitor &visitor) {
+  visitor.visit(*this);
+}
+std::shared_ptr<TerminalNode> FactorNode_BoolLiteral::getBoolLiteral() const {
+  return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+}
+std::shared_ptr<SymbolType> FactorNode_BoolLiteral::getType() const {
+  return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::BOOLEAN));
+}
+
 // FactorNode_Variable
 FactorNode_Variable::FactorNode_Variable(ASTNodePtr variable, size_t line)
     : FactorNode(line) {
