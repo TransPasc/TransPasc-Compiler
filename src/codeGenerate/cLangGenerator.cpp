@@ -51,7 +51,7 @@ void CLangGenerator::visit(class TerminalNode &node) {
   if (node.isRelOp()) {
     m_outputBuffer += std::format("{} ", relop2cStyle(node.getValStr()));
     return;
-  } 
+  }
   if (node.isMulOp()) {
     m_outputBuffer += std::format("{} ", mulop2cStyle(node.getValStr()));
     return;
@@ -231,10 +231,11 @@ void CLangGenerator::g_IdList_Type(std::shared_ptr<IdListNode> idListNode,
   auto ids = idListNode->getAllIds();
   if (type->is_array()) {
     // 数组类型
-    // 现在 typeStr 是 type[range1][range2]...的格式
-    // get basic type str and rangeStr by f
-    std::string rangeStr = typeStr.substr(typeStr.find('['));
-    typeStr = typeStr.substr(0, typeStr.find('['));
+    // 现在 typeStr 是 [range1][range2]...[rangeN]type 的格式
+    // get basic type str and rangeStr
+
+    std::string rangeStr = typeStr.substr(0, typeStr.find_last_of(']') + 1);
+    typeStr = typeStr.substr(typeStr.find_last_of(']') + 1);
 
     for (const auto &id : ids) {
       m_outputBuffer +=
@@ -576,12 +577,17 @@ void CLangGenerator::visit(class IdVarPartNode &node) {
 };
 void CLangGenerator::visit(
     class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
+
+  bool old_scanf = is_scanf;
+  is_scanf = false;
   // 处理数组下标
   m_outputBuffer += "[";
   m_expList_split = "][";
   node.getExpressionList()->accept(*this);
   m_expList_split = ", ";
   m_outputBuffer += "]";
+
+  is_scanf = old_scanf;
 };
 
 void CLangGenerator::visit(class ProcedureCallNode &node) {
@@ -778,7 +784,7 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
         std::string element_type_str = symbolType2Str(*array.element_type);
 
         // 组合成C风格数组类型
-        return element_type_str + "[" + std::to_string(array_size) + "]";
+        return "[" + std::to_string(array_size) + "]" + element_type_str;
       },
       [this](const SymbolType::Record &record) -> std::string {
         std::ostringstream oss;
@@ -859,7 +865,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
           // we should use scientific format
           // so use %E with a length of 20
           // and exponential should be of length 3
-          return "%20.16E"s;
+          return "%f"s;
         case BasicType::BOOLEAN:
           return "%d"s;
         case BasicType::CHAR:
