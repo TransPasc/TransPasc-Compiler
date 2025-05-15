@@ -168,7 +168,7 @@ void CLangGenerator::visit(class ConstValNode_Number &node) {
   m_outputBuffer += std::format("{}", node.getNumber()->getValStr());
 };
 void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {
-  m_outputBuffer += std::format("'{}'", node.getCharLiteral()->getValStr());
+  m_outputBuffer += std::format("{}", node.getCharLiteral()->getValStr());
 };
 
 void CLangGenerator::visit(class TypeNode &node) {
