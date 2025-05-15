@@ -576,12 +576,17 @@ void CLangGenerator::visit(class IdVarPartNode &node) {
 };
 void CLangGenerator::visit(
     class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
+
+  bool old_scanf = is_scanf;
+  is_scanf = false;
   // 处理数组下标
   m_outputBuffer += "[";
   m_expList_split = "][";
   node.getExpressionList()->accept(*this);
   m_expList_split = ", ";
   m_outputBuffer += "]";
+
+  is_scanf = old_scanf;
 };
 
 void CLangGenerator::visit(class ProcedureCallNode &node) {
