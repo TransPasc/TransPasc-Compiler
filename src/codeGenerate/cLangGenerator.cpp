@@ -620,8 +620,7 @@ void CLangGenerator::visit(class ElsePartNode_Else_Statement &node) {
 };
 
 void CLangGenerator::visit(class ExpressionListNode &node) {
-  throw CodeGenerateException(ErrType::UNREACH_CODE,
-                              "ExpressionListNode should not be visited");
+  // do nothing 
 };
 void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
   // 处理表达式列表节点

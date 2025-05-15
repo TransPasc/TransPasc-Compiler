@@ -14,7 +14,7 @@ public:
   ~ExpressionListNode() override = default;
 
   void accept(ASTVisitor &visitor) override;
-  virtual std::vector<std::shared_ptr<SymbolType>> getTypeList() const = 0;
+  virtual std::vector<std::shared_ptr<SymbolType>> getTypeList() const;
 };
 
 // expression_list := expression

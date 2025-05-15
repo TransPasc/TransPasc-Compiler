@@ -7,7 +7,9 @@ ExpressionListNode::ExpressionListNode(size_t line)
     : ASTNode("ExpressionList", line) {}
 
 void ExpressionListNode::accept(ASTVisitor &visitor) { visitor.visit(*this); }
-
+std::vector<std::shared_ptr<SymbolType>> ExpressionListNode::getTypeList() const{
+  return {};
+}
 // ExpressionListNode_Expression
 ExpressionListNode_Expression::ExpressionListNode_Expression(
     ASTNodePtr expression, size_t line)

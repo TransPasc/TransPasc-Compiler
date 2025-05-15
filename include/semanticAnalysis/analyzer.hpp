@@ -638,8 +638,8 @@ public:
   };
 
   virtual void visit(class ExpressionListNode &node) {
-    throw SemanticException(ErrType::UNDEFINED,
-                            "ExpressionListNode should not be Null");
+    // do nothing
+    // ppt's fault
   };
   virtual void visit(class ExpressionListNode_Expression &node) {
     node.getExpression()->accept(*this);
