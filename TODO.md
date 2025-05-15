@@ -21,3 +21,4 @@
 - 自动收集两个 tag 之间的 commit message, 用来填充 deploy CI/CD 的 Change Log
 - 统一 Menu 的传参为 config
 - 将集成测试脚本加入 github ci
+- 42_color.pas fpc结果与头歌平台上的不同，运行结果已经与头歌平台上一致
