@@ -33,6 +33,10 @@ public:
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
+    auto str = getNumber()->getValStr();
+    if (str.find('.') != std::string::npos)
+      return std::make_shared<SymbolType>(
+          SymbolType::MakeBasic(BasicType::FLOAT));
     return std::make_shared<SymbolType>(
         SymbolType::MakeBasic(BasicType::INTEGER));
   }

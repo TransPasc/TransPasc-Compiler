@@ -126,6 +126,29 @@ std::shared_ptr<SymbolType> FactorNode_Not_Factor::getType() const {
   return type;
 }
 
+// FactorNode_Plus_Factor
+FactorNode_Plus_Factor::FactorNode_Plus_Factor(ASTNodePtr plus,
+                                                 ASTNodePtr factor, size_t line)
+    : FactorNode(line) {
+  addChild(plus);
+  addChild(factor);
+}
+FactorNode_Plus_Factor::~FactorNode_Plus_Factor() = default;
+void FactorNode_Plus_Factor::accept(ASTVisitor &visitor) {
+  visitor.visit(*this);
+}
+std::shared_ptr<TerminalNode> FactorNode_Plus_Factor::getPlus() const {
+  return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+}
+std::shared_ptr<FactorNode> FactorNode_Plus_Factor::getFactor() const {
+  return dynamic_pointer_cast<FactorNode>(m_children[1]);
+}
+std::shared_ptr<SymbolType> FactorNode_Plus_Factor::getType() const {
+  auto type = getFactor()->getType();
+  assert(type->strictEq(BasicType::INTEGER) || type->strictEq(BasicType::REAL));
+  return type;
+}
+
 // FactorNode_Minus_Factor
 FactorNode_Minus_Factor::FactorNode_Minus_Factor(ASTNodePtr minus,
                                                  ASTNodePtr factor, size_t line)

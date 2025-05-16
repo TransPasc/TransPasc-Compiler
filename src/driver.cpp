@@ -132,6 +132,8 @@ std::string Driver::getTokenName(XYZ::Parser::symbol_kind_type kind) {
     return "Integer";
   case XYZ::Parser::symbol_kind_type::S_REAL:
     return "Real";
+  case XYZ::Parser::symbol_kind_type::S_UPLUS:
+    return "Unary Plus";
   case XYZ::Parser::symbol_kind_type::S_UMINUS:
     return "Unary Minus";
   default:

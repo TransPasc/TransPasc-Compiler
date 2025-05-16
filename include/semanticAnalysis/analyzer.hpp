@@ -334,8 +334,7 @@ public:
   };
 
   virtual void visit(class ParameterListNode &node) {
-    throw SemanticException(ErrType::UNDEFINED,
-                            "ParameterListNode should not be Null");
+    // do nothing
   };
 
   virtual void visit(class ParameterListNode_Parameter &node) {
@@ -824,6 +823,15 @@ public:
     if (!type->strictEq(BasicType::BOOLEAN)) {
       throw SemanticException(ErrType::UNSUPPORTED,
                               "Incompatible types in unary not");
+    }
+  };
+  virtual void visit(class FactorNode_Plus_Factor &node) {
+    node.getFactor()->accept(*this);
+    auto type = node.getFactor()->getType();
+    if (!type->strictEq(BasicType::INTEGER) &&
+        !type->strictEq(BasicType::REAL)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary plus");
     }
   };
   virtual void visit(class FactorNode_Minus_Factor &node) {

@@ -89,6 +89,18 @@ public:
   virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
+// factor := PLUS factor
+class FactorNode_Plus_Factor : public FactorNode {
+public:
+  FactorNode_Plus_Factor(ASTNodePtr plus, ASTNodePtr factor, size_t line);
+  ~FactorNode_Plus_Factor() override;
+
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<TerminalNode> getPlus() const;
+  std::shared_ptr<FactorNode> getFactor() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
+};
+
 // factor := MINUS factor
 class FactorNode_Minus_Factor : public FactorNode {
 public:
