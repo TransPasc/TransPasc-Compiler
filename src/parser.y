@@ -438,6 +438,9 @@ else_part :
     }
 ;
 expression_list :
+    {
+        $$ = std::make_shared<ExpressionListNode>(@$.begin.line);
+    } |
     expression {
         $$ = std::make_shared<ExpressionListNode_Expression>($1, @1.begin.line);
     } |
