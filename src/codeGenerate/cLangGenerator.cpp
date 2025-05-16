@@ -498,6 +498,16 @@ void CLangGenerator::visit(
   m_outputBuffer += "}\n";
 };
 void CLangGenerator::visit(
+    class StatementNode_While_Expression_Do_Statement &node) {
+  // 处理while循环语句节点
+  m_outputBuffer += "while (";
+  node.getExpression()->accept(*this);
+  m_outputBuffer += ") {\n";
+  node.getStatement()->accept(*this);
+  m_outputBuffer += "}\n";
+};
+
+void CLangGenerator::visit(
     class StatementNode_Read_Lparen_VariableList_Rparen &node) {
   auto types = node.getVariableList()->getTypeList();
   auto fmtStr = getCStyleIOFormatStr(types);
@@ -551,7 +561,7 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
   //   auto record = symbolTable->lookup(node.getId()->getValStr());
   auto type = node.getType();
   if (type->is_function() || type->is_procedure()) {
-    m_outputBuffer += std::format("{}()",node.getId()->getValStr());
+    m_outputBuffer += std::format("{}()", node.getId()->getValStr());
     return node.getIdVarpart()->accept(*this);
   }
   if (type->is_ref_type()) {

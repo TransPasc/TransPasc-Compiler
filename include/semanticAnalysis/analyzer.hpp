@@ -500,6 +500,16 @@ public:
     }
   };
 
+  virtual void visit(class StatementNode_While_Expression_Do_Statement &node) {
+    node.getExpression()->accept(*this);
+    node.getStatement()->accept(*this);
+    auto type = node.getExpression()->getType();
+    if (type->strictEq(BasicType::BOOLEAN) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in while statement");
+    }
+  }
+
   virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) {
     node.getVariableList()->accept(*this);

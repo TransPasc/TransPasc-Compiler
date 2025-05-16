@@ -380,6 +380,10 @@ statement : {
         $$ = std::make_shared<StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement>(
             $1, $2, $3, $4, $5, $6, $7, $8, @1.begin.line);
     } |
+    WHILE expression DO statement{
+        $$ = std::make_shared<StatementNode_While_Expression_Do_Statement>(
+           $1,$2,$3,$4,@1.begin.line);
+    } |
     READ LPAREN variable_list RPAREN {
         $$ = std::make_shared<StatementNode_Read_Lparen_VariableList_Rparen>(
             $1, $2, $3, $4, @1.begin.line);

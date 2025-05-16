@@ -154,6 +154,8 @@ public:
       class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
           &node) override;
   virtual void
+  visit(class StatementNode_While_Expression_Do_Statement &node) override;
+  virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) override;
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) override;
