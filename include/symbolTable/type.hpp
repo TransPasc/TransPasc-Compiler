@@ -299,12 +299,25 @@ public:
 
   //   TODO: 实现 strict equal
   bool strictEq(const SymbolType &other) const {
+    // TODO: 权且之计，暂且给函数调用: id , 没有括号这种情况开个洞洞应付一下
+    if (is_function()) {
+      return this->get<Function>().return_type->strictEq(other);
+    }
+    if (other.is_function()) {
+      return other.get<Function>().return_type->strictEq(*this);
+    }
+
     if (m_var.index() != other.m_var.index())
       return false;
     // TODO: 实现其他类型的比较(array, record, function, procedure)
     return true;
   }
   bool strictEq(const BasicType &other) const {
+    // TODO: 权且之计，暂且给函数调用: id , 没有括号这种情况开个洞洞应付一下
+    if (is_function()) {
+      return this->get<Function>().return_type->strictEq(other);
+    }
+
     if (!is_basic())
       return false;
     //   TODO

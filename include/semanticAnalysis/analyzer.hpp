@@ -6,7 +6,6 @@
 #include <memory>
 #include <stack>
 #include <string>
-// TODO: 补充各个节点的visit函数
 namespace XYZ {
 using namespace std;
 class Analyzer : public ASTVisitor {
@@ -612,7 +611,8 @@ public:
     auto functionType = record->getType()->get_if<SymbolType::Function>();
 
     auto expTypes = node.getExpressionList()->getTypeList();
-    auto params = procedureType ? procedureType->param_types : functionType->param_types;
+    auto params =
+        procedureType ? procedureType->param_types : functionType->param_types;
     // TODO: 将下面的代码提取到一个函数中
     // 检查参数个数
     if (expTypes.size() != params.size()) {

@@ -127,7 +127,6 @@ def process_case(args) -> dict[str, str]:
                 for part in out_parts:
                     out_floats.append(float(part))
 
-                print(ans_floats,out_floats)
                 for a, o in zip(ans_floats, out_floats):
                     if abs(a - o) > 1e-6:
                         raise ValueError("浮点误差超过1e-6")
