@@ -163,7 +163,34 @@ public:
     return std::dynamic_pointer_cast<StatementNode>(m_children[7]);
   }
 };
-
+// statement := WHILE expression DO statement
+class StatementNode_While_Expression_Do_Statement : public StatementNode {
+public:
+  StatementNode_While_Expression_Do_Statement(ASTNodePtr whileToken,
+                                              ASTNodePtr expression,
+                                              ASTNodePtr doToken,
+                                              ASTNodePtr statement, size_t line)
+      : StatementNode(line) {
+    addChild(whileToken);
+    addChild(expression);
+    addChild(doToken);
+    addChild(statement);
+  }
+  ~StatementNode_While_Expression_Do_Statement() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::shared_ptr<TerminalNode> getWhileToken() const {
+    return std::dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  std::shared_ptr<ExpressionNode> getExpression() const {
+    return std::dynamic_pointer_cast<ExpressionNode>(m_children[1]);
+  }
+  std::shared_ptr<TerminalNode> getDoToken() const {
+    return std::dynamic_pointer_cast<TerminalNode>(m_children[2]);
+  }
+  std::shared_ptr<StatementNode> getStatement() const {
+    return std::dynamic_pointer_cast<StatementNode>(m_children[3]);
+  }
+};
 // statement := READ LPAREN variable_list RPAREN
 class StatementNode_Read_Lparen_VariableList_Rparen : public StatementNode {
 public:

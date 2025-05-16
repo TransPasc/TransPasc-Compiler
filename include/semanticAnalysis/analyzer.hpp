@@ -6,7 +6,6 @@
 #include <memory>
 #include <stack>
 #include <string>
-// TODO: 补充各个节点的visit函数
 namespace XYZ {
 using namespace std;
 class Analyzer : public ASTVisitor {
@@ -60,13 +59,14 @@ public:
 
   virtual void visit(class ProgramHeadNode_Program_Id &node) {
     node.getId()->accept(*this);
-    std::shared_ptr<TerminalNode> id = node.getId();
-    // 插入程序名到符号表
-    // type 为 UNDEFINED
-    unique_ptr<SymbolRecord> record =
-        make_unique<SymbolRecord>(id->get<string>(), id->getLine());
-    record->setType(std::make_shared<SymbolType>());
-    symbolTable->insert(std::move(record));
+    // 程序名貌似不需要
+    // std::shared_ptr<TerminalNode> id = node.getId();
+    // // 插入程序名到符号表
+    // // type 为 UNDEFINED
+    // unique_ptr<SymbolRecord> record =
+    //     make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+    // record->setType(std::make_shared<SymbolType>());
+    // symbolTable->insert(std::move(record));
   };
 
   virtual void visit(class ProgramBodyNode &node) {
@@ -334,8 +334,7 @@ public:
   };
 
   virtual void visit(class ParameterListNode &node) {
-    throw SemanticException(ErrType::UNDEFINED,
-                            "ParameterListNode should not be Null");
+    // do nothing
   };
 
   virtual void visit(class ParameterListNode_Parameter &node) {
@@ -500,6 +499,16 @@ public:
     }
   };
 
+  virtual void visit(class StatementNode_While_Expression_Do_Statement &node) {
+    node.getExpression()->accept(*this);
+    node.getStatement()->accept(*this);
+    auto type = node.getExpression()->getType();
+    if (type->strictEq(BasicType::BOOLEAN) == false) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in while statement");
+    }
+  }
+
   virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) {
     node.getVariableList()->accept(*this);
@@ -606,13 +615,13 @@ public:
       throw SemanticException(ErrType::UNDEFINED,
                               "Undefined procedure: " + id->get<string>());
     }
+    // TODO: shit ppt, 统一Procedure & function的语法声明
     auto procedureType = record->getType()->get_if<SymbolType::Procedure>();
-    if (procedureType == nullptr) {
-      throw SemanticException(ErrType::UNSUPPORTED,
-                              "Not a procedure: " + id->get<string>());
-    }
+    auto functionType = record->getType()->get_if<SymbolType::Function>();
+
     auto expTypes = node.getExpressionList()->getTypeList();
-    auto params = procedureType->param_types;
+    auto params =
+        procedureType ? procedureType->param_types : functionType->param_types;
     // TODO: 将下面的代码提取到一个函数中
     // 检查参数个数
     if (expTypes.size() != params.size()) {
@@ -638,8 +647,8 @@ public:
   };
 
   virtual void visit(class ExpressionListNode &node) {
-    throw SemanticException(ErrType::UNDEFINED,
-                            "ExpressionListNode should not be Null");
+    // do nothing
+    // ppt's fault
   };
   virtual void visit(class ExpressionListNode_Expression &node) {
     node.getExpression()->accept(*this);
@@ -764,6 +773,9 @@ public:
     // 因为在词法分析阶段已经处理过了
     node.getCharLiteral()->accept(*this);
   };
+  virtual void visit(class FactorNode_BoolLiteral &node) {
+    node.getBoolLiteral()->accept(*this);
+  };
   virtual void visit(class FactorNode_Variable &node) {
     // 转发到变量节点
     node.getVariable()->accept(*this);
@@ -811,6 +823,15 @@ public:
     if (!type->strictEq(BasicType::BOOLEAN)) {
       throw SemanticException(ErrType::UNSUPPORTED,
                               "Incompatible types in unary not");
+    }
+  };
+  virtual void visit(class FactorNode_Plus_Factor &node) {
+    node.getFactor()->accept(*this);
+    auto type = node.getFactor()->getType();
+    if (!type->strictEq(BasicType::INTEGER) &&
+        !type->strictEq(BasicType::REAL)) {
+      throw SemanticException(ErrType::UNSUPPORTED,
+                              "Incompatible types in unary plus");
     }
   };
   virtual void visit(class FactorNode_Minus_Factor &node) {

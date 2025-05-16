@@ -42,6 +42,23 @@ std::shared_ptr<SymbolType> FactorNode_CharLiteral::getType() const {
   return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::CHAR));
 }
 
+// FactorNode_BoolLiteral
+FactorNode_BoolLiteral::FactorNode_BoolLiteral(ASTNodePtr boolLiteral,
+                                               size_t line)
+    : FactorNode(line) {
+  addChild(boolLiteral);
+}
+FactorNode_BoolLiteral::~FactorNode_BoolLiteral() = default;
+void FactorNode_BoolLiteral::accept(ASTVisitor &visitor) {
+  visitor.visit(*this);
+}
+std::shared_ptr<TerminalNode> FactorNode_BoolLiteral::getBoolLiteral() const {
+  return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+}
+std::shared_ptr<SymbolType> FactorNode_BoolLiteral::getType() const {
+  return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::BOOLEAN));
+}
+
 // FactorNode_Variable
 FactorNode_Variable::FactorNode_Variable(ASTNodePtr variable, size_t line)
     : FactorNode(line) {
@@ -106,6 +123,29 @@ std::shared_ptr<FactorNode> FactorNode_Not_Factor::getFactor() const {
 std::shared_ptr<SymbolType> FactorNode_Not_Factor::getType() const {
   auto type = getFactor()->getType();
   assert(type->strictEq(BasicType::BOOLEAN));
+  return type;
+}
+
+// FactorNode_Plus_Factor
+FactorNode_Plus_Factor::FactorNode_Plus_Factor(ASTNodePtr plus,
+                                                 ASTNodePtr factor, size_t line)
+    : FactorNode(line) {
+  addChild(plus);
+  addChild(factor);
+}
+FactorNode_Plus_Factor::~FactorNode_Plus_Factor() = default;
+void FactorNode_Plus_Factor::accept(ASTVisitor &visitor) {
+  visitor.visit(*this);
+}
+std::shared_ptr<TerminalNode> FactorNode_Plus_Factor::getPlus() const {
+  return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+}
+std::shared_ptr<FactorNode> FactorNode_Plus_Factor::getFactor() const {
+  return dynamic_pointer_cast<FactorNode>(m_children[1]);
+}
+std::shared_ptr<SymbolType> FactorNode_Plus_Factor::getType() const {
+  auto type = getFactor()->getType();
+  assert(type->strictEq(BasicType::INTEGER) || type->strictEq(BasicType::REAL));
   return type;
 }
 

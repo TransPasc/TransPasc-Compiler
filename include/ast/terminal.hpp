@@ -29,6 +29,7 @@ public:
     PERIOD,
     KEYWORD, // 新增关键字类型
     CHAR_LITERAL,
+    BOOL_LITERAL,
     QUOTE,         // 新增字符串类型
     STRING_LITERAL // 新增字符串类型
   };
@@ -82,6 +83,7 @@ public:
     }
   }
   bool isRelOp() const { return type == Type::RELOP; }
+  bool isMulOp() const { return type == Type::MULOP; }
 
 protected:
   std::string val2string() const {

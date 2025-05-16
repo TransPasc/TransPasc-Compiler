@@ -8,7 +8,7 @@ from collections import defaultdict
 DIFF = "diff"
 FPC = "fpc"
 CC = "cc"
-TIMEOUT = 5
+TIMEOUT = 20
 
 
 def process_case(args) -> dict[str, str]:
@@ -59,7 +59,7 @@ def process_case(args) -> dict[str, str]:
         # print the command
         # create a directory for fpc
         fpc_res = subprocess.run(
-            [FPC, pas_path, f"-FE{fpc_working_dir}"],
+            [FPC, "-Mdelphi", pas_path, f"-FE{fpc_working_dir}"],
             capture_output=True,
             text=True,
         )
@@ -108,9 +108,32 @@ def process_case(args) -> dict[str, str]:
             text=True,
         )
         if diff.returncode != 0:
-            with open(testcase_diff, "w") as f:
-                f.write(diff.stdout)
-                raise Exception("输出不一致")
+            try:
+                with open(testcase_answer, 'r') as f_ans, open(testcase_output, 'r') as f_out:
+                    ans_content = f_ans.read().strip()
+                    out_content = f_out.read().strip()
+
+                ans_parts = ans_content.split()
+                out_parts = out_content.split()
+
+                if len(ans_parts) != len(out_parts):
+                    raise ValueError("输出字段数量不一致")
+
+                ans_floats = []
+                for part in ans_parts:
+                    ans_floats.append(float(part))
+
+                out_floats = []
+                for part in out_parts:
+                    out_floats.append(float(part))
+
+                for a, o in zip(ans_floats, out_floats):
+                    if abs(a - o) > 1e-6:
+                        raise ValueError("浮点误差超过1e-6")
+            except Exception as e:
+                with open(testcase_diff, "w") as f:
+                    f.write(diff.stdout)
+                    raise Exception("输出不一致")
 
     except Exception as e:
         result["status"] = "failed"

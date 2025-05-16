@@ -9,13 +9,15 @@ namespace XYZ {
  * from the AST
  */
 class CLangGenerator : public Generator {
+  // TODO: 使用状态机管理状态
   std::string m_outputFile;
   std::string m_outputBuffer;
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
   std::string m_expList_split = ", ";
-  SymbolType::ParamsType params = {};
+  SymbolType::ParamsType m_params = {};
+  size_t m_paramIdx = 0;
   bool is_scanf = false;
 
 public:
@@ -154,6 +156,8 @@ public:
       class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
           &node) override;
   virtual void
+  visit(class StatementNode_While_Expression_Do_Statement &node) override;
+  virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) override;
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) override;
@@ -207,9 +211,11 @@ public:
   virtual void visit(class FactorNode &node) override;
   virtual void visit(class FactorNode_Number &node) override;
   virtual void visit(class FactorNode_CharLiteral &node) override;
+  virtual void visit(class FactorNode_BoolLiteral &node) override;
   virtual void visit(class FactorNode_Variable &node) override;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) override;
   virtual void visit(class FactorNode_Not_Factor &node) override;
+  virtual void visit(class FactorNode_Plus_Factor &node) override;
   virtual void visit(class FactorNode_Minus_Factor &node) override;
   virtual void
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) override;
@@ -230,6 +236,7 @@ private:
   std::string symbolType2Str(const SymbolType &type);
   // 将 Pascal relop 转换为 C 语言的 relop
   std::string relop2cStyle(const std::string &relop);
+  std::string mulop2cStyle(const std::string &mulop);
 
   /**
    * @brief 通过符号类型转换为 C 语言的输入输出的 format 字符串

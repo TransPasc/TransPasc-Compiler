@@ -3,6 +3,7 @@
 #endif
 #include "menu/menu.hpp"
 #include "codeGenerate/cLangGenerator.hpp"
+#include "utils.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -22,7 +23,7 @@ void Menu::showMenu() {
   std::cout << "Displaying menu options..." << std::endl;
 }
 void Menu::showVersion() {
-  std::cout << "KPC version " << __KPC_VERSION__ << std::endl;
+  std::cout << "KPC version " << TOSTRING(__KPC_VERSION__) << std::endl;
 }
 void Menu::readFromFile(Driver &driver, const OutputConfig &config) {
 

@@ -50,6 +50,7 @@ jobs:
           choco upgrade ninja -y
           $env:PATH = "C:\ProgramData\chocolatey\lib\ninja\tools;$env:PATH"
           choco install winflexbison -y
+          # https://github.com/lexxmark/winflexbison
           $env:PATH = "C:\ProgramData\chocolatey\lib\winflexbison\tools;$env:PATH"
 
           if ("${{ matrix.arch }}" -eq "arm64") {

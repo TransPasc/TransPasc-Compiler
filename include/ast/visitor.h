@@ -127,6 +127,7 @@ public:
   virtual void visit(
       class StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement
           &node) = 0;
+  dispatch(StatementNode_While_Expression_Do_Statement);
   virtual void
   visit(class StatementNode_Read_Lparen_VariableList_Rparen &node) = 0;
   virtual void
@@ -180,9 +181,11 @@ public:
   virtual void visit(class FactorNode &node) = 0;
   virtual void visit(class FactorNode_Number &node) = 0;
   virtual void visit(class FactorNode_CharLiteral &node) = 0;
+  virtual void visit(class FactorNode_BoolLiteral &node) = 0;
   virtual void visit(class FactorNode_Variable &node) = 0;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) = 0;
   virtual void visit(class FactorNode_Not_Factor &node) = 0;
+  virtual void visit(class FactorNode_Plus_Factor &node) = 0;
   virtual void visit(class FactorNode_Minus_Factor &node) = 0;
   virtual void
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) = 0;

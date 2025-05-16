@@ -4,7 +4,7 @@
 
 #include "ast/ast.hpp"
 #include "codeGenerate/generator.hpp"
-#include "err.h"
+#include "err.hpp"
 #include "location.hh"
 #include "parser.hpp"
 #include "scanner.h"

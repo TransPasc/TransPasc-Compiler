@@ -12,16 +12,14 @@ int main(int argc, char *argv[]) {
 
   Driver driver;
   auto config = parse_arguments(argc, argv);
-  if (!config.is_valid_format()) {
-    std::cout << "Invalid configuration format." << endl;
-    return 1;
-  }
-
   auto menuManager = std::make_shared<Menu>();
-
   if (config.show_version) {
     menuManager->showVersion();
     return 0;
+  }
+  if (!config.is_valid_format()) {
+    std::cout << "Invalid configuration format." << endl;
+    return 1;
   }
 
   driver.set_verbose(config.verbose);

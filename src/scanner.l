@@ -41,7 +41,7 @@ DIGITS {DIGIT}+
 
 OPTIONAL_FRACTION (\.{DIGITS})?
 NUM {DIGITS}{OPTIONAL_FRACTION}
-CHAR_LITERAL ('{LETTER}')
+CHAR_LITERAL '([^'\n\r]|'')'
 
 /* KEY WORD */
 PROGRAM "program"
@@ -73,7 +73,9 @@ TO "to"
 READ "read"
 WRITE "write"
 NOT "not"
-
+TRUE "true"
+FALSE "false"
+BOOL_LITERAL ({TRUE}|{FALSE})
 
 RELOP (<=|>=|<>|<|>|=)
 PLUS \+
@@ -270,12 +272,12 @@ LINE_COMMENT \/\/[^\n]*
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
     return XYZ::Parser::make_OR(ptr, m_driver.getLocation());
 }
-
-{ID}    {
-    /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
-    return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
+{BOOL_LITERAL}      {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::BOOL_LITERAL, yytext, m_driver.getLine());
+    return XYZ::Parser::make_BOOL_LITERAL(ptr, m_driver.getLocation());
 }
+
+
 {RELOP}    {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::RELOP, yytext, m_driver.getLine());
     return XYZ::Parser::make_RELOP(ptr, m_driver.getLocation());
@@ -333,7 +335,11 @@ LINE_COMMENT \/\/[^\n]*
     return XYZ::Parser::make_RBRACKET(ptr, m_driver.getLocation());
 }
 
-
+{ID}    {
+    /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
+    return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
+}
 <<EOF>>     { return yyterminate(); }
 
 .           {

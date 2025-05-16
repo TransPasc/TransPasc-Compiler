@@ -54,9 +54,10 @@ add_executable(kpc
     ${BISON_Parser_OUTPUTS}
     ${SOURCES}  # Include all source files
 )
+# TODO: 这里传递宏没生效
 target_compile_definitions(kpc
-    PRIVATE
-        __KPC_VERSION__="${PROJECT_VERSION}"
+    PUBLIC
+        __KPC_VERSION__=${PROJECT_VERSION}  # Remove quotes to pass the macro correctly
         __DEBUG__=${DEBUG}
 )
 

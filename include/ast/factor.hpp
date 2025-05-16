@@ -41,6 +41,17 @@ public:
   virtual std::shared_ptr<SymbolType> getType() const override;
 };
 
+// factor := BOOL_LITERAL
+class FactorNode_BoolLiteral : public FactorNode {
+public:
+  FactorNode_BoolLiteral(ASTNodePtr boolLiteral, size_t line);
+  ~FactorNode_BoolLiteral() override;
+
+  void accept(ASTVisitor &vistor) override;
+  std::shared_ptr<TerminalNode> getBoolLiteral() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
+};
+
 // factor := variable
 class FactorNode_Variable : public FactorNode {
 public:
@@ -74,6 +85,18 @@ public:
 
   void accept(ASTVisitor &visitor) override;
   std::shared_ptr<TerminalNode> getNotToken() const;
+  std::shared_ptr<FactorNode> getFactor() const;
+  virtual std::shared_ptr<SymbolType> getType() const override;
+};
+
+// factor := PLUS factor
+class FactorNode_Plus_Factor : public FactorNode {
+public:
+  FactorNode_Plus_Factor(ASTNodePtr plus, ASTNodePtr factor, size_t line);
+  ~FactorNode_Plus_Factor() override;
+
+  void accept(ASTVisitor &visitor) override;
+  std::shared_ptr<TerminalNode> getPlus() const;
   std::shared_ptr<FactorNode> getFactor() const;
   virtual std::shared_ptr<SymbolType> getType() const override;
 };

@@ -1,8 +1,17 @@
 #pragma once
 #include "ast/ast.h"
 #include "symbolTable/type.hpp"
-
 namespace XYZ {
+
+inline static std::shared_ptr<SymbolType>
+getTypeFromConstNumber(std::string str) {
+  if (str.find('.') != std::string::npos)
+    return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::REAL));
+
+  return std::make_shared<SymbolType>(
+      SymbolType::MakeBasic(BasicType::INTEGER));
+}
+
 // const_val 的基类
 class ConstValNode : public ASTNode {
 public:
@@ -33,8 +42,7 @@ public:
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
-    return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(BasicType::INTEGER));
+    return getTypeFromConstNumber(getNumber()->getValStr());
   }
 };
 
@@ -57,8 +65,7 @@ public:
     return static_pointer_cast<TerminalNode>(m_children[1]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
-    return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(BasicType::INTEGER));
+    return getTypeFromConstNumber(getNumber()->getValStr());
   }
 };
 
@@ -76,8 +83,7 @@ public:
     return static_pointer_cast<TerminalNode>(m_children[0]);
   }
   virtual std::shared_ptr<SymbolType> getType() const override {
-    return std::make_shared<SymbolType>(
-        SymbolType::MakeBasic(BasicType::INTEGER));
+    return getTypeFromConstNumber(getNumber()->getValStr());
   }
 };
 

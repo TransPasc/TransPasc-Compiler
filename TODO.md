@@ -21,3 +21,4 @@
 - 自动收集两个 tag 之间的 commit message, 用来填充 deploy CI/CD 的 Change Log
 - 统一 Menu 的传参为 config
 - 将集成测试脚本加入 github ci
+- 57_many_params.c，有未定义行为,param16有副作用，但参数调用顺序（从左到右、从右到左）未规定，从而导致不同平台不同编译器结果不一致

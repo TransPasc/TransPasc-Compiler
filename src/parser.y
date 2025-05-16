@@ -92,6 +92,7 @@
 %token <ASTNodePtr> ARRAY OF PROCEDURE FUNCTION
 %token <ASTNodePtr> FOR RECORD TYPE LABEL CASE GOTO
 %token <ASTNodePtr> CHAR BOOLEAN STRING INTEGER REAL
+%token <ASTNodePtr> BOOL_LITERAL
 
 /* node */
 %type <ASTNodePtr> program_struct
@@ -150,7 +151,7 @@
 %left LBRACKET RBRACKET
 %left LPAREN RPAREN
 %nonassoc END IF THEN ELSE WHILE DO
-%right UMINUS
+%right UMINUS UPLUS
 
 %%
 program_struct :
@@ -307,7 +308,9 @@ formal_parameter :{
             $1, $2, $3, @1.begin.line);
     }
 ;
-parameter_list :
+parameter_list :{
+        $$ = std::make_shared<ParameterListNode>(@$.begin.line);
+    } |
     parameter {
         $$ = std::make_shared<ParameterListNode_Parameter>($1, @1.begin.line);
     } |
@@ -379,6 +382,10 @@ statement : {
         $$ = std::make_shared<StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement>(
             $1, $2, $3, $4, $5, $6, $7, $8, @1.begin.line);
     } |
+    WHILE expression DO statement{
+        $$ = std::make_shared<StatementNode_While_Expression_Do_Statement>(
+           $1,$2,$3,$4,@1.begin.line);
+    } |
     READ LPAREN variable_list RPAREN {
         $$ = std::make_shared<StatementNode_Read_Lparen_VariableList_Rparen>(
             $1, $2, $3, $4, @1.begin.line);
@@ -437,6 +444,9 @@ else_part :
     }
 ;
 expression_list :
+    {
+        $$ = std::make_shared<ExpressionListNode>(@$.begin.line);
+    } |
     expression {
         $$ = std::make_shared<ExpressionListNode_Expression>($1, @1.begin.line);
     } |
@@ -487,6 +497,9 @@ factor :
     CHAR_LITERAL {
         $$ = std::make_shared<FactorNode_CharLiteral>($1, @1.begin.line);
     } |
+    BOOL_LITERAL {
+        $$ = std::make_shared<FactorNode_BoolLiteral>($1, @1.begin.line);
+    } |
     variable {
         $$ = std::make_shared<FactorNode_Variable>($1, @1.begin.line);
     } |
@@ -500,6 +513,10 @@ factor :
     } |
     NOT factor {
         $$ = std::make_shared<FactorNode_Not_Factor>($1, $2, @1.begin.line);
+    } |
+    PLUS factor %prec UPLUS {
+        $$ = std::make_shared<FactorNode_Plus_Factor>(
+            $1, $2, @1.begin.line);
     } |
     MINUS factor %prec UMINUS {
         $$ = std::make_shared<FactorNode_Minus_Factor>(
