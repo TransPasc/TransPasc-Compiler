@@ -185,6 +185,7 @@ public:
   virtual void visit(class FactorNode_Variable &node) = 0;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) = 0;
   virtual void visit(class FactorNode_Not_Factor &node) = 0;
+  virtual void visit(class FactorNode_Plus_Factor &node) = 0;
   virtual void visit(class FactorNode_Minus_Factor &node) = 0;
   virtual void
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) = 0;

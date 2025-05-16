@@ -213,6 +213,7 @@ public:
   virtual void visit(class FactorNode_Variable &node) override;
   virtual void visit(class FactorNode_Lparen_Expression_Rparen &node) override;
   virtual void visit(class FactorNode_Not_Factor &node) override;
+  virtual void visit(class FactorNode_Plus_Factor &node) override;
   virtual void visit(class FactorNode_Minus_Factor &node) override;
   virtual void
   visit(class FactorNode_ID_Lparen_ExpressionList_Rparen &node) override;

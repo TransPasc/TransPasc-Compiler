@@ -327,8 +327,7 @@ void CLangGenerator::visit(
 };
 
 void CLangGenerator::visit(class ParameterListNode &node) {
-  throw CodeGenerateException(ErrType::UNREACH_CODE,
-                              "ParameterListNode should not be visited");
+  // do nothing
 };
 void CLangGenerator::visit(class ParameterListNode_Parameter &node) {
   node.getParameter()->accept(*this);
@@ -748,6 +747,12 @@ void CLangGenerator::visit(class FactorNode_Lparen_Expression_Rparen &node) {
 void CLangGenerator::visit(class FactorNode_Not_Factor &node) {
   m_outputBuffer += "(";
   m_outputBuffer += "~";
+  node.getFactor()->accept(*this);
+  m_outputBuffer += ")";
+};
+void CLangGenerator::visit(class FactorNode_Plus_Factor &node) {
+  m_outputBuffer += "(";
+  m_outputBuffer += "+";
   node.getFactor()->accept(*this);
   m_outputBuffer += ")";
 };

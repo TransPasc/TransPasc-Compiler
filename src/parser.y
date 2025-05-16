@@ -151,7 +151,7 @@
 %left LBRACKET RBRACKET
 %left LPAREN RPAREN
 %nonassoc END IF THEN ELSE WHILE DO
-%right UMINUS
+%right UMINUS UPLUS
 
 %%
 program_struct :
@@ -308,7 +308,9 @@ formal_parameter :{
             $1, $2, $3, @1.begin.line);
     }
 ;
-parameter_list :
+parameter_list :{
+        $$ = std::make_shared<ParameterListNode>(@$.begin.line);
+    } |
     parameter {
         $$ = std::make_shared<ParameterListNode_Parameter>($1, @1.begin.line);
     } |
@@ -511,6 +513,10 @@ factor :
     } |
     NOT factor {
         $$ = std::make_shared<FactorNode_Not_Factor>($1, $2, @1.begin.line);
+    } |
+    PLUS factor %prec UPLUS {
+        $$ = std::make_shared<FactorNode_Plus_Factor>(
+            $1, $2, @1.begin.line);
     } |
     MINUS factor %prec UMINUS {
         $$ = std::make_shared<FactorNode_Minus_Factor>(

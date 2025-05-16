@@ -10,7 +10,9 @@ public:
   ~ParameterListNode() override = default;
 
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  virtual SymbolType::ParamsType getParams() const = 0;
+  virtual SymbolType::ParamsType getParams() const {
+    return {};
+  }
 };
 
 // parameter_list := parameter
