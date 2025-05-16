@@ -60,13 +60,14 @@ public:
 
   virtual void visit(class ProgramHeadNode_Program_Id &node) {
     node.getId()->accept(*this);
-    std::shared_ptr<TerminalNode> id = node.getId();
-    // 插入程序名到符号表
-    // type 为 UNDEFINED
-    unique_ptr<SymbolRecord> record =
-        make_unique<SymbolRecord>(id->get<string>(), id->getLine());
-    record->setType(std::make_shared<SymbolType>());
-    symbolTable->insert(std::move(record));
+    // 程序名貌似不需要
+    // std::shared_ptr<TerminalNode> id = node.getId();
+    // // 插入程序名到符号表
+    // // type 为 UNDEFINED
+    // unique_ptr<SymbolRecord> record =
+    //     make_unique<SymbolRecord>(id->get<string>(), id->getLine());
+    // record->setType(std::make_shared<SymbolType>());
+    // symbolTable->insert(std::move(record));
   };
 
   virtual void visit(class ProgramBodyNode &node) {
