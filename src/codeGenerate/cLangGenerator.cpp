@@ -913,7 +913,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
   std::string formatStr;
   for (size_t i = 0; i < types.size(); ++i) {
     formatStr += types[i]->visit(visitor);
-    // TODO: Pascal write 无分隔符
+    // Pascal write 无分隔符
   }
   return formatStr;
 }
