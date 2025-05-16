@@ -9,13 +9,15 @@ namespace XYZ {
  * from the AST
  */
 class CLangGenerator : public Generator {
+  // TODO: 使用状态机管理状态
   std::string m_outputFile;
   std::string m_outputBuffer;
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
   std::string m_expList_split = ", ";
-  SymbolType::ParamsType params = {};
+  SymbolType::ParamsType m_params = {};
+  size_t m_paramIdx = 0;
   bool is_scanf = false;
 
 public:

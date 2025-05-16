@@ -564,21 +564,15 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
     return node.getIdVarpart()->accept(*this);
   }
   if (type->is_ref_type()) {
+    // if (m_params.size()) {
+    //   auto param = m_params[m_paramIdx];
+    //   auto paramType = param->first;
+    //   if (paramType.is_ref_type()) {
+    //     m_outputBuffer += std::format("{}", node.getId()->getValStr());
+    //     return node.getIdVarpart()->accept(*this);
+    //   }
+    // }
     m_outputBuffer += std::format("*{}", node.getId()->getValStr());
-    return node.getIdVarpart()->accept(*this);
-  }
-
-  if (params.size()) {
-    // func call
-    // TODO:处理参数
-    auto param = params[0];
-    auto type = param->first;
-    if (type.is_ref_type()) {
-      m_outputBuffer += std::format("&{}", node.getId()->getValStr());
-    } else {
-      m_outputBuffer += std::format("{}", node.getId()->getValStr());
-    }
-    params.erase(params.begin());
     return node.getIdVarpart()->accept(*this);
   }
   if (is_scanf) {
@@ -595,9 +589,14 @@ void CLangGenerator::visit(class IdVarPartNode &node) {
 };
 void CLangGenerator::visit(
     class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
+  auto old_params = m_params;
+  auto old_paramIdx = m_paramIdx;
+  m_params.clear();
+  m_paramIdx = 0;
 
   bool old_scanf = is_scanf;
   is_scanf = false;
+
   // 处理数组下标
   m_outputBuffer += "[";
   m_expList_split = "][";
@@ -606,6 +605,8 @@ void CLangGenerator::visit(
   m_outputBuffer += "]";
 
   is_scanf = old_scanf;
+  m_params = old_params;
+  m_paramIdx = old_paramIdx;
 };
 
 void CLangGenerator::visit(class ProcedureCallNode &node) {
@@ -622,9 +623,16 @@ void CLangGenerator::visit(class ProcedureCallNode_Id_Lparen_Rparen &node) {
 };
 void CLangGenerator::visit(
     class ProcedureCallNode_Id_Lparen_ExpressionList_Rparen &node) {
+  auto record = symbolTable->lookup(node.getId()->getValStr());
+  auto type = record->getType();
+  auto procedure = type->get_if<SymbolType::Function>();
+  auto func = type->get_if<SymbolType::Procedure>();
+  m_params = procedure ? procedure->param_types : func->param_types;
+  m_paramIdx = 0;
   m_outputBuffer += std::format("{}(", node.getId()->getValStr());
   node.getExpressionList()->accept(*this);
   m_outputBuffer += ");\n";
+  m_params.clear();
 };
 
 void CLangGenerator::visit(class ElsePartNode &node) {
@@ -640,15 +648,35 @@ void CLangGenerator::visit(class ElsePartNode_Else_Statement &node) {
 void CLangGenerator::visit(class ExpressionListNode &node) {
   // do nothing
 };
+
 void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
+  if (m_params.size()) {
+    // func call
+    auto param = m_params[m_paramIdx];
+    auto type = param->first;
+    if (type.is_ref_type()) {
+      m_outputBuffer += "&";
+    }
+  }
   // 处理表达式列表节点
   node.getExpression()->accept(*this);
+  m_paramIdx++;
 };
 void CLangGenerator::visit(
     class ExpressionListNode_ExpressionList_Comma_Expression &node) {
+
   node.getExpressionList()->accept(*this);
   m_outputBuffer += m_expList_split;
+  if (m_params.size()) {
+    // func call
+    auto param = m_params[m_paramIdx];
+    auto type = param->first;
+    if (type.is_ref_type()) {
+      m_outputBuffer += "&";
+    }
+  }
   node.getExpression()->accept(*this);
+  m_paramIdx++;
 };
 
 void CLangGenerator::visit(class ExpressionNode &node) {
@@ -769,9 +797,10 @@ void CLangGenerator::visit(
   auto record = symbolTable->lookup(node.getID()->getValStr());
   auto type = record->getType();
   auto funcType = type->get<SymbolType::Function>();
-  params = funcType.param_types;
+  m_params = funcType.param_types;
+  m_paramIdx = 0;
   node.getExpressionList()->accept(*this);
-  params.clear();
+  m_params.clear();
   m_outputBuffer += ")";
 };
 
