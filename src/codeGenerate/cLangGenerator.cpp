@@ -550,10 +550,16 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
   // 处理变量节点
   //   auto record = symbolTable->lookup(node.getId()->getValStr());
   auto type = node.getType();
+  if (type->is_function() || type->is_procedure()) {
+    m_outputBuffer += std::format("{}()",node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
+  }
   if (type->is_ref_type()) {
     m_outputBuffer += std::format("*{}", node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
+  }
 
-  } else if (params.size()) {
+  if (params.size()) {
     // func call
     // TODO:处理参数
     auto param = params[0];
@@ -564,12 +570,15 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
       m_outputBuffer += std::format("{}", node.getId()->getValStr());
     }
     params.erase(params.begin());
-  } else if (is_scanf) {
-    m_outputBuffer += std::format("&{}", node.getId()->getValStr());
-  } else {
-    m_outputBuffer += std::format("{}", node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
   }
-  node.getIdVarpart()->accept(*this);
+  if (is_scanf) {
+    m_outputBuffer += std::format("&{}", node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
+  }
+
+  m_outputBuffer += std::format("{}", node.getId()->getValStr());
+  return node.getIdVarpart()->accept(*this);
 };
 
 void CLangGenerator::visit(class IdVarPartNode &node) {
@@ -620,7 +629,7 @@ void CLangGenerator::visit(class ElsePartNode_Else_Statement &node) {
 };
 
 void CLangGenerator::visit(class ExpressionListNode &node) {
-  // do nothing 
+  // do nothing
 };
 void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
   // 处理表达式列表节点
@@ -889,9 +898,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
             "Record type is not supported for C-style IO format");
       },
       [this](const SymbolType::Function &func) -> std::string {
-        throw CodeGenerateException(
-            ErrType::INVALID_INPUT,
-            "Function type is not supported for C-style IO format");
+        return getCStyleIOFormatStr({func.return_type});
       },
       [this](const SymbolType::Procedure &proc) -> std::string {
         throw CodeGenerateException(

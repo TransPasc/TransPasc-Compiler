@@ -606,22 +606,12 @@ public:
       throw SemanticException(ErrType::UNDEFINED,
                               "Undefined procedure: " + id->get<string>());
     }
+    // TODO: shit ppt, 统一Procedure & function的语法声明
     auto procedureType = record->getType()->get_if<SymbolType::Procedure>();
     auto functionType = record->getType()->get_if<SymbolType::Function>();
-    bool isProcedure = true;
-    if (procedureType != nullptr) {
-      // keep isProcedure = true
-      
-    } else if (functionType != nullptr) {
-      // change isProcedure
-      isProcedure = false;
-    } else {
-      auto params = nullptr;
-      throw SemanticException(ErrType::UNSUPPORTED,
-                              "Not a procedure: " + id->get<string>());
-    }
+
     auto expTypes = node.getExpressionList()->getTypeList();
-    auto params = isProcedure ? procedureType->param_types : functionType->param_types;
+    auto params = procedureType ? procedureType->param_types : functionType->param_types;
     // TODO: 将下面的代码提取到一个函数中
     // 检查参数个数
     if (expTypes.size() != params.size()) {
