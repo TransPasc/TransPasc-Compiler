@@ -15,7 +15,6 @@ enum class BasicType {
   BOOLEAN,
   CHAR,
   STRING,
-  FLOAT,
 };
 namespace XYZ {
 /**
@@ -257,9 +256,6 @@ public:
                        break;
                      case BasicType::STRING:
                        std::cout << "STRING";
-                       break;
-                     case BasicType::FLOAT:
-                       std::cout << "FLOAT";
                        break;
                      default:
                        std::cout << "Unknown basic type";
