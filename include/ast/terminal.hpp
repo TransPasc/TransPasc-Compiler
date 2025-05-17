@@ -90,7 +90,12 @@ public:
 protected:
   std::string val2string() const {
     if (std::holds_alternative<std::string>(value)) {
-      return std::get<std::string>(value);
+      // tolower if type is keyword
+      std::string str = std::get<std::string>(value);
+      if (type == Type::KEYWORD)
+        std::transform(str.begin(), str.end(), str.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+      return str;
     } else if (std::holds_alternative<int>(value)) {
       return std::to_string(std::get<int>(value));
     } else if (std::holds_alternative<double>(value)) {

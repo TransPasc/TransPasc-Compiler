@@ -355,8 +355,11 @@ LINE_COMMENT \/\/[^\n]*
 }
 
 {ID}    {
+    // yytext 转为小写
+    std::string str = yytext;
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, str, m_driver.getLine());
     return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
 }
 <<EOF>>     { return yyterminate(); }
