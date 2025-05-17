@@ -147,9 +147,9 @@ void CLangGenerator::visit(
   node.getConstDecl()->accept(*this);
 
   auto type = node.getConstVal()->getType();
-  std::string buf = std::format("const {} {} = ", symbolType2Str(*type),
+  m_outputBuffer += std::format("const {} {} = ", symbolType2Str(*type),
                                 node.getId()->get<std::string>());
-  m_outputBuffer += buf;
+
   node.getConstVal()->accept(*this);
   m_outputBuffer += ";\n";
 };
@@ -815,7 +815,7 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
         case BasicType::INTEGER:
           return "int";
         case BasicType::REAL:
-          return "float";
+          return "double";
         case BasicType::BOOLEAN:
           return "bool";
         case BasicType::CHAR:
@@ -920,7 +920,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
           // we should use scientific format
           // so use %E with a length of 20
           // and exponential should be of length 3
-          return "%f"s;
+          return "%lf"s;
         case BasicType::BOOLEAN:
           return "%d"s;
         case BasicType::CHAR:

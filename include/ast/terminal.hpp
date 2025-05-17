@@ -1,16 +1,17 @@
 #pragma once
+#include "ast/ast.h"
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <variant>
-
-#include "ast/ast.h"
 
 namespace XYZ {
 // 终结符节点
 class TerminalNode : public ASTNode {
 
 public:
-  using ValT = std::variant<std::string, int, float>;
+  using ValT = std::variant<std::string, int, double>;
   enum class Type {
     ID,
     NUMBER,
@@ -35,17 +36,17 @@ public:
   };
   /**
    * @brief 将字符串转换为数字
-   * 可能是 int 或 float
+   * 可能是 int 或 double
    * @param val
-   * @return Valt
+   * @return ValT
    */
   static ValT makeNum(const std::string &val) {
     // TODO: 未来可能会有更复杂的数字类型
-    auto is_float = [](const std::string &str) {
+    auto is_double = [](const std::string &str) {
       return str.find('.') != std::string::npos;
     };
-    if (is_float(val)) {
-      return std::stof(val);
+    if (is_double(val)) {
+      return std::stod(val);
     } else {
       return std::stoi(val);
     }
@@ -91,8 +92,11 @@ protected:
       return std::get<std::string>(value);
     } else if (std::holds_alternative<int>(value)) {
       return std::to_string(std::get<int>(value));
-    } else if (std::holds_alternative<float>(value)) {
-      return std::to_string(std::get<float>(value));
+    } else if (std::holds_alternative<double>(value)) {
+      std::ostringstream oss;
+      oss << std::setprecision(std::numeric_limits<double>::max_digits10)
+          << std::get<double>(value);
+      return oss.str();
     }
     throw std::runtime_error("Unknown value type");
   }

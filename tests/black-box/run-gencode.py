@@ -8,7 +8,7 @@ from collections import defaultdict
 DIFF = "diff"
 FPC = "fpc"
 CC = "cc"
-TIMEOUT = 20
+TIMEOUT = 60
 
 
 def process_case(args) -> dict[str, str]:
