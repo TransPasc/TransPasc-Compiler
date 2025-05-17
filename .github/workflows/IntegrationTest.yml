@@ -15,6 +15,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y flex bison libfl-dev
+          sudo apt-get install -y fpc
       - name: watch flex&bison
         run: |
           flex --version
@@ -40,7 +41,7 @@ jobs:
             echo "Failed logs found:"
             ls res/failed/log
             for file in res/failed/log/*; do
-              echo "Contents of $file:"
+              echo "\nContents of $file:"
               cat "$file"
             done
             exit 1
