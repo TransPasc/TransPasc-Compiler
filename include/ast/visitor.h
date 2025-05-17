@@ -135,6 +135,8 @@ public:
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) = 0;
   virtual void visit(class StatementNode_CompoundStatement &node) = 0;
+  dispatch(StatementNode_Break);
+  dispatch(StatementNode_Continue);
 
   virtual void visit(class VariableListNode &node) = 0;
   virtual void visit(class VariableListNode_Variable &node) = 0;

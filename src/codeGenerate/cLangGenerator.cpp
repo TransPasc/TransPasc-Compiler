@@ -559,6 +559,14 @@ void CLangGenerator::visit(class StatementNode_CompoundStatement &node) {
   node.getCompoundStatement()->accept(*this);
   m_outputBuffer += "}\n";
 };
+void CLangGenerator::visit(class StatementNode_Break &node) {
+  // 处理break语句节点
+  m_outputBuffer += "break;\n";
+};
+void CLangGenerator::visit(class StatementNode_Continue &node) {
+  // 处理continue语句节点
+  m_outputBuffer += "continue;\n";
+};
 
 void CLangGenerator::visit(class VariableListNode &node) {
   throw CodeGenerateException(ErrType::UNREACH_CODE,
@@ -778,7 +786,10 @@ void CLangGenerator::visit(class FactorNode_CharLiteral &node) {
   node.getCharLiteral()->accept(*this);
 };
 void CLangGenerator::visit(class FactorNode_BoolLiteral &node) {
-  node.getBoolLiteral()->accept(*this);
+  auto str = node.getBoolLiteral()->getValStr();
+  // 转为小写
+  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+  m_outputBuffer += str == "true" ? "1" : "0";
 };
 void CLangGenerator::visit(class FactorNode_Variable &node) {
   node.getVariable()->accept(*this);

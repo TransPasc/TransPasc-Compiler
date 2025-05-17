@@ -529,6 +529,12 @@ public:
   virtual void visit(class StatementNode_CompoundStatement &node) {
     node.getCompoundStatement()->accept(*this);
   };
+  virtual void visit(class StatementNode_Break &node) {
+    // TODO: break语句检查 是否在循环中
+  };
+  virtual void visit(class StatementNode_Continue &node) {
+    // TODO: continue语句检查 是否在循环中
+  };
 
   virtual void visit(class VariableListNode &node) {
     throw SemanticException(ErrType::UNDEFINED,

@@ -74,6 +74,9 @@ GOTO "goto"
 TO "to"
 READ "read"
 WRITE "write"
+BREAK "break"
+CONTINUE "continue"
+
 NOT "not"
 TRUE "true"
 FALSE "false"
@@ -279,6 +282,14 @@ LINE_COMMENT \/\/[^\n]*
 {OR}    {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
     return XYZ::Parser::make_OR(ptr, m_driver.getLocation());
+}
+{BREAK} {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
+    return XYZ::Parser::make_BREAK(ptr, m_driver.getLocation());
+}
+{CONTINUE} {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
+    return XYZ::Parser::make_CONTINUE(ptr, m_driver.getLocation());
 }
 {BOOL_LITERAL}      {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::BOOL_LITERAL, yytext, m_driver.getLine());

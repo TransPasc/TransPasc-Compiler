@@ -172,6 +172,8 @@ public:
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) override;
   virtual void visit(class StatementNode_CompoundStatement &node) override;
+  virtual void visit(class StatementNode_Break &node) override;
+  virtual void visit(class StatementNode_Continue &node) override;
 
   virtual void visit(class VariableListNode &node) override;
   virtual void visit(class VariableListNode_Variable &node) override;

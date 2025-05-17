@@ -82,6 +82,8 @@
 %token <ASTNodePtr> READ "read";
 %token <ASTNodePtr> WRITE "write";
 %token <ASTNodePtr> NOT "not";
+%token <ASTNodePtr> BREAK "break";
+%token <ASTNodePtr> CONTINUE;
 
 %token <ASTNodePtr> LPAREN "left parenthesis";
 %token <ASTNodePtr> RPAREN "right parenthesis";
@@ -404,6 +406,12 @@ statement : {
     /* 支持嵌套 */
     compound_statement {
         $$ = std::make_shared<StatementNode_CompoundStatement>($1, @1.begin.line);
+    } |
+    BREAK {
+        $$ = std::make_shared<StatementNode_Break>($1, @1.begin.line);
+    } |
+    CONTINUE {
+        $$ = std::make_shared<StatementNode_Continue>($1, @1.begin.line);
     }
 ;
 variable_list :
