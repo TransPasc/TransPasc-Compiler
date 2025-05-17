@@ -9,16 +9,20 @@ namespace XYZ {
  * from the AST
  */
 class CLangGenerator : public Generator {
-  // TODO: 使用状态机管理状态
+  enum class State {
+    NORMAL,       // 普通状态
+    FunctionCall, // 处于函数调用 <function_name>(...)
+    IdVarPart,    // 处于数组下标 <array_name>[...]
+    Scanf,        // 处于 scanf(<format_string>, ...)
+    Printf,       // 处于 printf(<format_string>, ...)
+  };
+  std::stack<State> m_stateStack;
   std::string m_outputFile;
   std::string m_outputBuffer;
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
-  std::string m_expList_split = ", ";
-  SymbolType::ParamsType m_params = {};
-  size_t m_paramIdx = 0;
-  bool is_scanf = false;
+  std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
 
 public:
   CLangGenerator();
