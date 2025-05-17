@@ -27,5 +27,23 @@ jobs:
 
       - name: Run Integration Tests
         run: |
+          pwd
+          ls -al
           mkdir res
           python3 tests/black-box/run-gencode.py tests/black-box/generate/ res
+      # 检查res/failed/log/ 文件夹下是否有文件
+      # 若存在，则输出文件夹中的所有文件及其内容，并 fail
+      # 否则输出成功信息
+      - name: Check for failed logs
+        run: |
+          if [ -d "res/failed/log" ] && [ "$(ls -A res/failed/log)" ]; then
+            echo "Failed logs found:"
+            ls res/failed/log
+            for file in res/failed/log/*; do
+              echo "Contents of $file:"
+              cat "$file"
+            done
+            exit 1
+          else
+            echo "No failed logs found."
+          fi

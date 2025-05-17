@@ -55,6 +55,7 @@ def process_case(args) -> dict[str, str]:
     # print("!" + "-" * 50)
 
     try:
+        err_msg_list = []
         # 编译Pascal
         # print the command
         # create a directory for fpc
@@ -64,7 +65,8 @@ def process_case(args) -> dict[str, str]:
             text=True,
         )
         if fpc_res.returncode != 0:
-            raise Exception(f"Pascal编译失败:\n{fpc_res.stderr}")
+            err_msg_list.append(f"Pascal编译失败:\n{fpc_res.stderr}")
+            err_msg_list.append(f"Pascal编译失败:\n{fpc_res.stdout}")
 
         with open(testcase_answer, "w") as f_ans:
             subprocess.run(
@@ -81,7 +83,7 @@ def process_case(args) -> dict[str, str]:
             timeout=TIMEOUT,
         )
         if kpc_res.returncode != 0:
-            raise Exception(f"C代码生成失败:\n{kpc_res.stderr.decode()}")
+            err_msg_list.append(f"C代码生成失败:\n{kpc_res.stderr}")
 
         # 编译C文件
         cc_res = subprocess.run(
@@ -89,8 +91,12 @@ def process_case(args) -> dict[str, str]:
             capture_output=True,
         )
         if cc_res.returncode != 0:
-            raise Exception(f"C编译失败:\n{cc_res.stderr.decode()}")
-
+            err_msg_list.append(f"C编译失败:\n{cc_res.stderr.decode()}")
+        if err_msg_list:
+            err_msg = ""
+            for msg in err_msg_list:
+                err_msg += f"{msg}\n"
+            raise Exception(err_msg)
         with open(testcase_output, "w") as f_out:
             subprocess.run(
                 [cc_output_executable],
