@@ -1,5 +1,6 @@
 #include "codeGenerate/cLangGenerator.hpp"
 #include "ast/ast.hpp"
+#include <algorithm>
 #include <cassert>
 #include <format>
 #include <fstream>

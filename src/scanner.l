@@ -1,6 +1,7 @@
 %{
     #include <iostream>
     #include <cstdlib>
+    #include <algorithm>
     #include "scanner.h"
     #include "driver.h"
     #include "parser.hpp"

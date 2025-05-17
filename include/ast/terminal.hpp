@@ -1,5 +1,6 @@
 #pragma once
 #include "ast/ast.h"
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <limits>
