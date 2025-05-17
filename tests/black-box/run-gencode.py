@@ -1,3 +1,6 @@
+import enum
+from typing import List,Tuple
+from dataclasses import dataclass
 import os
 import sys
 import subprocess
@@ -9,10 +12,67 @@ DIFF = "diff"
 FPC = "fpc"
 CC = "cc"
 TIMEOUT = 60
+class Platform(enum.Enum):
+  LINUX = "linux"
+  WINDOWS = "windows"
+  MACOS = "macos"
 
+@dataclass
+class Config:
+  @dataclass
+  class Skip:
+    reason : str
+    platform : List[Platform]
+    path : str
+  skips: List[Skip]
+
+  @staticmethod
+  def shouldSkip(config: "Config", pascal_path: str) -> Tuple[bool, 'Config.Skip|None']:
+    for skip in config.skips:
+        if skip.path in pascal_path and get_platform() in skip.platform:
+            return True, skip
+    return False, None
+
+PLATFORM = None
+def get_platform() -> Platform:
+  import platform
+  global PLATFORM
+  if PLATFORM is not None:
+      return PLATFORM
+  plat = platform.system()
+  if plat == "Linux":
+      PLATFORM = Platform.LINUX
+  elif plat == "Windows":
+      PLATFORM = Platform.WINDOWS
+  elif plat == "Darwin":
+      PLATFORM = Platform.MACOS
+  else:
+      raise ValueError(f"Unsupported platform: {plat}")
+  return PLATFORM
+
+def load_config(json_path: str) -> Config:
+  import json
+  with open(json_path, "r") as f:
+      data = json.load(f)
+  config = Config(skips=[])
+  for item in data['skip']:
+      reason = item["reason"]
+      if "all" in item["platform"]:
+          platform = [Platform.LINUX, Platform.WINDOWS, Platform.MACOS]
+      else:
+          platform = [Platform(p) for p in item["platform"]]
+      path = item["path"]
+      config.skips.append(
+          Config.Skip(
+              reason=reason,
+              platform=platform,
+              path=path,
+          )
+      )
+  return config
 
 def process_case(args) -> dict[str, str]:
-    name, pas_path, in_path, output_base = args
+    name, pas_path, in_path, output_base, config = args
     result = {
         "name": name,
         "status": "success",
@@ -21,6 +81,9 @@ def process_case(args) -> dict[str, str]:
         "short_report": "",
         "time_usage": None,
     }
+
+    output_label = result["pas_path"].split("generate/")[-1]
+    result["name"] = output_label
 
     # calculate all the path needed
     log_dir = os.path.join(output_base, "failed/log")
@@ -55,6 +118,15 @@ def process_case(args) -> dict[str, str]:
     # print("!" + "-" * 50)
 
     try:
+        # check if the pas_path is in the skip list
+        should_skip, skip_config = config.shouldSkip(config, pas_path)
+        if should_skip:
+            result["status"] = "skipped"
+            result["log"] = f"Skipped: {skip_config.reason} on {get_platform()}"
+            result["short_report"] = skip_config.reason
+            print(f"\033[93m{result['name']}: {result['status']} Because: {result['short_report']}\033[0m")
+            return result
+
         err_msg_list = []
         # 编译Pascal
         # print the command
@@ -152,8 +224,6 @@ def process_case(args) -> dict[str, str]:
     result["time_usage"] = end_time - start_time
 
 
-    output_label = result["pas_path"].split("generate/")[-1]
-    result["name"] = output_label
 
     text_message = (
         f"\033[92m{result['name']}: {result['status']}\033[0m"
@@ -176,8 +246,8 @@ def main():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    cases: list[tuple[str, str, str | None, str]] = []
-
+    cases: list[tuple[str, str, str | None, str, Config]] = []
+    config = load_config("tests/black-box/run-gencode-config.json")
     # 递归查找所有.pas文件[9,10](@ref)
     for root, _, files in os.walk(test_path):
         for file in files:
@@ -189,7 +259,7 @@ def main():
                 in_file = os.path.join(root, f"{name}.in")
                 if not os.path.exists(in_file):
                     in_file = None
-                cases.append((name, pas_file, in_file, output_path))
+                cases.append((name, pas_file, in_file, output_path, config))
     print(f"找到 {len(cases)} 个测试用例\n")
 
     start_time = time.time()
@@ -219,8 +289,8 @@ def main():
     stats = defaultdict(int)
     for res in results:
         stats[res["status"]] += 1
-    print(f"\n统计结果: 成功 {stats['success']}, 失败 {stats['failed']}")
-    print(f"通过率: {stats['success'] / len(cases) * 100:.2f}%")
+    print(f"\n统计结果: 成功 {stats['success']}, 失败 {stats['failed']}, 跳过 {stats['skipped']}")
+    print(f"错误率: {stats['failed'] / len(cases) * 100:.2f}%")
 
 
 if __name__ == "__main__":

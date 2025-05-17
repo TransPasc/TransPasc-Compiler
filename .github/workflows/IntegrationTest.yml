@@ -41,7 +41,8 @@ jobs:
             echo "Failed logs found:"
             ls res/failed/log
             for file in res/failed/log/*; do
-              echo "\nContents of $file:"
+              echo
+              echo "Contents of $file:"
               cat "$file"
             done
             exit 1
