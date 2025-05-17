@@ -41,6 +41,8 @@ DIGITS {DIGIT}+
 
 OPTIONAL_FRACTION (\.{DIGITS})?
 NUM {DIGITS}{OPTIONAL_FRACTION}
+STRING_LITERAL '([^'\n\r]+|'')'
+/*TODO: 确定 Pascal 单引号括起来的到底是 stirng 还是 char 还是什么*/
 CHAR_LITERAL '([^'\n\r]|'')'
 
 /* KEY WORD */
@@ -147,6 +149,12 @@ LINE_COMMENT \/\/[^\n]*
 {NUM}    {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::NUMBER, TerminalNode::makeNum(yytext), m_driver.getLine());
     return XYZ::Parser::make_NUMBER(ptr, m_driver.getLocation());
+}
+{STRING_LITERAL} {
+  // 去掉两侧的引号
+  std::string str = std::string(yytext).substr(1, yyleng - 2);
+  auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::STRING_LITERAL, str, m_driver.getLine());
+  return XYZ::Parser::make_STRING_LITERAL(ptr, m_driver.getLocation());
 }
 {CHAR_LITERAL} {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::CHAR_LITERAL, yytext, m_driver.getLine());

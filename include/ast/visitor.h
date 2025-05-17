@@ -43,12 +43,14 @@ public:
   virtual void visit(class ConstValNode_Plus_Number &node) = 0;
   virtual void visit(class ConstValNode_Minus_Number &node) = 0;
   virtual void visit(class ConstValNode_Number &node) = 0;
+  dispatch(ConstValNode_StringLiteral);
   virtual void visit(class ConstValNode_CharLiteral &node) = 0;
 
   virtual void visit(class TypeNode &node) = 0;
   virtual void visit(class TypeNode_BasicType &node) = 0;
   virtual void
   visit(class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType &node) = 0;
+  dispatch(TypeNode_String);
 
   virtual void visit(class BasicTypeNode &node) = 0;
   virtual void visit(class BasicTypeNode_Integer &node) = 0;

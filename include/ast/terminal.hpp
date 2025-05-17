@@ -29,10 +29,10 @@ public:
     SEMICOLON,
     COLON,
     PERIOD,
-    KEYWORD, // 新增关键字类型
-    CHAR_LITERAL,
+    KEYWORD,      // 新增关键字类型
+    CHAR_LITERAL, // 字符字面量
     BOOL_LITERAL,
-    QUOTE,         // 新增字符串类型
+    QUOTE,
     STRING_LITERAL // 新增字符串类型
   };
   /**
@@ -136,6 +136,14 @@ protected:
       return "PERIOD";
     case Type::KEYWORD:
       return "KEYWORD";
+    case Type::CHAR_LITERAL:
+      return "CHAR_LITERAL";
+    case Type::BOOL_LITERAL:
+      return "BOOL_LITERAL";
+    case Type::QUOTE:
+      return "QUOTE";
+    case Type::STRING_LITERAL:
+      return "STRING_LITERAL";
     default:
       return "";
     }

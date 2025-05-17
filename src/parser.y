@@ -64,6 +64,7 @@
 
 %token <ASTNodePtr> NUMBER "number";
 %token <ASTNodePtr> CHAR_LITERAL "char_literal";
+%token <ASTNodePtr> STRING_LITERAL;
 %token <ASTNodePtr> ID "id";
 %token <ASTNodePtr> RELOP "relational operator";
 %token <ASTNodePtr> PLUS "plus";
@@ -220,6 +221,9 @@ const_val :
     } |
     CHAR_LITERAL {
         $$ = std::make_shared<ConstValNode_CharLiteral>($1, @1.begin.line);
+    } |
+    STRING_LITERAL {
+      $$ = std::make_shared<ConstValNode_StringLiteral>($1, @1.begin.line);
     }
 ;
 var_decls :
@@ -248,6 +252,9 @@ type :
     ARRAY LBRACKET period RBRACKET OF basic_type {
         $$ = std::make_shared<TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType>(
             $1, $2, $3, $4, $5, $6, @1.begin.line);
+    } |
+    STRING {
+      $$ = std::make_shared<TypeNode_String> ($1, @1.begin.line);
     }
 ;
 basic_type :

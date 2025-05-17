@@ -29,7 +29,16 @@ public:
   std::shared_ptr<TerminalNode> getNumber() const;
   virtual std::shared_ptr<SymbolType> getType() const override;
 };
+// // factor := STRING_LITERAL
+// class FactorNode_StringLiteral : public FactorNode {
+// public:
+//   FactorNode_StringLiteral(ASTNodePtr stringLiteral, size_t line);
+//   ~FactorNode_StringLiteral() override;
 
+//   void accept(ASTVisitor &visitor) override;
+//   std::shared_ptr<TerminalNode> getStringLiteral() const;
+//   virtual std::shared_ptr<SymbolType> getType() const override;
+// };
 // factor := CHAR_LITERAL
 class FactorNode_CharLiteral : public FactorNode {
 public:

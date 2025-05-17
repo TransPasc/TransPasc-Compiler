@@ -77,10 +77,12 @@ public:
   virtual void visit(class ConstValNode_Plus_Number &node) override;
   virtual void visit(class ConstValNode_Minus_Number &node) override;
   virtual void visit(class ConstValNode_Number &node) override;
+  virtual void visit(class ConstValNode_StringLiteral &node) override;
   virtual void visit(class ConstValNode_CharLiteral &node) override;
 
   virtual void visit(class TypeNode &node) override;
   virtual void visit(class TypeNode_BasicType &node) override;
+  virtual void visit(class TypeNode_String &node) override;
   virtual void visit(class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType
                          &node) override;
 

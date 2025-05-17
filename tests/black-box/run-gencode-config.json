@@ -34,6 +34,13 @@
       "platform": [
         "all"
       ]
+    },
+    {
+      "path": "hidden_set/14_union_find.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
     }
   ]
 }

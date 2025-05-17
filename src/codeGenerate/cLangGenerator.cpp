@@ -169,6 +169,9 @@ void CLangGenerator::visit(class ConstValNode_Minus_Number &node) {
 void CLangGenerator::visit(class ConstValNode_Number &node) {
   m_outputBuffer += std::format("{}", node.getNumber()->getValStr());
 };
+void CLangGenerator::visit(class ConstValNode_StringLiteral &node) {
+  m_outputBuffer += std::format("\"{}\"", node.getStringLiteral()->getValStr());
+};
 void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {
   m_outputBuffer += std::format("{}", node.getCharLiteral()->getValStr());
 };
@@ -178,6 +181,9 @@ void CLangGenerator::visit(class TypeNode &node) {
                               "TypeNode should not be visited");
 };
 void CLangGenerator::visit(class TypeNode_BasicType &node) {
+  //   nothing need to do
+};
+void CLangGenerator::visit(class TypeNode_String &node) {
   //   nothing need to do
 };
 void CLangGenerator::visit(
@@ -404,7 +410,7 @@ void CLangGenerator::visit(
   if (m_stateStack.top() == State::FunctionDef) {
     auto type = m_returnTypeStack.top();
     m_outputBuffer +=
-        std::format("{} {} = 0;", symbolType2Str(*type), FUNC_RES);
+        std::format("{} {} = 0;\n", symbolType2Str(*type), FUNC_RES);
     m_returnTypeStack.pop();
   }
 
@@ -836,7 +842,7 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
         case BasicType::CHAR:
           return "char";
         case BasicType::STRING:
-          return "string";
+          return "const char*";
         default:
           assert(false && "Unhandled BasicType");
         }
