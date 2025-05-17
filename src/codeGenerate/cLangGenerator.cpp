@@ -278,10 +278,10 @@ void CLangGenerator::visit(
         &node) {
   // 处理子程序节点, 在 head 中 enter block
   node.getSubprogramHead()->accept(*this);
-  m_outputBuffer += " {\n";
+  m_outputBuffer += "{\n/* subprogram body */\n";
   node.getSubprogramBody()->accept(*this);
-  m_outputBuffer += "}";
   symbolTable->exitBlock();
+  m_outputBuffer += "}\n";
 };
 
 void CLangGenerator::visit(class SubprogramHeadNode &node) {
@@ -305,6 +305,7 @@ void CLangGenerator::visit(
 void CLangGenerator::visit(
     class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
         &node) {
+  m_stateStack.push(State::FunctionDef);
   // 将 func id 加入符号表
   auto params = node.getFormalParameter()->getParams();
   auto type = SymbolType::MakeFunction(nullptr, params);
@@ -318,6 +319,7 @@ void CLangGenerator::visit(
   symbolTable->enterBlock();
   node.getFormalParameter()->accept(*this);
   m_outputBuffer += ")";
+  m_returnTypeStack.push(node.getBasicType()->getType());
 };
 
 void CLangGenerator::visit(class FormalParameterNode &node) {
@@ -398,9 +400,22 @@ void CLangGenerator::visit(class SubprogramBodyNode &node) {
 };
 void CLangGenerator::visit(
     class SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement &node) {
+  // define FUNC_RES
+  if (m_stateStack.top() == State::FunctionDef) {
+    auto type = m_returnTypeStack.top();
+    m_outputBuffer +=
+        std::format("{} {} = 0;", symbolType2Str(*type), FUNC_RES);
+    m_returnTypeStack.pop();
+  }
+
   node.getConstDecls()->accept(*this);
   node.getVarDecls()->accept(*this);
   node.getCompoundStatement()->accept(*this);
+  //   处理函数返回值
+  if (m_stateStack.top() == State::FunctionDef) {
+    m_outputBuffer += std::format("return {};\n", FUNC_RES);
+    m_stateStack.pop();
+  }
 };
 
 void CLangGenerator::visit(class CompoundStatementNode &node) {
@@ -444,7 +459,7 @@ void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
   auto record = symbolTable->lookup(node.getId()->getValStr());
   // 处理 return 语句
   if (record && record->getType() && record->getType()->is_function()) {
-    m_outputBuffer += "return ";
+    m_outputBuffer += std::format("{} = ", FUNC_RES);
     node.getExpression()->accept(*this);
     m_outputBuffer += ";\n";
     return;
@@ -561,16 +576,19 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
   // 处理变量节点
   //   auto record = symbolTable->lookup(node.getId()->getValStr());
   auto type = node.getType();
+  if (m_stateStack.top() == State::Scanf) {
+    if (type->is_function())
+      m_outputBuffer += std::format("&{}", FUNC_RES);
+    else
+      m_outputBuffer += std::format("&{}", node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
+  }
   if (type->is_function() || type->is_procedure()) {
     m_outputBuffer += std::format("{}()", node.getId()->getValStr());
     return node.getIdVarpart()->accept(*this);
   }
   if (type->is_ref_type()) {
     m_outputBuffer += std::format("*{}", node.getId()->getValStr());
-    return node.getIdVarpart()->accept(*this);
-  }
-  if (m_stateStack.top() == State::Scanf) {
-    m_outputBuffer += std::format("&{}", node.getId()->getValStr());
     return node.getIdVarpart()->accept(*this);
   }
 

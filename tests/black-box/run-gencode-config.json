@@ -27,6 +27,13 @@
       "platform": [
         "macos"
       ]
+    },
+    {
+      "path": "hidden_set/15_matrix_multiply.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
     }
   ]
 }

@@ -9,9 +9,11 @@ namespace XYZ {
  * from the AST
  */
 class CLangGenerator : public Generator {
+  inline const static std::string FUNC_RES = "__result__";
   enum class State {
     NORMAL,       // 普通状态
     FunctionCall, // 处于函数调用 <function_name>(...)
+    FunctionDef,  // 处于函数定义 <function_name>(<params>) {...}
     IdVarPart,    // 处于数组下标 <array_name>[...]
     Scanf,        // 处于 scanf(<format_string>, ...)
     Printf,       // 处于 printf(<format_string>, ...)
@@ -22,7 +24,9 @@ class CLangGenerator : public Generator {
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
+
   std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
+  std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;
 
 public:
   CLangGenerator();
