@@ -2,6 +2,7 @@
 #include "ast/ast.h"
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <variant>
@@ -94,6 +95,7 @@ protected:
       return std::to_string(std::get<int>(value));
     } else if (std::holds_alternative<double>(value)) {
       std::ostringstream oss;
+      // output double with maximum precision
       oss << std::setprecision(std::numeric_limits<double>::max_digits10)
           << std::get<double>(value);
       return oss.str();
