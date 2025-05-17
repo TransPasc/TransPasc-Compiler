@@ -145,7 +145,10 @@ def process_case(args) -> dict[str, str]:
     end_time = time.time()
     result["time_usage"] = end_time - start_time
 
-    # get text_message from the result
+
+    output_label = result["pas_path"].split("generate/")[-1]
+    result["name"] = output_label
+
     text_message = (
         f"\033[92m{result['name']}: {result['status']}\033[0m"
         if result["status"] == "success"
