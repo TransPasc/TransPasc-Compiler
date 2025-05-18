@@ -54,17 +54,23 @@ public:
     }
   }
 
-  TerminalNode(Type type, ValT val, size_t line)
-      : ASTNode("Terminal", line), value(val), type(type) {}
+  TerminalNode(Type type, std::string val, size_t line)
+      : ASTNode("Terminal", line), __row_value_(val), type(type) {
+    if (type == Type::NUMBER) {
+      value = makeNum(__row_value_);
+    } else {
+      value = __row_value_;
+    }
+  }
   // 拷贝构造函数
   TerminalNode(const TerminalNode &other)
-      : ASTNode(other), value(other.value), type(other.type) {}
+      : ASTNode(other), __row_value_(other.__row_value_), type(other.type) {}
   TerminalNode &operator=(const TerminalNode &) = default;
 
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  std::string getValStr() { return val2string(); }
-  ValT getValue() const { return value; }
+  std::string getValStr() { return __row_value_; }
+  // std::string getValue() const { return __row_value_; }
   //   泛型 get
   template <typename T> T get() const { return std::get<T>(value); }
   //   指针版 get
@@ -72,7 +78,7 @@ public:
 
   virtual void print(std::string prefix) const override {
     std::cout << prefix;
-    std::cout << type2string() << " : " << val2string() << std::endl;
+    std::cout << type2string() << " : " << __row_value_ << std::endl;
   }
 
   //   断言是不是某个字符串
@@ -89,25 +95,6 @@ public:
   bool isMulOp() const { return type == Type::MULOP; }
 
 protected:
-  std::string val2string() const {
-    if (std::holds_alternative<std::string>(value)) {
-      // tolower if type is keyword
-      std::string str = std::get<std::string>(value);
-      if (type == Type::KEYWORD)
-        std::transform(str.begin(), str.end(), str.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
-      return str;
-    } else if (std::holds_alternative<int>(value)) {
-      return std::to_string(std::get<int>(value));
-    } else if (std::holds_alternative<double>(value)) {
-      std::ostringstream oss;
-      // output double with maximum precision
-      oss << std::setprecision(std::numeric_limits<double>::max_digits10)
-          << std::get<double>(value);
-      return oss.str();
-    }
-    throw std::runtime_error("Unknown value type");
-  }
   std::string type2string() const {
     switch (type) {
     case Type::ID:
@@ -157,6 +144,7 @@ protected:
 
 private:
   Type type;
+  std::string __row_value_;
   ValT value;
 };
 } // namespace XYZ

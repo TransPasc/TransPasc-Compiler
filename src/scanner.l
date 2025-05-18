@@ -151,7 +151,7 @@ LINE_COMMENT \/\/[^\n]*
     // cout << "空白符" << endl;
 }
 {NUM}    {
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::NUMBER, TerminalNode::makeNum(yytext), m_driver.getLine());
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::NUMBER, yytext, m_driver.getLine());
     return XYZ::Parser::make_NUMBER(ptr, m_driver.getLocation());
 }
 {STRING_LITERAL} {
