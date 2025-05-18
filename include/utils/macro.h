@@ -163,3 +163,6 @@
 
 #define dispatch_virtual(production)                                           \
   virtual void visit(class production &node) = 0
+
+#define impl_visit(class_type, node_type)                                      \
+  void class_type::visit(class node_type &node)

@@ -3,6 +3,7 @@
 #endif
 #include "menu/menu.hpp"
 #include "codeGenerate/cLangGenerator.hpp"
+#include "codeGenerate/llvmIrGenerator.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -43,24 +44,27 @@ void Menu::readFromFile(Driver &driver, const OutputConfig &config) {
   }
 }
 void Menu::generateCode(Driver &driver, const std::string &format) {
-  const static auto format2generator =
-      std::unordered_map<std::string, std::function<void(Driver &)>>{
-          {"c",
-           [](Driver &driver) {
-             driver.generateCode(make_shared<CLangGenerator>());
-           }},
-          {"llvm-ir",
-           [](Driver &driver) {
-             std::cerr << "LLVM IR code generation is not implemented yet."
-                       << std::endl;
-           }},
-          {"risc-v",
-           [](Driver &driver) {
-             std::cerr << "RISC-V code generation is not implemented yet."
-                       << std::endl;
-           }},
-          {"token", [](Driver &driver) { driver.printTokens(); }},
-          {"ast", [](Driver &driver) { driver.printAST(); }}};
+  const static auto format2generator = std::unordered_map<
+      std::string, std::function<void(Driver &)>>{
+      {"c",
+       [](Driver &driver) {
+         driver.generateCode(make_shared<CLangGenerator>());
+       }},
+      {"llvm-ir",
+       [](Driver &driver) {
+         std::cerr
+             << "\033[93mLLVM IR code generation is not implemented yet.\033[0m"
+             << std::endl;
+         driver.generateCode(make_shared<LLVMIrGenerator>());
+       }},
+      {"risc-v",
+       [](Driver &driver) {
+         std::cerr
+             << "\033[93mRISC-V code generation is not implemented yet.\033[0m"
+             << std::endl;
+       }},
+      {"token", [](Driver &driver) { driver.printTokens(); }},
+      {"ast", [](Driver &driver) { driver.printAST(); }}};
 
   auto it = format2generator.find(format);
   if (it != format2generator.end()) {
