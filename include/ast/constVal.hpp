@@ -86,7 +86,24 @@ public:
     return getTypeFromConstNumber(getNumber()->getValStr());
   }
 };
+// const_val := STRING_LITERAL
+class ConstValNode_StringLiteral : public ConstValNode {
+public:
+  ConstValNode_StringLiteral(ASTNodePtr stringLiteral, size_t line)
+      : ConstValNode(line) {
+    addChild(stringLiteral);
+  }
+  ~ConstValNode_StringLiteral() override = default;
 
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+  std::shared_ptr<TerminalNode> getStringLiteral() const {
+    return static_pointer_cast<TerminalNode>(m_children[0]);
+  }
+  virtual std::shared_ptr<SymbolType> getType() const override {
+    return std::make_shared<SymbolType>(
+        SymbolType::MakeBasic(BasicType::STRING));
+  }
+};
 // const_val := CHAR_LITERAL
 class ConstValNode_CharLiteral : public ConstValNode {
 public:

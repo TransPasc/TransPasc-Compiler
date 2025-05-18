@@ -1,6 +1,7 @@
 %{
     #include <iostream>
     #include <cstdlib>
+    #include <algorithm>
     #include "scanner.h"
     #include "driver.h"
     #include "parser.hpp"
@@ -41,6 +42,8 @@ DIGITS {DIGIT}+
 
 OPTIONAL_FRACTION (\.{DIGITS})?
 NUM {DIGITS}{OPTIONAL_FRACTION}
+STRING_LITERAL '([^'\n\r]+|'')'
+/*TODO: 确定 Pascal 单引号括起来的到底是 stirng 还是 char 还是什么*/
 CHAR_LITERAL '([^'\n\r]|'')'
 
 /* KEY WORD */
@@ -72,6 +75,9 @@ GOTO "goto"
 TO "to"
 READ "read"
 WRITE "write"
+BREAK "break"
+CONTINUE "continue"
+
 NOT "not"
 TRUE "true"
 FALSE "false"
@@ -145,8 +151,14 @@ LINE_COMMENT \/\/[^\n]*
     // cout << "空白符" << endl;
 }
 {NUM}    {
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::NUMBER, TerminalNode::makeNum(yytext), m_driver.getLine());
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::NUMBER, yytext, m_driver.getLine());
     return XYZ::Parser::make_NUMBER(ptr, m_driver.getLocation());
+}
+{STRING_LITERAL} {
+  // 去掉两侧的引号
+  std::string str = std::string(yytext).substr(1, yyleng - 2);
+  auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::STRING_LITERAL, str, m_driver.getLine());
+  return XYZ::Parser::make_STRING_LITERAL(ptr, m_driver.getLocation());
 }
 {CHAR_LITERAL} {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::CHAR_LITERAL, yytext, m_driver.getLine());
@@ -272,6 +284,14 @@ LINE_COMMENT \/\/[^\n]*
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
     return XYZ::Parser::make_OR(ptr, m_driver.getLocation());
 }
+{BREAK} {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
+    return XYZ::Parser::make_BREAK(ptr, m_driver.getLocation());
+}
+{CONTINUE} {
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::KEYWORD, yytext, m_driver.getLine());
+    return XYZ::Parser::make_CONTINUE(ptr, m_driver.getLocation());
+}
 {BOOL_LITERAL}      {
     auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::BOOL_LITERAL, yytext, m_driver.getLine());
     return XYZ::Parser::make_BOOL_LITERAL(ptr, m_driver.getLocation());
@@ -336,8 +356,11 @@ LINE_COMMENT \/\/[^\n]*
 }
 
 {ID}    {
+    // yytext 转为小写
+    std::string str = yytext;
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     /* 注: KEYWORD 需要在 ID 之前，否则会被匹配为 ID */
-    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, yytext, m_driver.getLine());
+    auto ptr = std::make_shared<TerminalNode>(TerminalNode::Type::ID, str, m_driver.getLine());
     return XYZ::Parser::make_ID(ptr, m_driver.getLocation());
 }
 <<EOF>>     { return yyterminate(); }

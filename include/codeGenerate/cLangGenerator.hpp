@@ -9,16 +9,24 @@ namespace XYZ {
  * from the AST
  */
 class CLangGenerator : public Generator {
-  // TODO: 使用状态机管理状态
+  inline const static std::string FUNC_RES = "__result__";
+  enum class State {
+    NORMAL,       // 普通状态
+    FunctionCall, // 处于函数调用 <function_name>(...)
+    FunctionDef,  // 处于函数定义 <function_name>(<params>) {...}
+    IdVarPart,    // 处于数组下标 <array_name>[...]
+    Scanf,        // 处于 scanf(<format_string>, ...)
+    Printf,       // 处于 printf(<format_string>, ...)
+  };
+  std::stack<State> m_stateStack;
   std::string m_outputFile;
   std::string m_outputBuffer;
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
   std::shared_ptr<SymbolTable> symbolTable;
-  std::string m_expList_split = ", ";
-  SymbolType::ParamsType m_params = {};
-  size_t m_paramIdx = 0;
-  bool is_scanf = false;
+
+  std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
+  std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;
 
 public:
   CLangGenerator();
@@ -69,10 +77,12 @@ public:
   virtual void visit(class ConstValNode_Plus_Number &node) override;
   virtual void visit(class ConstValNode_Minus_Number &node) override;
   virtual void visit(class ConstValNode_Number &node) override;
+  virtual void visit(class ConstValNode_StringLiteral &node) override;
   virtual void visit(class ConstValNode_CharLiteral &node) override;
 
   virtual void visit(class TypeNode &node) override;
   virtual void visit(class TypeNode_BasicType &node) override;
+  virtual void visit(class TypeNode_String &node) override;
   virtual void visit(class TypeNode_Array_Lbracket_Period_Rbracket_Of_BasicType
                          &node) override;
 
@@ -162,6 +172,8 @@ public:
   virtual void
   visit(class StatementNode_Write_Lparen_ExpressionList_Rparen &node) override;
   virtual void visit(class StatementNode_CompoundStatement &node) override;
+  virtual void visit(class StatementNode_Break &node) override;
+  virtual void visit(class StatementNode_Continue &node) override;
 
   virtual void visit(class VariableListNode &node) override;
   virtual void visit(class VariableListNode_Variable &node) override;

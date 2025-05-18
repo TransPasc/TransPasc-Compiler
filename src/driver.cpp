@@ -136,6 +136,10 @@ std::string Driver::getTokenName(XYZ::Parser::symbol_kind_type kind) {
     return "Unary Plus";
   case XYZ::Parser::symbol_kind_type::S_UMINUS:
     return "Unary Minus";
+  case XYZ::Parser::symbol_kind_type::S_BREAK:
+    return "Break";
+  case XYZ::Parser::symbol_kind_type::S_CONTINUE:
+    return "Continue";
   default:
     return "Unknown Token";
   }

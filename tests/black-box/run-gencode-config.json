@@ -1,0 +1,46 @@
+{
+  "skip": [
+    {
+      "path": "hidden_set/19_many_params3.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
+    },
+    {
+      "path": "open_set/51_var_name.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
+    },
+    {
+      "path": "open_set/65_float.pas",
+      "reason": "fpc float format cannot convert to x.xxx",
+      "platform": [
+        "macos"
+      ]
+    },
+    {
+      "path": "open_set/57_many_params.pas",
+      "reason": "有副作用，未定义行为，macos 上与 fpc 不一致",
+      "platform": [
+        "macos"
+      ]
+    },
+    {
+      "path": "hidden_set/15_matrix_multiply.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
+    },
+    {
+      "path": "hidden_set/14_union_find.pas",
+      "reason": "fpc is not able to compile this file",
+      "platform": [
+        "all"
+      ]
+    }
+  ]
+}

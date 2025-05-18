@@ -268,4 +268,34 @@ public:
     return std::dynamic_pointer_cast<CompoundStatementNode>(m_children[0]);
   }
 };
+// statement := BREAK
+class StatementNode_Break : public StatementNode {
+public:
+  StatementNode_Break(ASTNodePtr breakToken, size_t line)
+      : StatementNode(line) {
+    addChild(breakToken);
+  }
+  ~StatementNode_Break() override = default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  std::shared_ptr<TerminalNode> getBreakToken() const {
+    return std::dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+};
+// statement := CONTINUE
+class StatementNode_Continue : public StatementNode {
+public:
+  StatementNode_Continue(ASTNodePtr continueToken, size_t line)
+      : StatementNode(line) {
+    addChild(continueToken);
+  }
+  ~StatementNode_Continue() override = default;
+
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  std::shared_ptr<TerminalNode> getContinueToken() const {
+    return std::dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+};
 } // namespace XYZ

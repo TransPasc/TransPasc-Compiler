@@ -1,5 +1,6 @@
 #include "codeGenerate/cLangGenerator.hpp"
 #include "ast/ast.hpp"
+#include <algorithm>
 #include <cassert>
 #include <format>
 #include <fstream>
@@ -27,6 +28,8 @@ void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
   symbolTable = std::make_shared<StackLinkedSymbolTable>();
   //   默认 block
   symbolTable->enterBlock();
+
+  m_stateStack.push(State::NORMAL);
 
   std::cout << "Generating code..." << std::endl;
   root->accept(*this);
@@ -147,9 +150,9 @@ void CLangGenerator::visit(
   node.getConstDecl()->accept(*this);
 
   auto type = node.getConstVal()->getType();
-  std::string buf = std::format("const {} {} = ", symbolType2Str(*type),
+  m_outputBuffer += std::format("const {} {} = ", symbolType2Str(*type),
                                 node.getId()->get<std::string>());
-  m_outputBuffer += buf;
+
   node.getConstVal()->accept(*this);
   m_outputBuffer += ";\n";
 };
@@ -167,6 +170,9 @@ void CLangGenerator::visit(class ConstValNode_Minus_Number &node) {
 void CLangGenerator::visit(class ConstValNode_Number &node) {
   m_outputBuffer += std::format("{}", node.getNumber()->getValStr());
 };
+void CLangGenerator::visit(class ConstValNode_StringLiteral &node) {
+  m_outputBuffer += std::format("\"{}\"", node.getStringLiteral()->getValStr());
+};
 void CLangGenerator::visit(class ConstValNode_CharLiteral &node) {
   m_outputBuffer += std::format("{}", node.getCharLiteral()->getValStr());
 };
@@ -176,6 +182,9 @@ void CLangGenerator::visit(class TypeNode &node) {
                               "TypeNode should not be visited");
 };
 void CLangGenerator::visit(class TypeNode_BasicType &node) {
+  //   nothing need to do
+};
+void CLangGenerator::visit(class TypeNode_String &node) {
   //   nothing need to do
 };
 void CLangGenerator::visit(
@@ -276,10 +285,10 @@ void CLangGenerator::visit(
         &node) {
   // 处理子程序节点, 在 head 中 enter block
   node.getSubprogramHead()->accept(*this);
-  m_outputBuffer += " {\n";
+  m_outputBuffer += "{\n/* subprogram body */\n";
   node.getSubprogramBody()->accept(*this);
-  m_outputBuffer += "}";
   symbolTable->exitBlock();
+  m_outputBuffer += "}\n";
 };
 
 void CLangGenerator::visit(class SubprogramHeadNode &node) {
@@ -303,6 +312,7 @@ void CLangGenerator::visit(
 void CLangGenerator::visit(
     class SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType
         &node) {
+  m_stateStack.push(State::FunctionDef);
   // 将 func id 加入符号表
   auto params = node.getFormalParameter()->getParams();
   auto type = SymbolType::MakeFunction(nullptr, params);
@@ -316,6 +326,7 @@ void CLangGenerator::visit(
   symbolTable->enterBlock();
   node.getFormalParameter()->accept(*this);
   m_outputBuffer += ")";
+  m_returnTypeStack.push(node.getBasicType()->getType());
 };
 
 void CLangGenerator::visit(class FormalParameterNode &node) {
@@ -396,9 +407,22 @@ void CLangGenerator::visit(class SubprogramBodyNode &node) {
 };
 void CLangGenerator::visit(
     class SubprogramBodyNode_ConstDecls_VarDecls_CompoundStatement &node) {
+  // define FUNC_RES
+  if (m_stateStack.top() == State::FunctionDef) {
+    auto type = m_returnTypeStack.top();
+    m_outputBuffer +=
+        std::format("{} {} = 0;\n", symbolType2Str(*type), FUNC_RES);
+    m_returnTypeStack.pop();
+  }
+
   node.getConstDecls()->accept(*this);
   node.getVarDecls()->accept(*this);
   node.getCompoundStatement()->accept(*this);
+  //   处理函数返回值
+  if (m_stateStack.top() == State::FunctionDef) {
+    m_outputBuffer += std::format("return {};\n", FUNC_RES);
+    m_stateStack.pop();
+  }
 };
 
 void CLangGenerator::visit(class CompoundStatementNode &node) {
@@ -442,7 +466,7 @@ void CLangGenerator::visit(class StatementNode_Id_Assignop_Expression &node) {
   auto record = symbolTable->lookup(node.getId()->getValStr());
   // 处理 return 语句
   if (record && record->getType() && record->getType()->is_function()) {
-    m_outputBuffer += "return ";
+    m_outputBuffer += std::format("{} = ", FUNC_RES);
     node.getExpression()->accept(*this);
     m_outputBuffer += ";\n";
     return;
@@ -511,9 +535,9 @@ void CLangGenerator::visit(
   auto types = node.getVariableList()->getTypeList();
   auto fmtStr = getCStyleIOFormatStr(types);
   m_outputBuffer += std::format("scanf(\"{}\", ", fmtStr);
-  is_scanf = true;
+  m_stateStack.push(State::Scanf);
   node.getVariableList()->accept(*this);
-  is_scanf = false;
+  m_stateStack.pop();
   m_outputBuffer += ");\n";
 };
 
@@ -535,6 +559,14 @@ void CLangGenerator::visit(class StatementNode_CompoundStatement &node) {
   m_outputBuffer += "{\n";
   node.getCompoundStatement()->accept(*this);
   m_outputBuffer += "}\n";
+};
+void CLangGenerator::visit(class StatementNode_Break &node) {
+  // 处理break语句节点
+  m_outputBuffer += "break;\n";
+};
+void CLangGenerator::visit(class StatementNode_Continue &node) {
+  // 处理continue语句节点
+  m_outputBuffer += "continue;\n";
 };
 
 void CLangGenerator::visit(class VariableListNode &node) {
@@ -559,24 +591,19 @@ void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
   // 处理变量节点
   //   auto record = symbolTable->lookup(node.getId()->getValStr());
   auto type = node.getType();
+  if (m_stateStack.top() == State::Scanf) {
+    if (type->is_function())
+      m_outputBuffer += std::format("&{}", FUNC_RES);
+    else
+      m_outputBuffer += std::format("&{}", node.getId()->getValStr());
+    return node.getIdVarpart()->accept(*this);
+  }
   if (type->is_function() || type->is_procedure()) {
     m_outputBuffer += std::format("{}()", node.getId()->getValStr());
     return node.getIdVarpart()->accept(*this);
   }
   if (type->is_ref_type()) {
-    // if (m_params.size()) {
-    //   auto param = m_params[m_paramIdx];
-    //   auto paramType = param->first;
-    //   if (paramType.is_ref_type()) {
-    //     m_outputBuffer += std::format("{}", node.getId()->getValStr());
-    //     return node.getIdVarpart()->accept(*this);
-    //   }
-    // }
     m_outputBuffer += std::format("*{}", node.getId()->getValStr());
-    return node.getIdVarpart()->accept(*this);
-  }
-  if (is_scanf) {
-    m_outputBuffer += std::format("&{}", node.getId()->getValStr());
     return node.getIdVarpart()->accept(*this);
   }
 
@@ -589,24 +616,12 @@ void CLangGenerator::visit(class IdVarPartNode &node) {
 };
 void CLangGenerator::visit(
     class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {
-  auto old_params = m_params;
-  auto old_paramIdx = m_paramIdx;
-  m_params.clear();
-  m_paramIdx = 0;
-
-  bool old_scanf = is_scanf;
-  is_scanf = false;
-
   // 处理数组下标
   m_outputBuffer += "[";
-  m_expList_split = "][";
+  m_stateStack.push(State::IdVarPart);
   node.getExpressionList()->accept(*this);
-  m_expList_split = ", ";
+  m_stateStack.pop();
   m_outputBuffer += "]";
-
-  is_scanf = old_scanf;
-  m_params = old_params;
-  m_paramIdx = old_paramIdx;
 };
 
 void CLangGenerator::visit(class ProcedureCallNode &node) {
@@ -627,12 +642,17 @@ void CLangGenerator::visit(
   auto type = record->getType();
   auto procedure = type->get_if<SymbolType::Function>();
   auto func = type->get_if<SymbolType::Procedure>();
-  m_params = procedure ? procedure->param_types : func->param_types;
-  m_paramIdx = 0;
+
+  m_stateStack.push(State::FunctionCall);
+  m_paramsStack.push(
+      {procedure ? procedure->param_types : func->param_types, 0});
+
   m_outputBuffer += std::format("{}(", node.getId()->getValStr());
   node.getExpressionList()->accept(*this);
   m_outputBuffer += ");\n";
-  m_params.clear();
+
+  m_paramsStack.pop();
+  m_stateStack.pop();
 };
 
 void CLangGenerator::visit(class ElsePartNode &node) {
@@ -650,9 +670,9 @@ void CLangGenerator::visit(class ExpressionListNode &node) {
 };
 
 void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
-  if (m_params.size()) {
+  if (m_stateStack.top() == State::FunctionCall) {
     // func call
-    auto param = m_params[m_paramIdx];
+    auto param = m_paramsStack.top().first[m_paramsStack.top().second];
     auto type = param->first;
     if (type.is_ref_type()) {
       m_outputBuffer += "&";
@@ -660,23 +680,29 @@ void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
   }
   // 处理表达式列表节点
   node.getExpression()->accept(*this);
-  m_paramIdx++;
+  if (m_stateStack.top() == State::FunctionCall)
+    m_paramsStack.top().second++;
 };
 void CLangGenerator::visit(
     class ExpressionListNode_ExpressionList_Comma_Expression &node) {
 
   node.getExpressionList()->accept(*this);
-  m_outputBuffer += m_expList_split;
-  if (m_params.size()) {
+  if (m_stateStack.top() == State::IdVarPart) {
+    m_outputBuffer += "][";
+  } else {
+    m_outputBuffer += ", ";
+  }
+  if (m_stateStack.top() == State::FunctionCall) {
     // func call
-    auto param = m_params[m_paramIdx];
+    auto param = m_paramsStack.top().first[m_paramsStack.top().second];
     auto type = param->first;
     if (type.is_ref_type()) {
       m_outputBuffer += "&";
     }
   }
   node.getExpression()->accept(*this);
-  m_paramIdx++;
+  if (m_stateStack.top() == State::FunctionCall)
+    m_paramsStack.top().second++;
 };
 
 void CLangGenerator::visit(class ExpressionNode &node) {
@@ -761,7 +787,10 @@ void CLangGenerator::visit(class FactorNode_CharLiteral &node) {
   node.getCharLiteral()->accept(*this);
 };
 void CLangGenerator::visit(class FactorNode_BoolLiteral &node) {
-  node.getBoolLiteral()->accept(*this);
+  auto str = node.getBoolLiteral()->getValStr();
+  // 转为小写
+  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+  m_outputBuffer += str == "true" ? "1" : "0";
 };
 void CLangGenerator::visit(class FactorNode_Variable &node) {
   node.getVariable()->accept(*this);
@@ -797,10 +826,14 @@ void CLangGenerator::visit(
   auto record = symbolTable->lookup(node.getID()->getValStr());
   auto type = record->getType();
   auto funcType = type->get<SymbolType::Function>();
-  m_params = funcType.param_types;
-  m_paramIdx = 0;
+
+  m_stateStack.push(State::FunctionCall);
+  m_paramsStack.push({funcType.param_types, 0});
+
   node.getExpressionList()->accept(*this);
-  m_params.clear();
+
+  m_paramsStack.pop();
+  m_stateStack.pop();
   m_outputBuffer += ")";
 };
 
@@ -815,13 +848,13 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
         case BasicType::INTEGER:
           return "int";
         case BasicType::REAL:
-          return "float";
+          return "double";
         case BasicType::BOOLEAN:
           return "bool";
         case BasicType::CHAR:
           return "char";
         case BasicType::STRING:
-          return "string";
+          return "const char*";
         default:
           assert(false && "Unhandled BasicType");
         }
@@ -920,7 +953,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
           // we should use scientific format
           // so use %E with a length of 20
           // and exponential should be of length 3
-          return "%f"s;
+          return "%lf"s;
         case BasicType::BOOLEAN:
           return "%d"s;
         case BasicType::CHAR:

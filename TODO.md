@@ -22,3 +22,29 @@
 - 统一 Menu 的传参为 config
 - 将集成测试脚本加入 github ci
 - 57_many_params.c，有未定义行为,param16有副作用，但参数调用顺序（从左到右、从右到左）未规定，从而导致不同平台不同编译器结果不一致
+- 解决下面的歧义问题:
+  ```pas
+    program main;
+    const
+      hello_world = 'Hello World\n';
+    var
+      good : string;
+    function func():integer;
+    begin
+      read(func);
+      if(func > 4) then begin
+        func := 0;
+      end;
+      /*
+        因为 Pascal 调用函数可以不带 (),
+        故而下面有歧义 __result__ = __result__ +1
+        还是 __result__ = func() + 1
+        目前的方案会翻译为 __result__ = func() + 1
+      */
+      func := func + 1;
+    end;
+    begin
+      write(hello_world);
+      write(func);
+    end.
+  ```

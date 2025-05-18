@@ -68,4 +68,17 @@ public:
   }
 };
 
+// type := STRING
+class TypeNode_String : public TypeNode {
+public:
+  TypeNode_String(ASTNodePtr stringToken, size_t line) : TypeNode(line) {
+    addChild(stringToken);
+  }
+  ~TypeNode_String() override = default;
+  void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
+
+  std::shared_ptr<TerminalNode> getStringToken() const {
+    return dynamic_pointer_cast<TerminalNode>(m_children[0]);
+  }
+};
 } // namespace XYZ

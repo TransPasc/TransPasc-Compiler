@@ -146,6 +146,9 @@ public:
   virtual void visit(class ConstValNode_Number &node) {
     // nothing to do
   };
+  virtual void visit(class ConstValNode_StringLiteral &node) {
+    // nothing to do
+  };
   virtual void visit(class ConstValNode_CharLiteral &node) {
     // nothing to do
   };
@@ -172,7 +175,10 @@ public:
     }
     node.setType(curType);
   };
-
+  virtual void visit(class TypeNode_String &node) {
+    node.setType(
+        std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::STRING)));
+  }
   virtual void visit(class BasicTypeNode &node) {
     throw SemanticException(ErrType::UNDEFINED,
                             "BasicTypeNode should not be Null");
@@ -522,6 +528,12 @@ public:
   };
   virtual void visit(class StatementNode_CompoundStatement &node) {
     node.getCompoundStatement()->accept(*this);
+  };
+  virtual void visit(class StatementNode_Break &node) {
+    // TODO: break语句检查 是否在循环中
+  };
+  virtual void visit(class StatementNode_Continue &node) {
+    // TODO: continue语句检查 是否在循环中
   };
 
   virtual void visit(class VariableListNode &node) {
