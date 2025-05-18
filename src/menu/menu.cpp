@@ -3,7 +3,6 @@
 #endif
 #include "menu/menu.hpp"
 #include "codeGenerate/cLangGenerator.hpp"
-#include "utils.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
