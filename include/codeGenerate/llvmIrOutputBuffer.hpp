@@ -63,42 +63,43 @@ public:
       sectionStack.pop();
     }
   }
-  void writeln(const std::string &data = "") {
+  void write(const std::string &data = "") {
     if (sectionStack.empty()) {
       throw std::runtime_error("No section is active");
     }
     switch (sectionStack.top()) {
     case Section::TARGET_SPEC:
-      target_spec += data + "\n";
+      target_spec += data;
       break;
     case Section::TYPE_DECLS:
-      type_decls += data + "\n";
+      type_decls += data;
       break;
     case Section::GLOBAL_CONST_DECLS:
-      global_const_decls += data + "\n";
+      global_const_decls += data;
       break;
     case Section::GLOBAL_VAR_DECLS:
-      global_var_decls += data + "\n";
+      global_var_decls += data;
       break;
     case Section::FUNC_DECLS:
-      func_decls += data + "\n";
+      func_decls += data;
       break;
     case Section::FUNC_DEFS:
-      func_defs += data + "\n";
+      func_defs += data;
       break;
     case Section::ATTRIBUTE_GROUPS:
-      attribute_groups += data + "\n";
+      attribute_groups += data;
       break;
     case Section::NAMED_METADATA:
-      named_metadata += data + "\n";
+      named_metadata += data;
       break;
     case Section::METADATA_NODES:
-      metadata_nodes += data + "\n";
+      metadata_nodes += data;
       break;
     default:
       throw std::runtime_error("Unknown section");
     }
   }
+  void writeln(const std::string &data = "") { write(data + "\n"); }
   void setSourceFileName(const std::string &name) { source_file_name = name; }
 };
 }; // namespace XYZ

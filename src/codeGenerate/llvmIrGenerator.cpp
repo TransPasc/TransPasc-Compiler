@@ -106,17 +106,82 @@ std::string LLVMIrGenerator::getDefaultValue(const SymbolType &type) {
                  [](auto &&) -> std::string { return "0"; }};
   return type.visit(printer);
 }
-
+std::string LLVMIrGenerator::getFmtStrName(const std::string &fmt) {
+  std::string fmtStr = "$fmt_";
+  for (char ch : fmt) {
+    fmtStr += std::format("{:02x}", static_cast<int>(ch));
+  }
+  return fmtStr;
+}
+std::string LLVMIrGenerator::getUnNameIdStr() {
+  std::string id = std::format("%{}", unname_id_num);
+  unname_id_num++;
+  return id;
+}
+std::string LLVMIrGenerator::getLLVMStyleIOFormatStr(
+    const std::vector<std::shared_ptr<SymbolType>> &types) {
+  static const auto visitor = overloaded{
+      [](std::monostate) -> std::string {
+        throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                    "Invalid type for LLVM-IR style IO format");
+      },
+      [](BasicType basic) -> std::string {
+        using std::literals::operator""s;
+        switch (basic) {
+        case BasicType::INTEGER:
+          return "%d"s;
+        case BasicType::REAL:
+          return "%lf"s;
+        case BasicType::BOOLEAN:
+          return "%d"s;
+        case BasicType::CHAR:
+          return "%c"s;
+        case BasicType::STRING:
+          return "%s"s;
+        default:
+          assert(false && "Unhandled BasicType");
+        }
+      },
+      [this](const SymbolType::Array &array) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Array type is not supported for LLVM-IR style IO format");
+      },
+      [this](const SymbolType::Record &record) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Record type is not supported for LLVM-IR style IO format");
+      },
+      [this](const SymbolType::Function &func) -> std::string {
+        return getLLVMStyleIOFormatStr({func.return_type});
+      },
+      [this](const SymbolType::Procedure &proc) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Procedure type is not supported for LLVM-IR style IO format");
+      },
+      [](auto &&) -> std::string {
+        throw CodeGenerateException(
+            ErrType::INVALID_INPUT,
+            "Unsupported type for LLVM-IR style IO format");
+      } // 兜底
+  };
+  std::string formatStr;
+  for (size_t i = 0; i < types.size(); ++i) {
+    formatStr += types[i]->visit(visitor);
+  }
+  return formatStr;
+}
 impl(TerminalNode) {
   if (node.isRelOp()) {
-    m_outputBuffer.writeln(std::format("{} ", relop2LLVMStr(node.getValStr())));
+    m_outputBuffer.write(std::format("{} ", relop2LLVMStr(node.getValStr())));
     return;
   }
   if (node.isMulOp()) {
-    m_outputBuffer.writeln(std::format("{} ", mulop2LLVMStr(node.getValStr())));
+    m_outputBuffer.write(std::format("{} ", mulop2LLVMStr(node.getValStr())));
     return;
   }
-  m_outputBuffer.writeln(std::format("{} ", node.getValStr()));
+  m_outputBuffer.write(std::format("{} ", node.getValStr()));
 }
 impl(ProgramStructNode) {
   throw CodeGenerateException(ErrType::UNREACH_CODE,
@@ -254,14 +319,14 @@ impl(ConstDeclNode) {
 impl(ConstDeclNode_Id_Relop_ConstVal_Semicolon) {
   std::string name = node.getId()->getValStr();
   auto type = node.getConstVal()->getType();
-  m_outputBuffer.writeln(std::format("@{} = private constant ", name));
+  m_outputBuffer.write(std::format("@{} = private constant ", name));
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
 impl(ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon) {
   node.getConstDecl()->accept(*this);
   std::string name = node.getId()->getValStr();
-  m_outputBuffer.writeln(std::format("@{} = private constant ", name));
+  m_outputBuffer.write(std::format("@{} = private constant ", name));
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
@@ -273,30 +338,30 @@ impl(ConstValNode) {
 impl(ConstValNode_Plus_Number) {
   auto type = node.getType();
   auto typeStr = symbolType2LLVMStr(*type);
-  m_outputBuffer.writeln(std::format("{} +", typeStr));
+  m_outputBuffer.write(std::format("{} +", typeStr));
   node.getNumber()->accept(*this);
 }
 impl(ConstValNode_Minus_Number) {
   auto type = node.getType();
   auto typeStr = symbolType2LLVMStr(*type);
-  m_outputBuffer.writeln(std::format("{} -", typeStr));
+  m_outputBuffer.write(std::format("{} -", typeStr));
   node.getNumber()->accept(*this);
 }
 impl(ConstValNode_Number) {
   auto type = node.getType();
   auto typeStr = symbolType2LLVMStr(*type);
-  m_outputBuffer.writeln(std::format("{} ", typeStr));
+  m_outputBuffer.write(std::format("{} ", typeStr));
   node.getNumber()->accept(*this);
 }
 impl(ConstValNode_StringLiteral) {
   auto str = node.getStringLiteral()->getValStr();
   // TODO: 也许要加个 global output buffer 才能处理字符串constant
   // [12 x i8] c"Hello world\00"
-  m_outputBuffer.writeln(
-      std::format("[{} x i8] c\"{}\\\\00\"\n", str.size() + 3, str));
+  m_outputBuffer.write(
+      std::format("[{} x i8] c\"{}\\00\"\n", str.size() + 1, str));
 }
 impl(ConstValNode_CharLiteral) {
-  m_outputBuffer.writeln("i8 ");
+  m_outputBuffer.write("i8 ");
   node.getCharLiteral()->accept(*this);
 }
 
@@ -401,14 +466,36 @@ impl(VarDeclNode_VarDecl_Semicolon_IdList_Colon_Type) {
 impl(SubprogramDeclsNode) {}
 impl(SubprogramDeclsNode_SubprogramDecls_Subprogram) {}
 
-impl(SubprogramNode) {}
+impl(SubprogramNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SubprogramNode should not be visited");
+}
 
-impl(SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON) {}
+impl(SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON) {
+  m_outputBuffer.enterSection(Section::FUNC_DECLS);
 
-impl(SubprogramHeadNode) {}
-impl(SubprogramHeadNode_Procedure_Id_FormalParameter) {}
+  m_outputBuffer.writeln("; subprogram head");
+  node.getSubprogramHead()->accept(*this);
+  m_outputBuffer.writeln("{");
+  m_outputBuffer.writeln("; subprogram body");
+  node.getSubprogramBody()->accept(*this);
+  m_outputBuffer.writeln("; subprogram end");
+  m_outputBuffer.writeln("}\n");
 
-impl(SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType) {}
+  m_outputBuffer.exitSection();
+}
+
+impl(SubprogramHeadNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SubprogramHeadNode should not be visited");
+}
+impl(SubprogramHeadNode_Procedure_Id_FormalParameter) {
+  unname_id_num = 0; // 重新计数
+}
+
+impl(SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType) {
+  unname_id_num = 0; // 重新计数
+}
 
 impl(FormalParameterNode) {}
 impl(FormalParameterNode_Lparen_ParameterList_Rparen) {}
@@ -435,7 +522,9 @@ impl(CompoundStatementNode) {
                               "CompoundStatementNode should not be visited");
 }
 impl(CompoundStatementNode_Begin_StatementList_End) {
+  symbolTable->enterBlock();
   node.getStatementList()->accept(*this);
+  symbolTable->exitBlock();
 }
 
 impl(StatementListNode) {
@@ -460,10 +549,47 @@ impl(
 
     StatementNode_For_Id_Assignop_Expression_To_Expression_Do_Statement) {}
 impl(StatementNode_While_Expression_Do_Statement) {}
-impl(StatementNode_Read_Lparen_VariableList_Rparen) {}
+impl(StatementNode_Read_Lparen_VariableList_Rparen) {
+  auto types = node.getVariableList()->getTypeList();
+  auto fmtStr = getLLVMStyleIOFormatStr(types);
+  auto fmtStrName = getFmtStrName(fmtStr);
+  if (m_FmtStrSet.count(fmtStrName) == 0) {
+    // declare fmt string in global
+    m_outputBuffer.enterSection(Section::GLOBAL_CONST_DECLS);
+    m_outputBuffer.writeln(
+        std::format("@{} = private constant [{} x i8] c\"{}\\00\"\n",
+                    fmtStrName, fmtStr.size() + 1, fmtStr));
+    m_FmtStrSet.insert(fmtStrName);
+    m_outputBuffer.exitSection();
+  }
+  auto localFmtStrName = getUnNameIdStr();
+  m_outputBuffer.write(
+      std::format("call i32 (i8*, ...) @scanf(i8* @{}, ", fmtStrName));
+  m_stateStack.push(State::Scanf);
+  node.getVariableList()->accept(*this);
+  m_stateStack.pop();
+  m_outputBuffer.writeln(")");
+}
 impl(StatementNode_Write_Lparen_ExpressionList_Rparen) {
-  // 类似 %0 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([13 x
-  // i8], [13 x i8]* @.str, i32 0, i32 0))
+  auto types = node.getExpressionList()->getTypeList();
+  auto fmtStr = getLLVMStyleIOFormatStr(types);
+  auto fmtStrName = getFmtStrName(fmtStr);
+  if (m_FmtStrSet.count(fmtStrName) == 0) {
+    // declare fmt string in global
+    m_outputBuffer.enterSection(Section::GLOBAL_CONST_DECLS);
+    m_outputBuffer.writeln(
+        std::format("@{} = private constant [{} x i8] c\"{}\\00\"\n",
+                    fmtStrName, fmtStr.size() + 1, fmtStr));
+    m_FmtStrSet.insert(fmtStrName);
+    m_outputBuffer.exitSection();
+  }
+  auto localFmtStrName = getUnNameIdStr();
+  m_outputBuffer.write(
+      std::format("call i32 (i8*, ...) @printf(i8* @{}, ", fmtStrName));
+  m_stateStack.push(State::Printf);
+  node.getExpressionList()->accept(*this);
+  m_stateStack.pop();
+  m_outputBuffer.writeln(")");
 }
 impl(StatementNode_CompoundStatement) {}
 impl(StatementNode_Break) {}

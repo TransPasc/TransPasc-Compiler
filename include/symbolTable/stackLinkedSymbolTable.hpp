@@ -54,13 +54,32 @@ public:
 
     hashTable[hash_val] = static_cast<int32_t>(symbolTable.size() - 1);
   }
-  // 暂不支持手动删除
+  // TODO: 添加 remove、update 的 单元测试
   bool remove(const SymbolName &name) override {
-    throw XYZ::SymbolTableException(ErrType::UnsupportedOperation);
+    auto [record, idx] = _lookup(name);
+    if (record == nullptr) {
+      throw XYZ::SymbolTableException(ErrType::SymbolNotFound, name);
+    }
+
+    // 从符号表中移除
+    symbolTable[idx] = nullptr;
+    return true;
   }
-  // 暂不支持更新
+
   bool update(std::shared_ptr<SymbolRecord> record) override {
-    throw XYZ::SymbolTableException(ErrType::UnsupportedOperation);
+    if (record == nullptr) {
+      throw XYZ::SymbolTableException(ErrType::NullPointer);
+    }
+
+    auto symbol_name = record->getName();
+    auto [existing_record, idx] = _lookup(symbol_name);
+    if (existing_record == nullptr) {
+      throw XYZ::SymbolTableException(ErrType::SymbolNotFound, symbol_name);
+    }
+
+    // 更新符号记录
+    symbolTable[idx] = record;
+    return true;
   }
   //   查找
   std::shared_ptr<SymbolRecord> lookup(const SymbolName &name) override {

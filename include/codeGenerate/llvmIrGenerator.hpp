@@ -5,16 +5,26 @@
 #include "symbolTable/stackLinkedSymbolTable.hpp"
 #include "symbolTable/type.hpp"
 #include "utils/utils.hpp"
+#include <set>
 #include <stack>
 namespace XYZ {
 class LLVMIrGenerator : public Generator {
   using ErrType = CodeGenerateException::ErrorCode;
   std::string m_outputFile;
   OutputBuffer m_outputBuffer;
-  std::stack<State> m_stateStack;
-  std::shared_ptr<SymbolTable> symbolTable;
-  std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
-  std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;
+
+  std::stack<State> m_stateStack; // 状态栈
+
+  std::shared_ptr<SymbolTable> symbolTable; // 符号表
+
+  std::size_t unname_id_num = 0; // 匿名变量数量
+
+  std::stack<std::pair<SymbolType::ParamsType, size_t>>
+      m_paramsStack; // 函数参数栈
+
+  std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack; // 函数返回值类型
+
+  std::set<std::string> m_FmtStrSet; // 已经定义的格式化字符串
 
 public:
   LLVMIrGenerator();
@@ -40,6 +50,10 @@ private:
   std::string relop2LLVMStr(const std::string &relop);
   std::string mulop2LLVMStr(const std::string &mulop);
   std::string getDefaultValue(const SymbolType &type);
+  std::string getFmtStrName(const std::string &fmt);
+  std::string getUnNameIdStr();
+  std::string getLLVMStyleIOFormatStr(
+      const std::vector<std::shared_ptr<SymbolType>> &types);
 };
 
 } // namespace XYZ
