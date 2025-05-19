@@ -448,7 +448,6 @@ void CLangGenerator::visit(class StatementListNode_Statement &node) {
 void CLangGenerator::visit(
     class StatementListNode_StatementList_Semicolon_Statement &node) {
   node.getStatementList()->accept(*this);
-  m_outputBuffer += ";\n";
   node.getStatement()->accept(*this);
 };
 
