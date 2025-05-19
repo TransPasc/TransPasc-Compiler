@@ -69,6 +69,8 @@ void Menu::generateCode(Driver &driver, const std::string &format) {
   auto it = format2generator.find(format);
   if (it != format2generator.end()) {
     it->second(driver);
+  std:
+    cout << "Code generation completed." << std::endl;
   } else {
     std::cerr << "Unrecognized format: " << format << std::endl;
   }

@@ -1,13 +1,19 @@
 #pragma once
 #include "codeGenerate/exception.hpp"
 #include "generator.hpp"
+#include "symbolTable/stackLinkedSymbolTable.hpp"
 #include "symbolTable/type.hpp"
-#include "utils/macro.h"
+#include "utils/utils.hpp"
+#include <stack>
 namespace XYZ {
 class LLVMIrGenerator : public Generator {
   using ErrType = CodeGenerateException::ErrorCode;
   std::string m_outputFile;
   std::string m_outputBuffer;
+  std::stack<State> m_stateStack;
+  std::shared_ptr<SymbolTable> symbolTable;
+  std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
+  std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;
 
 public:
   LLVMIrGenerator();
@@ -24,6 +30,12 @@ public:
   virtual void setOutputFile(const std::string &filename) override;
 
   dispatch_all_nodes(dispatch_override);
+
+private:
+  void writeln(const std::string &str);
+  std::string symbolType2LLVMStr(const SymbolType &type);
+  std::string relop2LLVMStr(const std::string &relop);
+  std::string mulop2LLVMStr(const std::string &mulop);
 };
 
 } // namespace XYZ

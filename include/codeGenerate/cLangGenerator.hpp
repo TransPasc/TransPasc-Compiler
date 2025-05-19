@@ -3,7 +3,7 @@
 #include "generator.hpp"
 #include "symbolTable/stackLinkedSymbolTable.hpp"
 #include "symbolTable/type.hpp"
-#include "utils/macro.h"
+#include "utils/utils.hpp"
 namespace XYZ {
 /**
  * @brief c language code generator
@@ -11,14 +11,6 @@ namespace XYZ {
  */
 class CLangGenerator : public Generator {
   inline const static std::string FUNC_RES = "__result__";
-  enum class State {
-    NORMAL,       // 普通状态
-    FunctionCall, // 处于函数调用 <function_name>(...)
-    FunctionDef,  // 处于函数定义 <function_name>(<params>) {...}
-    IdVarPart,    // 处于数组下标 <array_name>[...]
-    Scanf,        // 处于 scanf(<format_string>, ...)
-    Printf,       // 处于 printf(<format_string>, ...)
-  };
   std::stack<State> m_stateStack;
   std::string m_outputFile;
   std::string m_outputBuffer;
@@ -52,10 +44,6 @@ private:
 private:
   // 生成代码的辅助函数, 写入str到缓冲区
   void writeln(const std::string &str);
-  template <class... Ts> struct overloaded : Ts... {
-    using Ts::operator()...;
-  };
-  template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
   std::string symbolType2Str(const SymbolType &type);
   // 将 Pascal relop 转换为 C 语言的 relop

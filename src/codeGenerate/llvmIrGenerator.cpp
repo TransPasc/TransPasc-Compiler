@@ -1,23 +1,159 @@
 #include "codeGenerate/llvmIrGenerator.hpp"
+#include "ast/ast.hpp"
+#include <algorithm>
+#include <cassert>
+#include <format>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <variant>
+#include <vector>
+
 #define impl(node_type) impl_visit(LLVMIrGenerator, node_type)
 
 namespace XYZ {
-LLVMIrGenerator::LLVMIrGenerator() {}
+LLVMIrGenerator::LLVMIrGenerator() : Generator() {}
 LLVMIrGenerator::~LLVMIrGenerator() {}
-void LLVMIrGenerator::generateCode(ASTNode::ASTNodePtr root) {}
-void LLVMIrGenerator::setOutputFile(const std::string &filename) {}
+void LLVMIrGenerator::setOutputFile(const std::string &filename) {
+  m_outputFile = filename;
+}
 
-impl(TerminalNode) {}
-impl(ProgramStructNode) {}
-impl(ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot) {}
+void LLVMIrGenerator::generateCode(ASTNode::ASTNodePtr root) {
+  symbolTable = std::make_shared<StackLinkedSymbolTable>();
+  symbolTable->enterBlock();
+  std::cout << "Generating LLVM IR..." << std::endl;
+  root->accept(*this);
+  symbolTable->exitBlock();
+  if (m_outputFile.empty()) {
+    std::cout << m_outputBuffer;
+    return;
+  }
+  std::ofstream outFile(m_outputFile);
+  if (outFile.is_open()) {
+    outFile << m_outputBuffer;
+    outFile.close();
+  } else {
+    std::cerr << "Unable to open file: " << m_outputFile << std::endl;
+  }
+}
 
-impl(ProgramHeadNode) {}
-impl(ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen) {}
-impl(ProgramHeadNode_Program_Id) {}
+void LLVMIrGenerator::writeln(const std::string &str) {
+  m_outputBuffer += str + "\n";
+}
+
+std::string LLVMIrGenerator::symbolType2LLVMStr(const SymbolType &type) {
+  // 这里只实现最基础的类型映射
+  static const auto printer =
+      overloaded{[](std::monostate) -> std::string { return "void"; },
+                 [](BasicType basic) -> std::string {
+                   switch (basic) {
+                   case BasicType::INTEGER:
+                     return "i32";
+                   case BasicType::REAL:
+                     return "double";
+                   case BasicType::BOOLEAN:
+                     return "i1";
+                   case BasicType::CHAR:
+                     return "i8";
+                   default:
+                     return "i32";
+                   }
+                 },
+                 [](auto &&) -> std::string { return "i32"; }};
+  return type.visit(printer);
+}
+std::string LLVMIrGenerator::relop2LLVMStr(const std::string &relop) {
+  if (relop == "<")
+    return "icmp slt";
+  if (relop == "<=")
+    return "icmp sle";
+  if (relop == ">")
+    return "icmp sgt";
+  if (relop == ">=")
+    return "icmp sge";
+  if (relop == "==")
+    return "icmp eq";
+  if (relop == "!=")
+    return "icmp ne";
+  return "icmp eq";
+}
+std::string LLVMIrGenerator::mulop2LLVMStr(const std::string &mulop) {
+  if (mulop == "*")
+    return "mul";
+  if (mulop == "/")
+    return "sdiv";
+  if (mulop == "%")
+    return "srem";
+  return "mul";
+}
+impl(TerminalNode) {
+  if (node.isRelOp()) {
+    m_outputBuffer += std::format("{} ", relop2LLVMStr(node.getValStr()));
+    return;
+  }
+  if (node.isMulOp()) {
+    m_outputBuffer += std::format("{} ", mulop2LLVMStr(node.getValStr()));
+    return;
+  }
+  m_outputBuffer += std::format("{} ", node.getValStr());
+}
+impl(ProgramStructNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProgramStructNode should not be visited");
+}
+impl(ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot) {
+  writeln("; Generated LLVM IR by The King Of Pascal Compiler(kpc)");
+  // macosx
+  writeln("target datalayout = \"e-m:o-i64:64-f80:128-n8:16:32:64-S128\"");
+  writeln("target triple = \"x86_64-apple-macosx10.15.0\"");
+  writeln("");
+  // linux
+  writeln("; target datalayout = "
+          "\"e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-"
+          "S128\"");
+  writeln("; target triple = \"x86_64-pc-linux-gnu\"");
+  writeln("");
+  // windows
+  writeln("; target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\"");
+  writeln("; target triple = \"x86_64-unknown-unknown-windows\"");
+  writeln("");
+
+  writeln("; program struct");
+  writeln("declare i32 @printf(i8*, ...)");
+  writeln("declare i32 @scanf(i8*, ...)");
+  node.getProgramHead()->accept(*this);
+  node.getSemicolon()->accept(*this);
+  node.getProgramBody()->accept(*this);
+}
+
+impl(ProgramHeadNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ProgramHeadNode should not be visited");
+}
+impl(ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen) {
+  // TODO:暂不支持
+  throw CodeGenerateException(
+      ErrType::UNREACH_CODE,
+      "ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen should not be visited, "
+      "because we don't support this");
+}
+impl(ProgramHeadNode_Program_Id) { writeln("; program head"); }
 
 impl(ProgramBodyNode) {}
 
-impl(ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement) {}
+impl(ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement) {
+  node.getConstDecls()->accept(*this);
+  node.getVarDecls()->accept(*this);
+  node.getSubprogramDecls()->accept(*this);
+  //   main func
+  m_outputBuffer += "\ndefine i32 @main() {\n";
+  node.getCompoundStatement()->accept(*this);
+  m_outputBuffer += "  ret i32 0\n";
+  m_outputBuffer += "}\n";
+}
 
 impl(IdListNode) {}
 impl(IdListNode_Id) {}

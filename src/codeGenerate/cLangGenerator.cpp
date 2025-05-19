@@ -69,7 +69,7 @@ void CLangGenerator::visit(class ProgramStructNode &node) {
 void CLangGenerator::visit(
     class ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot &node) {
   // 处理程序结构节点
-  writeln("// Generated C code by Pascal Compiler");
+  writeln("// Generated C code by The King Of Pascal Compiler(kpc)");
   writeln("#include <stdio.h>");
   writeln("#include <stdlib.h>");
   writeln("#include <stdbool.h>");
