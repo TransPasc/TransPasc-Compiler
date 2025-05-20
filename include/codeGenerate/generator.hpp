@@ -10,6 +10,7 @@ enum class State {
   IdVarPart,    // 处于数组下标 <array_name>[...]
   Scanf,        // 处于 scanf(<format_string>, ...)
   Printf,       // 处于 printf(<format_string>, ...)
+  Global,       // 处于全局变量定义
 };
 /**
  * @brief code generator virtual base class

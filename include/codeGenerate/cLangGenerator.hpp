@@ -1,6 +1,7 @@
 #pragma once
 #include "codeGenerate/exception.hpp"
 #include "generator.hpp"
+#include "symbolTable/record.hpp"
 #include "symbolTable/stackLinkedSymbolTable.hpp"
 #include "symbolTable/type.hpp"
 #include "utils/utils.hpp"
@@ -16,7 +17,7 @@ class CLangGenerator : public Generator {
   std::string m_outputBuffer;
   bool m_isRefParam = false;
   using ErrType = CodeGenerateException::ErrorCode;
-  std::shared_ptr<SymbolTable> symbolTable;
+  std::shared_ptr<SymbolTable<SymbolRecord>> symbolTable;
 
   std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
   std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;

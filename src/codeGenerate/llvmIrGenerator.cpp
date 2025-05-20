@@ -23,7 +23,7 @@ void LLVMIrGenerator::setOutputFile(const std::string &filename) {
 }
 
 void LLVMIrGenerator::generateCode(ASTNode::ASTNodePtr root) {
-  symbolTable = std::make_shared<StackLinkedSymbolTable>();
+  symbolTable = std::make_shared<StackLinkedSymbolTable<LLVMIRSymbolRecord>>();
   symbolTable->enterBlock();
   std::cout << "Generating LLVM IR..." << std::endl;
   root->accept(*this);
@@ -172,6 +172,38 @@ std::string LLVMIrGenerator::getLLVMStyleIOFormatStr(
   }
   return formatStr;
 }
+
+inline void LLVMIrGenerator::storeSymbolName(const std::string &name) {
+  auto record = std::make_unique<LLVMIRSymbolRecord>(name);
+  record->setGlobal(m_stateStack.top() == State::Global);
+  symbolTable->insert(std::move(record));
+}
+inline void LLVMIrGenerator::updateSymbolName(const std::string &name) {
+  auto record = symbolTable->lookup(name);
+  if (record == nullptr) {
+    throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                "Symbol not found in symbol table");
+  }
+  if (record->isGlobal()) {
+    // 不能更新全局变量的名字
+    return;
+  }
+  record->setCurrentName(getUnNameIdStr());
+}
+
+inline std::string
+LLVMIrGenerator::getCurrentSymbolName(const std::string &name) {
+  auto record = symbolTable->lookup(name);
+  if (record == nullptr) {
+    throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                "Symbol not found in symbol table");
+  }
+  if (record->isGlobal()) {
+    return std::format("@{}", record->getCurrentName());
+  }
+  return std::format("%{}", record->getCurrentName());
+}
+
 impl(TerminalNode) {
   if (node.isRelOp()) {
     m_outputBuffer.write(std::format("{} ", relop2LLVMStr(node.getValStr())));
@@ -264,7 +296,9 @@ impl(ProgramHeadNode_Program_Id_Lparen_Idlist_Rparen) {
       "because we don't support this");
 }
 impl(ProgramHeadNode_Program_Id) {
+  m_stateStack.push(State::NORMAL);
   m_outputBuffer.setSourceFileName(node.getId()->getValStr());
+  m_stateStack.pop();
 }
 
 impl(ProgramBodyNode) {
@@ -273,7 +307,7 @@ impl(ProgramBodyNode) {
 }
 
 impl(ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement) {
-
+  m_stateStack.push(State::Global);
   m_outputBuffer.enterSection(Section::GLOBAL_CONST_DECLS);
   node.getConstDecls()->accept(*this);
   m_outputBuffer.exitSection();
@@ -281,9 +315,12 @@ impl(ProgramBodyNode_ConstDecls_VarDecls_SubprogramDecls_CompoundStatement) {
   m_outputBuffer.enterSection(Section::GLOBAL_VAR_DECLS);
   node.getVarDecls()->accept(*this);
   m_outputBuffer.exitSection();
+  m_stateStack.pop();
 
-  m_outputBuffer.enterSection(Section::FUNC_DECLS);
+  m_stateStack.push(State::FunctionDef);
+  m_outputBuffer.enterSection(Section::FUNC_DEFS);
   node.getSubprogramDecls()->accept(*this);
+  m_stateStack.pop();
   //   main func
   m_outputBuffer.writeln("\ndefine dso_local i32 @main() {\n");
   node.getCompoundStatement()->accept(*this);
@@ -320,6 +357,7 @@ impl(ConstDeclNode_Id_Relop_ConstVal_Semicolon) {
   std::string name = node.getId()->getValStr();
   auto type = node.getConstVal()->getType();
   m_outputBuffer.write(std::format("@{} = private constant ", name));
+  storeSymbolName(name);
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
@@ -327,6 +365,7 @@ impl(ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon) {
   node.getConstDecl()->accept(*this);
   std::string name = node.getId()->getValStr();
   m_outputBuffer.write(std::format("@{} = private constant ", name));
+  storeSymbolName(name);
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
@@ -595,7 +634,10 @@ impl(StatementNode_CompoundStatement) {}
 impl(StatementNode_Break) {}
 impl(StatementNode_Continue) {}
 
-impl(VariableListNode) {}
+impl(VariableListNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VariableListNode should not be visited");
+}
 impl(VariableListNode_Variable) {}
 impl(VariableListNode_VariableList_Comma_Variable) {}
 

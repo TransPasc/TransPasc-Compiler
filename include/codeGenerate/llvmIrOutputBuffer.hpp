@@ -36,25 +36,36 @@ public:
   std::string toString() {
     std::string result;
     result += "source_filename = \"" + source_file_name + ".pas\"\n\n";
-    result += "; TARGET SPEC\n";
+    result += "; ------------------------------------------------TARGET "
+              "SPEC------------------------------------------------\n";
     result += target_spec + "\n";
-    result += "; TYPE DECLS\n";
+    result += "; ------------------------------------------------TYPE "
+              "DECLS------------------------------------------------\n";
     result += type_decls + "\n";
-    result += "; GLOBAL CONST DECLS\n";
+    result += "; ------------------------------------------------GLOBAL CONST "
+              "DECLS------------------------------------------------\n";
     result += global_const_decls + "\n";
-    result += "; GLOBAL VAR DECLS\n";
+    result += "; ------------------------------------------------GLOBAL VAR "
+              "DECLS------------------------------------------------\n";
     result += global_var_decls + "\n";
-    result += "; FUNC DECLS\n";
+    result += "; ------------------------------------------------FUNC "
+              "DECLS------------------------------------------------\n";
     result += func_decls + "\n";
-    result += "; FUNC DEFS\n";
+    result += "; ------------------------------------------------FUNC "
+              "DEFS------------------------------------------------\n";
     result += func_defs + "\n";
-    result += "; ATTRIBUTE GROUPS\n";
+    result += "; ------------------------------------------------ATTRIBUTE "
+              "GROUPS------------------------------------------------\n";
     result += attribute_groups + "\n";
-    result += "; NAMED METADATA\n";
+    result += "; ------------------------------------------------NAMED "
+              "METADATA------------------------------------------------\n";
     result += named_metadata + "\n";
-    result += "; METADATA NODES\n";
+    result += "; ------------------------------------------------METADATA "
+              "NODES------------------------------------------------\n";
     result += metadata_nodes + "\n";
-    result += "; END\n";
+    result += "; "
+              "------------------------------------------------END-------------"
+              "-----------------------------------\n";
     return result;
   }
   void enterSection(Section section) { sectionStack.push(section); }

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
+#include "symbolTable/record.hpp"
 #include "symbolTable/stackLinkedSymbolTable.hpp"
-
 TEST(SymbolTable, SUC) {
   /*
     变量作用域示意图:
@@ -34,7 +34,8 @@ TEST(SymbolTable, SUC) {
         f (14)
     }
   */
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   EXPECT_NE(table, nullptr);
   EXPECT_EQ(table->size(), 0);
 
@@ -113,7 +114,8 @@ TEST(SymbolTable, SUC) {
 
 // 测试边缘情况
 TEST(SymbolTable, EdgeCase) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   EXPECT_NE(table, nullptr);
   EXPECT_EQ(table->size(), 0);
 
@@ -127,7 +129,8 @@ TEST(SymbolTable, EdgeCase) {
 }
 
 TEST(SymbolTable, InsertDuplicateInSameScope) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   table->enterBlock();
   table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1));
 
@@ -139,14 +142,16 @@ TEST(SymbolTable, InsertDuplicateInSameScope) {
 }
 
 TEST(SymbolTable, ExitBlockWithoutEnter) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
 
   // 未进入块直接退出（应抛出逻辑错误）
   EXPECT_THROW(table->exitBlock(), XYZ::SymbolTableException);
 }
 
 TEST(SymbolTable, LookupNonexistentSymbol) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   table->enterBlock();
 
   EXPECT_EQ(table->lookup("phantom_var"), nullptr); // 应返回空指针
@@ -157,13 +162,15 @@ TEST(SymbolTable, LookupNonexistentSymbol) {
 }
 
 TEST(SymbolTable, LookupWithoutBlock) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   // 未进入块查找
   EXPECT_EQ(table->lookup("a"), nullptr); // 应返回空指针
 }
 
 TEST(SymbolTable, OverExitBlocks) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   table->enterBlock();
   table->enterBlock();
 
@@ -176,14 +183,16 @@ TEST(SymbolTable, OverExitBlocks) {
 }
 
 TEST(SymbolTable, InsertWithoutBlock) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
 
   EXPECT_THROW(table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1)),
                XYZ::SymbolTableException);
 }
 
 TEST(SymbolTable, CrossScopeShadowing) {
-  auto table = std::make_unique<XYZ::StackLinkedSymbolTable>();
+  auto table =
+      std::make_unique<XYZ::StackLinkedSymbolTable<XYZ::SymbolRecord>>();
   table->enterBlock();
   table->insert(std::make_unique<XYZ::SymbolRecord>("a", 1));
 

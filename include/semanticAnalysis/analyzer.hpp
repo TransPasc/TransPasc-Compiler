@@ -1,7 +1,9 @@
 #pragma once
 #include "ast/ast.hpp"
 #include "exception.hpp"
+#include "symbolTable/record.hpp"
 #include "symbolTable/stackLinkedSymbolTable.hpp"
+
 #include <iostream>
 #include <memory>
 #include <stack>
@@ -11,7 +13,7 @@ using namespace std;
 class Analyzer : public ASTVisitor {
   using ErrType = SemanticException::ErrorType;
   std::shared_ptr<ProgramStructNode> root = nullptr;
-  std::shared_ptr<SymbolTable> symbolTable = nullptr;
+  std::shared_ptr<SymbolTable<SymbolRecord>> symbolTable = nullptr;
 
 public:
   Analyzer() {}
@@ -20,7 +22,7 @@ public:
     this->root = root;
     // 语义分析起点
     // 初始化符号表
-    symbolTable = std::make_shared<StackLinkedSymbolTable>();
+    symbolTable = std::make_shared<StackLinkedSymbolTable<SymbolRecord>>();
     symbolTable->enterBlock();
     root->accept(*this);
     // 语义分析结束

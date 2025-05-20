@@ -25,7 +25,7 @@ void CLangGenerator::setOutputFile(const std::string &filename) {
 }
 
 void CLangGenerator::generateCode(ASTNode::ASTNodePtr root) {
-  symbolTable = std::make_shared<StackLinkedSymbolTable>();
+  symbolTable = std::make_shared<StackLinkedSymbolTable<SymbolRecord>>();
   //   默认 block
   symbolTable->enterBlock();
 

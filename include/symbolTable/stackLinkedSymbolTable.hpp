@@ -1,6 +1,6 @@
 #pragma once
 #include "symbolTable/exception.hpp"
-#include "symbolTable/record.hpp" // 添加此行以包含 SymbolRecord 的定义
+#include "symbolTable/recordInterface.hpp"
 #include "symbolTable/table.hpp"
 #include "symbolTable/type.hpp"
 #include <memory>
@@ -10,12 +10,13 @@
 
 namespace XYZ {
 // 栈 链 式符号表
-class StackLinkedSymbolTable : public SymbolTable {
+template <typename RecordType = RecordInterface>
+class StackLinkedSymbolTable : public SymbolTable<RecordType> {
   using ErrType = XYZ::SymbolTableException::ErrorType;
   const static size_t HASH_TABLE_SIZE = (1 << 20); // hash表大小
 
 public:
-  StackLinkedSymbolTable() : SymbolTable() {
+  StackLinkedSymbolTable() : SymbolTable<RecordType>() {
     // 初始化hash表
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
       hashTable[i] = -1;
@@ -28,7 +29,7 @@ public:
    * @param symbol_name
    * @param new_record
    */
-  void insert(std::unique_ptr<SymbolRecord> new_record) override {
+  void insert(std::unique_ptr<RecordType> new_record) override {
     if (new_record == nullptr) {
       throw XYZ::SymbolTableException(ErrType::NullPointer);
     }
@@ -55,7 +56,7 @@ public:
     hashTable[hash_val] = static_cast<int32_t>(symbolTable.size() - 1);
   }
   // TODO: 添加 remove、update 的 单元测试
-  bool remove(const SymbolName &name) override {
+  bool remove(const std::string &name) override {
     auto [record, idx] = _lookup(name);
     if (record == nullptr) {
       throw XYZ::SymbolTableException(ErrType::SymbolNotFound, name);
@@ -66,7 +67,7 @@ public:
     return true;
   }
 
-  bool update(std::shared_ptr<SymbolRecord> record) override {
+  bool update(std::shared_ptr<RecordType> record) override {
     if (record == nullptr) {
       throw XYZ::SymbolTableException(ErrType::NullPointer);
     }
@@ -82,7 +83,7 @@ public:
     return true;
   }
   //   查找
-  std::shared_ptr<SymbolRecord> lookup(const SymbolName &name) override {
+  std::shared_ptr<RecordType> lookup(const std::string &name) override {
     auto [record, idx] = _lookup(name);
     return record;
   }
@@ -127,8 +128,8 @@ private:
    * @param name
    * @return (符号表中找到的符号记录，索引)
    */
-  std::tuple<std::shared_ptr<SymbolRecord>, int32_t>
-  _lookup(const SymbolName &name) const {
+  std::tuple<std::shared_ptr<RecordType>, int32_t>
+  _lookup(const std::string &name) const {
     auto index = hashTable[hash(name)];
     //   如果hash表中没有找到
     if (index < 0 || index >= symbolTable.size()) {
@@ -145,8 +146,8 @@ private:
     }
     return {nullptr, -1};
   }
-  size_t hash(const SymbolName &name) const { return hash_pjw(name); }
-  inline size_t hash_pjw(const SymbolName &name) const {
+  size_t hash(const std::string &name) const { return hash_pjw(name); }
+  inline size_t hash_pjw(const std::string &name) const {
     unsigned int val = 0, i = 0;
     for (const auto ch : name) {
       val = (val << 2) + ch;
@@ -161,7 +162,7 @@ private:
   //   块索引表，记录每个块的起始位置
   std::stack<int32_t> blockIndex;
   //   栈式符号表，存储符号记录
-  std::vector<std::shared_ptr<SymbolRecord>> symbolTable;
+  std::vector<std::shared_ptr<RecordType>> symbolTable;
   //   hash表
   int32_t hashTable[HASH_TABLE_SIZE];
 };

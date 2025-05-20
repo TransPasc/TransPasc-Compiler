@@ -1,21 +1,17 @@
 #pragma once
+#include "symbolTable/exception.hpp"
+#include "symbolTable/recordInterface.hpp"
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "symbolTable/exception.hpp"
-
 namespace XYZ {
-class SymbolRecord; // 前向声明 符号记录类，存储例如： lineno, type, value,
-                    // etc.
+
 /**
  * @class SymbolTable
  * @brief 符号表抽象接口，可支持多级作用域管理（默认不支持）
  */
-class SymbolTable {
-public:
-  using SymbolName = std::string;
-
+template <typename RecordType = RecordInterface> class SymbolTable {
 public:
   SymbolTable() = default;
   virtual ~SymbolTable() = default;
@@ -25,13 +21,13 @@ public:
    * @param new_record 符号记录对象（移交所有权）
    * @exception SymbolTableException
    */
-  virtual void insert(std::unique_ptr<SymbolRecord> new_record) = 0;
+  virtual void insert(std::unique_ptr<RecordType> new_record) = 0;
   // 删除符号
-  virtual bool remove(const SymbolName &name) = 0;
+  virtual bool remove(const std::string &name) = 0;
   //   update符号
-  virtual bool update(std::shared_ptr<SymbolRecord> record) = 0;
+  virtual bool update(std::shared_ptr<RecordType> record) = 0;
   // 查找符号
-  virtual std::shared_ptr<SymbolRecord> lookup(const SymbolName &name) = 0;
+  virtual std::shared_ptr<RecordType> lookup(const std::string &name) = 0;
 
   virtual auto size() const -> size_t = 0;
   // 清空符号表

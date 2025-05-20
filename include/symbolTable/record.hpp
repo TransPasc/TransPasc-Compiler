@@ -4,14 +4,14 @@
 #include <vector>
 
 #include "symbolTable/exception.hpp"
+#include "symbolTable/recordInterface.hpp"
 #include "symbolTable/type.hpp"
-
 namespace XYZ {
 /**
  * @brief 符号记录基类，存储符号元数据
  */
 
-class SymbolRecord {
+class SymbolRecord : public RecordInterface {
   // 符号名称
   std::string m_name;
   // 符号表中的下一个符号记录

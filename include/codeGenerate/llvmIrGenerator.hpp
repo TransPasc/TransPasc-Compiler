@@ -2,6 +2,7 @@
 #include "codeGenerate/exception.hpp"
 #include "generator.hpp"
 #include "llvmIrOutputBuffer.hpp"
+#include "llvmIrRecord.hpp"
 #include "symbolTable/stackLinkedSymbolTable.hpp"
 #include "symbolTable/type.hpp"
 #include "utils/utils.hpp"
@@ -15,7 +16,7 @@ class LLVMIrGenerator : public Generator {
 
   std::stack<State> m_stateStack; // 状态栈
 
-  std::shared_ptr<SymbolTable> symbolTable; // 符号表
+  std::shared_ptr<SymbolTable<LLVMIRSymbolRecord>> symbolTable; // 符号表
 
   std::size_t unname_id_num = 0; // 匿名变量数量
 
@@ -54,6 +55,9 @@ private:
   std::string getUnNameIdStr();
   std::string getLLVMStyleIOFormatStr(
       const std::vector<std::shared_ptr<SymbolType>> &types);
+  inline void storeSymbolName(const std::string &name);
+  inline void updateSymbolName(const std::string &name);
+  inline std::string getCurrentSymbolName(const std::string &name);
 };
 
 } // namespace XYZ
