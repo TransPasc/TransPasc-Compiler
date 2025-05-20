@@ -27,6 +27,8 @@ class LLVMIrGenerator : public Generator {
 
   std::set<std::string> m_FmtStrSet; // 已经定义的格式化字符串
 
+  std::string latest_symbol_name = ""; // 最新的符号名称
+
 public:
   LLVMIrGenerator();
   ~LLVMIrGenerator() override;
@@ -55,9 +57,11 @@ private:
   std::string getUnNameIdStr();
   std::string getLLVMStyleIOFormatStr(
       const std::vector<std::shared_ptr<SymbolType>> &types);
-  inline void storeSymbolName(const std::string &name);
+  inline void storeSymbolName(const std::string &name,
+                              std::shared_ptr<SymbolType> type);
   inline void updateSymbolName(const std::string &name);
   inline std::string getCurrentSymbolName(const std::string &name);
+  inline std::shared_ptr<SymbolType> getSymbolType(const std::string &name);
 };
 
 } // namespace XYZ

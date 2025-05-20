@@ -173,8 +173,9 @@ std::string LLVMIrGenerator::getLLVMStyleIOFormatStr(
   return formatStr;
 }
 
-inline void LLVMIrGenerator::storeSymbolName(const std::string &name) {
-  auto record = std::make_unique<LLVMIRSymbolRecord>(name);
+inline void LLVMIrGenerator::storeSymbolName(const std::string &name,
+                                             std::shared_ptr<SymbolType> type) {
+  auto record = std::make_unique<LLVMIRSymbolRecord>(name, type);
   record->setGlobal(m_stateStack.top() == State::Global);
   symbolTable->insert(std::move(record));
 }
@@ -203,7 +204,15 @@ LLVMIrGenerator::getCurrentSymbolName(const std::string &name) {
   }
   return std::format("%{}", record->getCurrentName());
 }
-
+inline std::shared_ptr<SymbolType>
+LLVMIrGenerator::getSymbolType(const std::string &name) {
+  auto record = symbolTable->lookup(name);
+  if (record == nullptr) {
+    throw CodeGenerateException(ErrType::INVALID_INPUT,
+                                "Symbol not found in symbol table");
+  }
+  return record->getType();
+}
 impl(TerminalNode) {
   if (node.isRelOp()) {
     m_outputBuffer.write(std::format("{} ", relop2LLVMStr(node.getValStr())));
@@ -357,7 +366,7 @@ impl(ConstDeclNode_Id_Relop_ConstVal_Semicolon) {
   std::string name = node.getId()->getValStr();
   auto type = node.getConstVal()->getType();
   m_outputBuffer.write(std::format("@{} = private constant ", name));
-  storeSymbolName(name);
+  latest_symbol_name = name;
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
@@ -365,7 +374,7 @@ impl(ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon) {
   node.getConstDecl()->accept(*this);
   std::string name = node.getId()->getValStr();
   m_outputBuffer.write(std::format("@{} = private constant ", name));
-  storeSymbolName(name);
+  latest_symbol_name = name;
   node.getConstVal()->accept(*this);
   m_outputBuffer.writeln();
 }
@@ -379,18 +388,22 @@ impl(ConstValNode_Plus_Number) {
   auto typeStr = symbolType2LLVMStr(*type);
   m_outputBuffer.write(std::format("{} +", typeStr));
   node.getNumber()->accept(*this);
+
+  storeSymbolName(latest_symbol_name, type);
 }
 impl(ConstValNode_Minus_Number) {
   auto type = node.getType();
   auto typeStr = symbolType2LLVMStr(*type);
   m_outputBuffer.write(std::format("{} -", typeStr));
   node.getNumber()->accept(*this);
+  storeSymbolName(latest_symbol_name, type);
 }
 impl(ConstValNode_Number) {
   auto type = node.getType();
   auto typeStr = symbolType2LLVMStr(*type);
   m_outputBuffer.write(std::format("{} ", typeStr));
   node.getNumber()->accept(*this);
+  storeSymbolName(latest_symbol_name, type);
 }
 impl(ConstValNode_StringLiteral) {
   auto str = node.getStringLiteral()->getValStr();
@@ -398,10 +411,12 @@ impl(ConstValNode_StringLiteral) {
   // [12 x i8] c"Hello world\00"
   m_outputBuffer.write(
       std::format("[{} x i8] c\"{}\\00\"\n", str.size() + 1, str));
+  storeSymbolName(latest_symbol_name, node.getType());
 }
 impl(ConstValNode_CharLiteral) {
   m_outputBuffer.write("i8 ");
   node.getCharLiteral()->accept(*this);
+  storeSymbolName(latest_symbol_name, node.getType());
 }
 
 impl(TypeNode) {
@@ -488,9 +503,11 @@ void LLVMIrGenerator::g_IdList_Type(std::shared_ptr<IdListNode> idList,
   }
 
   for (const auto &id : ids) {
-    m_outputBuffer.writeln(std::format("@{} = private global {} {};\n",
+    auto prefix = m_stateStack.top() == State::Global ? "@" : "%";
+    m_outputBuffer.writeln(std::format("{}{} = private global {} {};\n", prefix,
                                        id->getValStr(), typeStr,
                                        getDefaultValue(*type)));
+    storeSymbolName(id->getValStr(), type);
   }
 }
 
@@ -571,11 +588,13 @@ impl(StatementListNode) {
                               "StatementListNode should not be visited");
 }
 impl(StatementListNode_Statement) {
+  m_outputBuffer.flushBuffer();
   node.getStatement()->accept(*this);
   m_outputBuffer.writeln();
 }
 impl(StatementListNode_StatementList_Semicolon_Statement) {
   node.getStatementList()->accept(*this);
+  m_outputBuffer.flushBuffer();
   node.getStatement()->accept(*this);
 }
 
@@ -638,11 +657,39 @@ impl(VariableListNode) {
   throw CodeGenerateException(ErrType::UNREACH_CODE,
                               "VariableListNode should not be visited");
 }
-impl(VariableListNode_Variable) {}
-impl(VariableListNode_VariableList_Comma_Variable) {}
+impl(VariableListNode_Variable) { node.getVariable()->accept(*this); }
+impl(VariableListNode_VariableList_Comma_Variable) {
+  node.getVariableList()->accept(*this);
+  m_outputBuffer.writeln(", ");
+  node.getVariable()->accept(*this);
+}
 
-impl(VariableNode) {}
-impl(VariableNode_Id_IdVarpart) {}
+impl(VariableNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "VariableNode should not be visited");
+}
+impl(VariableNode_Id_IdVarpart) {
+  // TODO: 这里需要处理数组下标
+  auto name = node.getId()->getValStr();
+  auto type = getSymbolType(name);
+  name = getCurrentSymbolName(name);
+  auto typeStr = symbolType2LLVMStr(*type);
+  if (m_stateStack.top() == State::Printf) {
+    auto tmp_name = getUnNameIdStr();
+    m_outputBuffer.writelnHead(std::format("{} = load {}, {}* {}\n", tmp_name,
+                                           typeStr, typeStr, name));
+    m_outputBuffer.write(std::format("{} {} ", typeStr, tmp_name));
+    node.getIdVarpart()->accept(*this);
+    return;
+  }
+  if (m_stateStack.top() == State::Scanf) {
+    m_outputBuffer.write(std::format("{}* {} ", typeStr, name));
+    node.getIdVarpart()->accept(*this);
+    return;
+  }
+  throw CodeGenerateException(ErrType::INVALID_INPUT,
+                              "Invalid state for VariableNode");
+}
 
 impl(IdVarPartNode) {}
 impl(IdVarPartNode_Lbracket_ExpressionList_Rbracket) {}
@@ -655,30 +702,50 @@ impl(ProcedureCallNode_Id_Lparen_ExpressionList_Rparen) {}
 impl(ElsePartNode) {}
 impl(ElsePartNode_Else_Statement) {}
 
-impl(ExpressionListNode) {}
-impl(ExpressionListNode_Expression) {}
-impl(ExpressionListNode_ExpressionList_Comma_Expression) {}
+impl(ExpressionListNode) {
+  // do nothing
+}
+impl(ExpressionListNode_Expression) { node.getExpression()->accept(*this); }
+impl(ExpressionListNode_ExpressionList_Comma_Expression) {
+  node.getExpressionList()->accept(*this);
+  m_outputBuffer.writeln(", ");
+  node.getExpression()->accept(*this);
+}
 
-impl(ExpressionNode) {}
-impl(ExpressionNode_SimpleExpression) {}
+impl(ExpressionNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "ExpressionNode should not be visited");
+}
+impl(ExpressionNode_SimpleExpression) {
+  node.getSimpleExpression()->accept(*this);
+}
 
 impl(ExpressionNode_SimpleExpression_Relop_SimpleExpression) {}
 
-impl(SimpleExpressionNode) {}
-impl(SimpleExpressionNode_Term) {}
+impl(SimpleExpressionNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "SimpleExpressionNode should not be visited");
+}
+impl(SimpleExpressionNode_Term) { node.getTerm()->accept(*this); }
 impl(SimpleExpressionNode_SimpleExpression_Plus_Term) {}
 impl(SimpleExpressionNode_SimpleExpression_Minus_Term) {}
 impl(SimpleExpressionNode_SimpleExpression_Or_Term) {}
 
-impl(TermNode) {}
-impl(TermNode_Factor) {}
+impl(TermNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "TermNode should not be visited");
+}
+impl(TermNode_Factor) { node.getFactor()->accept(*this); }
 impl(TermNode_Term_Mulop_Factor) {}
 
-impl(FactorNode) {}
-impl(FactorNode_Number) {}
-impl(FactorNode_CharLiteral) {}
-impl(FactorNode_BoolLiteral) {}
-impl(FactorNode_Variable) {}
+impl(FactorNode) {
+  throw CodeGenerateException(ErrType::UNREACH_CODE,
+                              "FactorNode should not be visited");
+}
+impl(FactorNode_Number) { node.getNumber()->accept(*this); }
+impl(FactorNode_CharLiteral) { node.getCharLiteral()->accept(*this); }
+impl(FactorNode_BoolLiteral) { node.getBoolLiteral()->accept(*this); }
+impl(FactorNode_Variable) { node.getVariable()->accept(*this); }
 impl(FactorNode_Lparen_Expression_Rparen) {}
 impl(FactorNode_Not_Factor) {}
 impl(FactorNode_Plus_Factor) {}

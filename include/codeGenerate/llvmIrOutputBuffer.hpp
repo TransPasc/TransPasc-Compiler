@@ -15,6 +15,10 @@ struct OutputBuffer {
     NAMED_METADATA,
     METADATA_NODES
   };
+  struct {
+    std::string head;
+    std::string main;
+  } buffer;
 
 private:
   // LLVM IR的各个部分
@@ -68,13 +72,30 @@ public:
               "-----------------------------------\n";
     return result;
   }
-  void enterSection(Section section) { sectionStack.push(section); }
+
+  void enterSection(Section section) {
+    if (!(buffer.head.empty() && buffer.main.empty())) {
+      flushBuffer();
+    }
+    sectionStack.push(section);
+  }
+
   void exitSection() {
+    flushBuffer();
     if (!sectionStack.empty()) {
       sectionStack.pop();
     }
   }
-  void write(const std::string &data = "") {
+  void flushBuffer() {
+    __write(buffer.head + buffer.main);
+    buffer.head.clear();
+    buffer.main.clear();
+  }
+  void write(const std::string &data = "") { buffer.main += data; }
+
+  void writeHead(const std::string &data = "") { buffer.head += data; }
+
+  void __write(const std::string &data = "") {
     if (sectionStack.empty()) {
       throw std::runtime_error("No section is active");
     }
@@ -110,7 +131,11 @@ public:
       throw std::runtime_error("Unknown section");
     }
   }
+
   void writeln(const std::string &data = "") { write(data + "\n"); }
+
+  void writelnHead(const std::string &data = "") { writeHead(data + "\n"); }
+
   void setSourceFileName(const std::string &name) { source_file_name = name; }
 };
 }; // namespace XYZ
