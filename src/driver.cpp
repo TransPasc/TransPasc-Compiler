@@ -12,8 +12,10 @@ std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
 
 } // namespace XYZ
 
-Driver::Driver()
-    : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {}
+Driver::Driver() : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {
+  // TODO:最高级别的调试信息
+  m_parser.set_debug_level(1);
+}
 
 int Driver::parse() {
   cout << "Parsing..." << endl;
@@ -202,6 +204,7 @@ void Driver::setOutputFileName(const std::string &filename) {
   m_outputFileName = filename;
   std::cout << "Output file set to: " << m_outputFileName << std::endl;
 }
+void Driver::set_verbose(bool verbose) { m_parser.set_debug_level(verbose); }
 void Driver::generateCode(std::shared_ptr<Generator> generator) {
   if (!root)
     //   先进行语法分析

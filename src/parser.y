@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-/* %require "3.0" */
+%require "3.0"
 %defines
 %define api.parser.class { Parser }
 /* %define api.parser.class "Parser" */
@@ -27,6 +27,7 @@
 
     using ASTNodePtr = std::shared_ptr<ASTNode>;
 
+
 }
 
 %code top
@@ -45,7 +46,7 @@
     using namespace XYZ;
     using ASTNodePtr = std::shared_ptr<ASTNode>;
 
-    int yydebug = 1;
+
 }
 
 %lex-param { XYZ::Scanner &scanner }
@@ -364,6 +365,11 @@ compound_statement :
     BEGIN statement_list END{
         $$ = std::make_shared<CompoundStatementNode_Begin_StatementList_End>(
             $1, $2, $3, @1.begin.line);
+    } |
+    BEGIN error END {
+        driver.handleError("compound statement error", @1);
+        yyerrok;
+        yyclearin;
     }
 ;
 statement_list :
@@ -373,6 +379,13 @@ statement_list :
     statement_list SEMICOLON statement {
         $$ = std::make_shared<StatementListNode_StatementList_Semicolon_Statement>(
             $1, $2, $3, @1.begin.line);
+    } |
+    statement_list SEMICOLON error SEMICOLON statement{
+        driver.handleError("statement list error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<StatementListNode_StatementList_Semicolon_Statement>(
+            $1, $2, $5, @1.begin.line);
     }
 ;
 statement : {
@@ -418,10 +431,6 @@ statement : {
     } |
     CONTINUE {
         $$ = std::make_shared<StatementNode_Continue>($1, @1.begin.line);
-    } |
-    error SEMICOLON {
-        driver.handleError("statement error", @1);
-        yyerrok;
     }
 ;
 variable_list :
@@ -553,6 +562,5 @@ factor :
 
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
-
     driver.handleError(message, loc);
 }

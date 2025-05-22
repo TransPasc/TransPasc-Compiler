@@ -42,7 +42,7 @@ public:
 
   void setOutputFileName(const std::string &filename);
   // TODO: Implement the set_verbose method
-  void set_verbose(bool verbose) {};
+  void set_verbose(bool verbose);
 
   static std::shared_ptr<ProgramStructNode> root;
 
