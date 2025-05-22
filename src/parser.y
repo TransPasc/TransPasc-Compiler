@@ -162,6 +162,12 @@ program_struct :
         Driver::root = std::make_shared<ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot>(
             $1, $2, $3, $4, @1.begin.line);
         $$ = Driver::root;
+    } |
+    program_head SEMICOLON error DOT {
+        driver.handleError("program body error", @1);
+        yyerrok;
+    } | error {
+        driver.handleError("program head error", @1);
     }
 ;
 program_head :
@@ -412,6 +418,10 @@ statement : {
     } |
     CONTINUE {
         $$ = std::make_shared<StatementNode_Continue>($1, @1.begin.line);
+    } |
+    error SEMICOLON {
+        driver.handleError("statement error", @1);
+        yyerrok;
     }
 ;
 variable_list :

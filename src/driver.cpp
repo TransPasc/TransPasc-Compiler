@@ -151,12 +151,19 @@ void Driver::switchInputStream(std::istream *is) {
   m_scanner.switch_streams(is, NULL);
 }
 
+// 增加 columns
 void Driver::increaseLocation(unsigned int leng) {
   m_location.columns(leng);
-  //   std::cout << "increaseLocation(): " << leng << ", total = " << m_location
-  //             << std::endl;
+  // std::cout << "increaseLocation(): " << leng << ", total = " << m_location
+  //           << std::endl;
 }
-void Driver::increaseLine() { m_location.lines(1); }
+
+// 增加行数
+void Driver::increaseLine() {
+  // std::cout << "increaseLine()" << std::endl;
+  m_location.lines(1);
+  m_location.step();
+}
 
 void Driver::step() { m_location.step(); }
 
