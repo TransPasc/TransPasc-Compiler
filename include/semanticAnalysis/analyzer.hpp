@@ -421,7 +421,7 @@ public:
   };
 
   virtual void visit(class StatementNode &node) {
-    cout << "statement is null" << endl;
+    // cout << "statement is null" << endl;
   };
   virtual void visit(class StatementNode_Variable_Assignop_Expression &node) {
     node.getVariable()->accept(*this);
@@ -584,11 +584,13 @@ public:
       throw SemanticException(ErrType::UNSUPPORTED,
                               "Incompatible types in array subscript");
     }
+    auto ranges = arrayType->getRanges();
+    node.setRanges(arrayType->getRanges());
     node.setValType(*subType);
   };
 
   virtual void visit(class IdVarPartNode &node) {
-    cout << "IdVarPartNode is null" << endl;
+    // cout << "IdVarPartNode is null" << endl;
   };
   virtual void
   visit(class IdVarPartNode_Lbracket_ExpressionList_Rbracket &node) {

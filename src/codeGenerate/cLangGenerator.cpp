@@ -448,7 +448,6 @@ void CLangGenerator::visit(class StatementListNode_Statement &node) {
 void CLangGenerator::visit(
     class StatementListNode_StatementList_Semicolon_Statement &node) {
   node.getStatementList()->accept(*this);
-  m_outputBuffer += ";\n";
   node.getStatement()->accept(*this);
 };
 
@@ -588,9 +587,13 @@ void CLangGenerator::visit(class VariableNode &node) {
                               "VariableNode should not be visited");
 };
 void CLangGenerator::visit(class VariableNode_Id_IdVarpart &node) {
-  // 处理变量节点
-  //   auto record = symbolTable->lookup(node.getId()->getValStr());
+  auto ranges = node.getRanges();
+  // 倒序压入 m_array_begin_stack
+  for (auto it = ranges.rbegin(); it != ranges.rend(); ++it) {
+    m_array_begin_stack.push(it->first);
+  }
   auto type = node.getType();
+
   if (m_stateStack.top() == State::Scanf) {
     if (type->is_function())
       m_outputBuffer += std::format("&{}", FUNC_RES);
@@ -621,6 +624,9 @@ void CLangGenerator::visit(
   m_stateStack.push(State::IdVarPart);
   node.getExpressionList()->accept(*this);
   m_stateStack.pop();
+  auto top = m_array_begin_stack.top();
+  m_array_begin_stack.pop();
+  m_outputBuffer += std::format(" - {}", top);
   m_outputBuffer += "]";
 };
 
@@ -678,8 +684,10 @@ void CLangGenerator::visit(class ExpressionListNode_Expression &node) {
       m_outputBuffer += "&";
     }
   }
+
   // 处理表达式列表节点
   node.getExpression()->accept(*this);
+
   if (m_stateStack.top() == State::FunctionCall)
     m_paramsStack.top().second++;
 };
@@ -688,6 +696,9 @@ void CLangGenerator::visit(
 
   node.getExpressionList()->accept(*this);
   if (m_stateStack.top() == State::IdVarPart) {
+    auto top = m_array_begin_stack.top();
+    m_array_begin_stack.pop();
+    m_outputBuffer += std::format(" - {}", top);
     m_outputBuffer += "][";
   } else {
     m_outputBuffer += ", ";

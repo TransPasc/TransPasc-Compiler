@@ -185,6 +185,10 @@ void Driver::printAST() {
 }
 
 void Driver::handleError(const std::string &msg, const location &loc) {
+  if (m_err_lines.find(loc.begin.line) != m_err_lines.end()) {
+    return; // 已经处理过的错误
+  }
+  m_err_lines.insert(loc.begin.line);
   // TODO: 改用日志库
   auto formatted_msg = std::format("Error[{}]: {}", loc.begin.line, msg);
   std::cerr << formatted_msg << std::endl;
