@@ -628,15 +628,6 @@ factor :
             $1, $2, @1.begin.line);
     }
 ;
-recovery_tokens:
-    /* 空 */
-    | recovery_tokens ID
-    | recovery_tokens NUMBER
-    | recovery_tokens STRING_LITERAL
-    | recovery_tokens CHAR_LITERAL
-    | recovery_tokens CONTINUE
-    | recovery_tokens BREAK
-    // 你可以根据需要加更多
 ;
 %%
 
