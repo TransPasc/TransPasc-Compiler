@@ -859,7 +859,7 @@ std::string CLangGenerator::symbolType2Str(const SymbolType &type) {
         case BasicType::INTEGER:
           return "int";
         case BasicType::REAL:
-          return "double";
+          return "float";
         case BasicType::BOOLEAN:
           return "bool";
         case BasicType::CHAR:
