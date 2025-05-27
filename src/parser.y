@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-/* %require "3.0" */
+%require "3.0"
 %defines
 %define api.parser.class { Parser }
 /* %define api.parser.class "Parser" */
@@ -27,6 +27,7 @@
 
     using ASTNodePtr = std::shared_ptr<ASTNode>;
 
+
 }
 
 %code top
@@ -45,7 +46,7 @@
     using namespace XYZ;
     using ASTNodePtr = std::shared_ptr<ASTNode>;
 
-    int yydebug = 1;
+
 }
 
 %lex-param { XYZ::Scanner &scanner }
@@ -162,6 +163,12 @@ program_struct :
         Driver::root = std::make_shared<ProgramStructNode_ProgramHead_Semicolon_ProgramBody_Dot>(
             $1, $2, $3, $4, @1.begin.line);
         $$ = Driver::root;
+    } |
+    program_head SEMICOLON error DOT {
+        driver.handleError("program body error", @1);
+        yyerrok;
+    } | error {
+        driver.handleError("program head error", @1);
     }
 ;
 program_head :
@@ -187,6 +194,12 @@ idlist:
     idlist COMMA ID {
         $$ = std::make_shared<IdListNode_IdList_Comma_Id>(
             $1, $2, $3, @1.begin.line);
+    } |
+    error {
+        driver.handleError("idlist error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<IdListNode>(@1.begin.line);
     }
 ;
 const_decls : {
@@ -195,6 +208,12 @@ const_decls : {
     CONST const_decl {
         $$ = std::make_shared<ConstDeclsNode_Const_ConstDecl>(
             $1, $2, @1.begin.line);
+    } |
+    error {
+        driver.handleError("const decls error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<ConstDeclsNode>(@1.begin.line);
     }
 ;
 const_decl :
@@ -209,6 +228,12 @@ const_decl :
     const_decl ID RELOP const_val SEMICOLON{
         $$ = std::make_shared<ConstDeclNode_ConstDecl_Id_Relop_ConstVal_Semicolon>(
             $1, $2, $3, $4, $5, @1.begin.line);
+    } |
+    error SEMICOLON {
+        driver.handleError("const decl error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<ConstDeclNode>(@1.begin.line);
     }
 ;
 const_val :
@@ -226,6 +251,12 @@ const_val :
     } |
     STRING_LITERAL {
       $$ = std::make_shared<ConstValNode_StringLiteral>($1, @1.begin.line);
+    } |
+    error {
+        driver.handleError("const val error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = nullptr;
     }
 ;
 var_decls :
@@ -235,6 +266,12 @@ var_decls :
     VAR var_decl SEMICOLON {
         $$ = std::make_shared<VarDeclsNode_Var_VarDecl_Semicolon>(
             $1, $2, $3, @1.begin.line);
+    } |
+    error {
+        driver.handleError("var decls error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<VarDeclsNode>(@1.begin.line);
     }
 ;
 var_decl :
@@ -257,6 +294,12 @@ type :
     } |
     STRING {
       $$ = std::make_shared<TypeNode_String> ($1, @1.begin.line);
+    } |
+    error {
+        driver.handleError("undefined type", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<TypeNode>(@1.begin.line);
     }
 ;
 basic_type :
@@ -271,6 +314,12 @@ basic_type :
     } |
     CHAR {
         $$ = std::make_shared<BasicTypeNode_Char>($1, @1.begin.line);
+    } |
+    error {
+        driver.handleError("undefined basic type", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<BasicTypeNode>(@1.begin.line);
     }
 ;
 period :
@@ -281,6 +330,12 @@ period :
     period COMMA NUMBER DOT DOT NUMBER {
         $$ = std::make_shared<PeriodNode_Period_Comma_Number_Dot_Dot_Number>(
             $1, $2, $3, $4, $5, $6, @1.begin.line);
+    } |
+    error {
+        driver.handleError("period error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = nullptr;
     }
 ;
 subprogram_decls :
@@ -290,6 +345,12 @@ subprogram_decls :
     subprogram_decls subprogram {
         $$ = std::make_shared<SubprogramDeclsNode_SubprogramDecls_Subprogram>(
             $1, $2, @1.begin.line);
+    } |
+    error {
+        driver.handleError("subprogram decls error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<SubprogramDeclsNode>(@1.begin.line);
     }
 ;
 subprogram :
@@ -297,6 +358,12 @@ subprogram :
     subprogram_head SEMICOLON subprogram_body SEMICOLON {
         $$ = std::make_shared<SubprogramNode_SubprogramHead_Semicolon_SubprogramBody_SEMICOLON>(
             $1, $2, $3, $4, @1.begin.line);
+    } |
+    error SEMICOLON {
+        driver.handleError("subprogram error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<SubprogramNode>(@1.begin.line);
     }
 ;
 subprogram_head :
@@ -307,6 +374,12 @@ subprogram_head :
     FUNCTION ID formal_parameter COLON basic_type {
         $$ = std::make_shared<SubprogramHeadNode_Function_Id_FormalParameter_Colon_BasicType>(
             $1, $2, $3, $4, $5, @1.begin.line);
+    } |
+    error {
+        driver.handleError("subprogram head error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<SubprogramHeadNode>(@1.begin.line);
     }
 ;
 formal_parameter :{
@@ -358,6 +431,11 @@ compound_statement :
     BEGIN statement_list END{
         $$ = std::make_shared<CompoundStatementNode_Begin_StatementList_End>(
             $1, $2, $3, @1.begin.line);
+    } |
+    BEGIN error END {
+        driver.handleError("compound statement error", @1);
+        yyerrok;
+        yyclearin;
     }
 ;
 statement_list :
@@ -412,6 +490,18 @@ statement : {
     } |
     CONTINUE {
         $$ = std::make_shared<StatementNode_Continue>($1, @1.begin.line);
+    } |
+    error SEMICOLON {
+        driver.handleError("statement error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<StatementNode>(@1.begin.line);
+    } |
+    error {
+        driver.handleError("statement error", @1);
+        yyerrok;
+        yyclearin;
+        $$ = std::make_shared<StatementNode>(@1.begin.line);
     }
 ;
 variable_list :
@@ -538,11 +628,11 @@ factor :
             $1, $2, @1.begin.line);
     }
 ;
+;
 %%
 
 
 // Bison expects us to provide implementation - otherwise linker complains
 void XYZ::Parser::error(const location &loc , const std::string &message) {
-
     driver.handleError(message, loc);
 }

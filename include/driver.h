@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "ast/ast.hpp"
 #include "codeGenerate/generator.hpp"
 #include "err.hpp"
@@ -9,6 +7,8 @@
 #include "parser.hpp"
 #include "scanner.h"
 #include "semanticAnalysis/analyzer.hpp"
+#include <set>
+#include <vector>
 
 namespace XYZ {
 
@@ -42,7 +42,7 @@ public:
 
   void setOutputFileName(const std::string &filename);
   // TODO: Implement the set_verbose method
-  void set_verbose(bool verbose) {};
+  void set_verbose(bool verbose);
 
   static std::shared_ptr<ProgramStructNode> root;
 
@@ -63,6 +63,7 @@ private:
   Analyzer m_analyzer;
   // 声明位置实例
   location m_location;
+  std::set<size_t> m_err_lines;
 };
 
 } // namespace XYZ

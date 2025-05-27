@@ -12,8 +12,10 @@ std::shared_ptr<ProgramStructNode> Driver::root = nullptr;
 
 } // namespace XYZ
 
-Driver::Driver()
-    : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {}
+Driver::Driver() : m_scanner(*this), m_parser(m_scanner, *this), m_location(0) {
+  // TODO:最高级别的调试信息
+  m_parser.set_debug_level(1);
+}
 
 int Driver::parse() {
   cout << "Parsing..." << endl;
@@ -151,12 +153,19 @@ void Driver::switchInputStream(std::istream *is) {
   m_scanner.switch_streams(is, NULL);
 }
 
+// 增加 columns
 void Driver::increaseLocation(unsigned int leng) {
   m_location.columns(leng);
-  //   std::cout << "increaseLocation(): " << leng << ", total = " << m_location
-  //             << std::endl;
+  // std::cout << "increaseLocation(): " << leng << ", total = " << m_location
+  //           << std::endl;
 }
-void Driver::increaseLine() { m_location.lines(1); }
+
+// 增加行数
+void Driver::increaseLine() {
+  // std::cout << "increaseLine()" << std::endl;
+  m_location.lines(1);
+  m_location.step();
+}
 
 void Driver::step() { m_location.step(); }
 
@@ -176,6 +185,10 @@ void Driver::printAST() {
 }
 
 void Driver::handleError(const std::string &msg, const location &loc) {
+  if (m_err_lines.find(loc.begin.line) != m_err_lines.end()) {
+    return; // 已经处理过的错误
+  }
+  m_err_lines.insert(loc.begin.line);
   // TODO: 改用日志库
   auto formatted_msg = std::format("Error[{}]: {}", loc.begin.line, msg);
   std::cerr << formatted_msg << std::endl;
@@ -195,6 +208,7 @@ void Driver::setOutputFileName(const std::string &filename) {
   m_outputFileName = filename;
   std::cout << "Output file set to: " << m_outputFileName << std::endl;
 }
+void Driver::set_verbose(bool verbose) { m_parser.set_debug_level(verbose); }
 void Driver::generateCode(std::shared_ptr<Generator> generator) {
   if (!root)
     //   先进行语法分析

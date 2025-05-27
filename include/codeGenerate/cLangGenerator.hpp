@@ -28,6 +28,7 @@ class CLangGenerator : public Generator {
 
   std::stack<std::pair<SymbolType::ParamsType, size_t>> m_paramsStack;
   std::stack<std::shared_ptr<SymbolType>> m_returnTypeStack;
+  std::stack<std::int32_t> m_array_begin_stack;
 
 public:
   CLangGenerator();

@@ -76,6 +76,16 @@ public:
       }
       return nullptr;
     }
+
+    std::vector<std::pair<int32_t, int32_t>> getRanges() const {
+      auto ranges = std::vector<std::pair<int32_t, int32_t>>{range};
+      auto array_type = element_type->get_if<Array>();
+      if (array_type) {
+        auto sub_ranges = array_type->getRanges();
+        ranges.insert(ranges.end(), sub_ranges.begin(), sub_ranges.end());
+      }
+      return ranges;
+    }
   };
 
   struct Record {
