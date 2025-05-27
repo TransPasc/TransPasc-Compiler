@@ -964,7 +964,7 @@ std::string CLangGenerator::getCStyleIOFormatStr(
           // we should use scientific format
           // so use %E with a length of 20
           // and exponential should be of length 3
-          return "%lf"s;
+          return "%f"s;
         case BasicType::BOOLEAN:
           return "%d"s;
         case BasicType::CHAR:
