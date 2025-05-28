@@ -4,7 +4,7 @@
 namespace XYZ {
 
 inline static std::shared_ptr<SymbolType>
-getTypeFromConstNumber(std::string str) {
+getTypeFromConstNumber(const std::string &str) {
   if (str.find('.') != std::string::npos)
     return std::make_shared<SymbolType>(SymbolType::MakeBasic(BasicType::REAL));
 
