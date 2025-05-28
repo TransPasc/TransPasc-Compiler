@@ -71,14 +71,14 @@ end;
 begin
   n := getint;
   k := getint;
-  
+
   for i := 0 to n - 1 do
   begin
     arr[i] := getint;
   end;
-  
+
   low := 0;
   high := n - 1;
-  
+
   findSmallest(low, high, k, n);
 end.
