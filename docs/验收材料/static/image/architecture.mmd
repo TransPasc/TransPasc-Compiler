@@ -1,0 +1,98 @@
+graph TB
+    %% 用户接口层
+    subgraph UI["用户接口层"]
+        CLI[CLI命令行界面]
+        Menu[Menu菜单系统]
+        Args[ArgParse参数解析]
+    end
+
+    %% 驱动控制层
+    subgraph Control["驱动控制层"]
+        Driver[Driver编译器驱动]
+    end
+
+    %% 编译前端
+    subgraph Frontend["编译前端"]
+        Scanner[Scanner词法分析器]
+        Parser[Parser语法分析器]
+        Flex[Flex词法规则]
+        Bison[Bison语法规则]
+    end
+
+    %% 语义分析层
+    subgraph Semantic["语义分析层"]
+        Analyzer[Analyzer语义分析器]
+        SymbolTable[SymbolTable符号表]
+        TypeSystem[SymbolType类型系统]
+    end
+
+    %% 代码生成层
+    subgraph CodeGen["代码生成层"]
+        Generator[Generator生成器接口]
+        CLang[CLangGenerator]
+        LLVM[LLVMGenerator]
+        RISCV[RISCVGenerator]
+    end
+
+    %% 基础设施层
+    subgraph Infrastructure["基础设施层"]
+        AST[AST节点系统]
+        Visitor[ASTVisitor访问者模式]
+        Exception[Exception异常处理]
+        Utils[Utils工具模块]
+    end
+
+    %% 构建测试层
+    subgraph BuildTest["构建测试层"]
+        CMake[CMake构建系统]
+        Tests[Tests测试套件]
+        CI[GitHub Actions]
+    end
+
+    %% 数据流关系
+    CLI --> Driver
+    Menu --> Driver
+    Args --> Menu
+
+    Driver --> Scanner
+    Driver --> Parser
+    Driver --> Analyzer
+    Driver --> Generator
+
+    Flex --> Scanner
+    Bison --> Parser
+    Scanner --> Parser
+    Parser --> AST
+
+    Analyzer --> SymbolTable
+    Analyzer --> TypeSystem
+    Analyzer --> AST
+
+    Generator --> CLang
+    Generator --> LLVM
+    Generator --> RISCV
+    Generator --> Visitor
+
+    AST --> Visitor
+    Visitor --> Exception
+    Utils --> Exception
+
+    CMake --> Tests
+    Tests --> CI
+
+    %% 样式定义
+    classDef uiLayer fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef controlLayer fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef frontendLayer fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef semanticLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef codegenLayer fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef infraLayer fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef buildLayer fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+
+    class CLI,Menu,Args uiLayer
+    class Driver controlLayer
+    class Scanner,Parser,Flex,Bison frontendLayer
+    class Analyzer,SymbolTable,TypeSystem semanticLayer
+    class Generator,CLang,LLVM,RISCV codegenLayer
+    class AST,Visitor,Exception,Utils infraLayer
+    class CMake,Tests,CI buildLayer

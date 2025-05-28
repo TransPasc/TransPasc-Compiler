@@ -1,0 +1,112 @@
+flowchart TD
+    %% 输入源代码
+    A["Pascal源代码文件<br/>(*.pas)"] --> B["CLI参数解析器<br/>cli/cli.cpp"]
+
+    %% 命令行配置处理
+    B --> C{"配置验证<br/>OutputConfig"}
+    C -->|有效配置| D["驱动器初始化<br/>Driver"]
+    C -->|无效配置| E["错误退出"]
+
+    %% 词法分析阶段
+    D --> F["词法分析器<br/>Scanner"]
+    F --> G["Flex词法规则<br/>scanner.l"]
+    G --> H["Token流<br/>包含类型、值、位置"]
+
+    %% 注释和空白处理
+    G --> I["注释处理<br/>三种注释格式"]
+    I --> J["空白符过滤<br/>保留行号信息"]
+    J --> H
+
+    %% 语法分析阶段
+    H --> K["语法分析器<br/>Parser LALR(1)"]
+    K --> L["Bison语法规则<br/>parser.y"]
+    L --> M["抽象语法树<br/>AST Root Node"]
+
+    %% 错误恢复
+    L --> N["语法错误恢复<br/>error产生式"]
+    N --> O["错误信息收集<br/>Driver::handleError"]
+    O --> M
+
+    %% 语义分析阶段
+    M --> P["语义分析器<br/>Analyzer"]
+    P --> Q["符号表管理<br/>StackLinkedSymbolTable"]
+    P --> R["类型检查<br/>SymbolType系统"]
+    P --> S["作用域管理<br/>enterBlock/exitBlock"]
+
+    %% 符号表详细流程
+    Q --> T["哈希表索引<br/>链式解决冲突"]
+    T --> U["符号记录<br/>SymbolRecord"]
+    U --> V["类型信息<br/>基本类型/数组类型"]
+
+    %% 语义检查
+    R --> W["表达式类型推导"]
+    R --> X["赋值兼容性检查"]
+    R --> Y["函数调用参数匹配"]
+    R --> Z["变量声明与使用检查"]
+
+    %% 语义分析结果
+    W --> AA["带类型信息的AST"]
+    X --> AA
+    Y --> AA
+    Z --> AA
+    S --> AA
+    V --> AA
+
+    %% 代码生成阶段
+    AA --> BB["代码生成器选择<br/>Generator接口"]
+    BB --> CC{"目标格式<br/>format参数"}
+
+    %% 不同目标格式
+    CC -->|c| DD["C语言生成器<br/>CLangGenerator"]
+    CC -->|llvm-ir| EE["LLVM IR生成器<br/>预留接口"]
+    CC -->|risc-v| FF["RISC-V生成器<br/>预留接口"]
+    CC -->|token| GG["Token流输出<br/>词法分析结果"]
+    CC -->|ast| HH["AST结构输出<br/>语法分析结果"]
+
+    %% C代码生成详细流程
+    DD --> II["C语言头文件生成<br/>stdio.h, stdlib.h等"]
+    DD --> JJ["类型映射<br/>Pascal类型→C类型"]
+    DD --> KK["语句转换<br/>Pascal语法→C语法"]
+    DD --> LL["函数/过程转换<br/>C函数定义"]
+
+    %% 代码生成优化
+    II --> MM["代码缓冲区<br/>m_outputBuffer"]
+    JJ --> MM
+    KK --> MM
+    LL --> MM
+
+    %% 输出文件处理
+    MM --> NN["输出文件管理<br/>setOutputFile"]
+    GG --> NN
+    HH --> NN
+    EE --> NN
+    FF --> NN
+
+    %% 最终输出
+    NN --> OO["目标代码文件<br/>(*.c/*.ll/*.s/*.tokens/*.ast)"]
+
+    %% 错误处理流程
+    O --> PP["错误信息格式化<br/>行号+错误描述"]
+    PP --> QQ["错误输出<br/>stderr"]
+
+    %% 调试支持
+    M --> RR["AST可视化输出<br/>printAST方法"]
+    H --> SS["Token流详细输出<br/>printTokens方法"]
+
+    %% 样式定义
+    classDef inputStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef lexicalStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef syntaxStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef semanticStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef codegenStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef outputStyle fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef errorStyle fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+
+    %% 应用样式
+    class A,B,C inputStyle
+    class F,G,H,I,J lexicalStyle
+    class K,L,M,N syntaxStyle
+    class P,Q,R,S,T,U,V,W,X,Y,Z,AA semanticStyle
+    class BB,CC,DD,EE,FF,II,JJ,KK,LL,MM,NN codegenStyle
+    class OO,RR,SS outputStyle
+    class E,O,PP,QQ errorStyle
