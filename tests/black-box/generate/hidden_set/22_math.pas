@@ -153,7 +153,7 @@ begin
             putfloat(my_log(x, y))
         else
             write(split);
-        
+
         if x > 0.0 then
             putfloat(my_powf(x, y))
         else

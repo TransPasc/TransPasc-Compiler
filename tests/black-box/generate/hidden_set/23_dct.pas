@@ -118,7 +118,7 @@ begin
   for i := 0 to dim_x - 1 do
     for j := 0 to dim_y - 1 do
       read(test_block[i, j]);
-  
+
   dct(dim_x, dim_y);
   write_mat(dim_x, dim_y);
 

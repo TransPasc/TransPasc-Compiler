@@ -98,7 +98,7 @@ begin
     for i := 0 to 39 do
         for j := 0 to 2 do
             arr[i, j] := i * 2.2 - j * 3.3;
-    
+
     ret0 := params_f40(
       arr[0, k], arr[1, k], arr[2, k], arr[3, k], arr[4, k], arr[5, k],
       arr[6, k], arr[7, k], arr[8, k], arr[9, k], arr[10, k], arr[11, k],

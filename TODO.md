@@ -6,22 +6,22 @@
 - 编译器支持单独输出 TOKEN 流、AST、语义信息、符号表 等
 - 对 TOKEN 流、AST、语义信息、符号表 等支持黑盒测试
 - 引入日志库
-- fix: 输出的ast 的 location 信息错误
+- fix: 输出的 ast 的 location 信息错误
 - fix: 部分语法未能正确识别
 - 优化 AST 的输出
-- 完善 ast:exception类
+- 完善 ast:exception 类
 - 添加 ERROR 类：词法错误、语法错误、语义错误（需要细分）
 - 分离声明和实现
 - 添加 TRUE 、 FALSE 的 TOKEN
 - 提供变长参数列表的 strictEq 函数，只要等于其中一个即可（或者取名叫 strictIn）
 - fix: 部分 TerminalNode 坐标出现错误
 - 貌似符合语句的最后一个分号是可选的，修改相关产生式、类支持
-- 使用Graphviz展示 AST(定义新的 visitor), [参考文档](./docs/Graphviz.md)
+- 使用 Graphviz 展示 AST(定义新的 visitor), [参考文档](./docs/Graphviz.md)
 - 完成其他平台编译部署的 CI/CD
 - 自动收集两个 tag 之间的 commit message, 用来填充 deploy CI/CD 的 Change Log
 - 统一 Menu 的传参为 config
 - 将集成测试脚本加入 github ci
-- 57_many_params.c，有未定义行为,param16有副作用，但参数调用顺序（从左到右、从右到左）未规定，从而导致不同平台不同编译器结果不一致
+- 57_many_params.c，有未定义行为,param16 有副作用，但参数调用顺序（从左到右、从右到左）未规定，从而导致不同平台不同编译器结果不一致
 - 解决下面的歧义问题:
   ```pas
     program main;

@@ -69,7 +69,7 @@ public:
 
   ~TerminalNode() override = default;
   void accept(ASTVisitor &visitor) override { visitor.visit(*this); }
-  std::string getValStr() { return __row_value_; }
+  const std::string &getValStr() const { return __row_value_; }
   // std::string getValue() const { return __row_value_; }
   //   泛型 get
   template <typename T> T get() const { return std::get<T>(value); }
