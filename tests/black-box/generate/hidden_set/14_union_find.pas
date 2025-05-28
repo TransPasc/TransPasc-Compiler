@@ -1,5 +1,5 @@
 program main;
-  
+
 var
   parent: array[0..1004] of integer;
   n, m, i, p, q, clusters: integer;
@@ -35,26 +35,26 @@ end;
 begin
   n := getint();
   m := getint();
-  
+
   for i := 0 to n - 1 do
   begin
     parent[i] := i;
   end;
-  
+
   for i := 0 to m - 1 do
   begin
     p := getint();
     q := getint();
     merge(p, q);
   end;
-  
+
   clusters := 0;
   for i := 0 to n - 1 do
   begin
     if parent[i] = i then
       clusters := clusters + 1;
   end;
-  
+
   write(clusters);
   read(clusters);
 end.

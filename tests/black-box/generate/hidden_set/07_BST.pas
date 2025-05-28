@@ -11,7 +11,7 @@ function search(root, x: integer): integer;
 begin
   if (root = -1) or (value[root] = x) then
     search := root
-  else 
+  else
   begin
     if (x > value[root]) then
       search := search(right_child[root], x)
@@ -24,7 +24,7 @@ function find_minimum(root: integer): integer;
 begin
   if (root = -1) then
     find_minimum := -1
-  else 
+  else
   begin
     if (left_child[root] <> -1) then
       find_minimum := find_minimum(left_child[root])
@@ -46,7 +46,7 @@ function insert(root, x: integer): integer;
 begin
   if (root = -1) then
     insert := new_node(x)
-  else 
+  else
   begin
     if (x > value[root]) then
       right_child[root] := insert(right_child[root], x)
